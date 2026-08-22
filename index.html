@@ -376,7 +376,19 @@ h2 {
   font-size: 0.85rem;
 }
 .flag-item.bad { border-left-color: var(--bad); }
+.flag-item.store-slowdown { border-left-color: var(--bad); background: var(--bad-bg); }
 .flag-item .flag-action { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+.store-slowdown-banner {
+  background: var(--bad-bg);
+  border: 1px solid #fecaca;
+  border-left: 4px solid var(--bad);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.88rem;
+}
+.store-slowdown-banner strong { display: block; margin-bottom: 0.25rem; color: var(--bad); }
+.store-slowdown-banner .flag-action { font-size: 0.8rem; color: var(--text); margin-top: 0.35rem; }
 .decision-row {
   display: flex;
   gap: 0.5rem;
@@ -1293,7 +1305,45 @@ function renderSimpleActions(data) {
     </section>`;
 }
 
+function storeSlowdown(data) {
+  const k = data.kpis || {};
+  const p = priorKpis(data);
+  const w = data.window || {};
+  const threshold = Number(data.thresholds?.anomaly_pct_threshold) || 15;
+  const rev = storeRev(k);
+  const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
+  if (!revP || !p.paid_orders) return null;
+  const revPct = (rev - revP) / revP * 100;
+  const ordPct = (k.paid_orders - p.paid_orders) / p.paid_orders * 100;
+  const revDown = revPct <= -threshold;
+  const ordDown = ordPct <= -threshold;
+  if (!revDown && !ordDown) return null;
+  const priorLabel = w.prior_label || 'last period';
+  const bits = [];
+  if (revDown) bits.push(`${fmt(rev)} revenue (${revPct.toFixed(0)}%)`);
+  if (ordDown) bits.push(`${k.paid_orders} orders (${ordPct.toFixed(0)}%)`);
+  return {
+    cls: revDown && ordDown ? 'bad' : 'watch',
+    title: 'Store slowdown · whole store vs ' + priorLabel,
+    action: `${bits.join(' · ')} vs ${priorLabel} (${fmt(revP)} · ${p.paid_orders} orders). Slower week — review channel mix; partial days in the window can pull totals down.`,
+    revPct,
+    ordPct,
+  };
+}
+
+function renderStoreSlowdownBanner(data) {
+  const flag = storeSlowdown(data);
+  if (!flag) return '';
+  return `
+    <div class="store-slowdown-banner" data-view="simple summary performance" data-store-slowdown>
+      <strong>${flag.title}</strong>
+      <div class="flag-action">${flag.action}</div>
+    </div>`;
+}
+
 function overallHealth(data) {
+  const slowdown = storeSlowdown(data);
+  if (slowdown?.cls === 'bad') return 'watch';
   const ch = data.channels || [];
   const bad = ch.some(c => c.status === 'pull_back');
   const watch = ch.some(c => c.status === 'watch');
@@ -1304,11 +1354,14 @@ function overallHealth(data) {
 
 function renderHealthStrip(data) {
   const ch = data.channels || [];
+  const slowdown = storeSlowdown(data);
   const overall = overallHealth(data);
   const q = data.data_quality || {};
   const shopOk = q.shopify?.status === 'ok';
+  const accountCls = slowdown?.cls === 'bad' ? 'bad' : overall;
+  const accountText = slowdown?.cls === 'bad' ? 'Slow week' : overall === 'good' ? 'On track' : 'Needs attention';
   const pills = [
-    ['Account', overall, overall === 'good' ? 'On track' : 'Needs attention'],
+    ['Account', accountCls, accountText],
     ...ch.map(c => {
       const slug = channelSlug(c.name);
       const label = c.name.replace('Google PMax', 'Google');
@@ -1385,14 +1438,21 @@ function renderCampaignSnapshot(data) {
         <h3>Ads by name</h3>
         <table class="compact-table">
           <thead><tr><th>Ch</th><th>Campaign</th><th>Ad name</th><th>Spend</th><th>Platform purch</th><th>Platform ROAS</th><th>Note</th></tr></thead>
-          <tbody>${adRows}${pausedRows}${testRows || '<tr><td colspan="7">No ad-level data</td></tr>'}</tbody>
+          <tbody>${adRows || pausedRows || testRows ? adRows + pausedRows + testRows : '<tr><td colspan="7">No ad-level data yet</td></tr>'}</tbody>
         </table>
       </div>
     </section>`;
 }
 
 function renderFlags(data) {
+  const storeFlag = storeSlowdown(data);
   const items = [
+    ...(storeFlag ? [{
+      cls: 'bad store-slowdown',
+      title: storeFlag.title,
+      action: storeFlag.action,
+      storeSlowdown: true,
+    }] : []),
     ...(data.anomalies || []).slice(0, 2).map(a => ({
       cls: 'watch',
       title: a.metric + ' · ' + a.change,
@@ -1408,7 +1468,7 @@ function renderFlags(data) {
   return `
     <section data-view="simple summary">
       <h2>Flags</h2>
-      ${items.map(f => `<div class="flag-item ${f.cls}"><strong>${f.title}</strong><div class="flag-action">${f.action}</div></div>`).join('')}
+      ${items.map(f => `<div class="flag-item ${f.cls}"${f.storeSlowdown ? ' data-store-slowdown' : ''}><strong>${f.title}</strong><div class="flag-action">${f.action}</div></div>`).join('')}
     </section>`;
 }
 
@@ -1645,6 +1705,9 @@ function applyFilters() {
   document.querySelectorAll('.col-prior, .wow-last').forEach(el => {
     el.style.display = filters.showCompare ? '' : 'none';
   });
+  document.querySelectorAll('[data-store-slowdown]').forEach(el => {
+    el.style.display = filters.showCompare ? '' : 'none';
+  });
   document.querySelectorAll('.col-month').forEach(el => {
     el.style.display = filters.showMonthCompare ? '' : 'none';
   });
@@ -1824,6 +1887,7 @@ function render(raw) {
 
   document.getElementById('app').innerHTML = `
     ${renderHealthStrip(data)}
+    ${renderStoreSlowdownBanner(data)}
     ${renderShopifyPeriod(data)}
     ${renderAtAGlance(data)}
 
