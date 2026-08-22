@@ -411,6 +411,36 @@ h2 {
   padding: 0.65rem 0.15rem 0;
 }
 .stat-leak strong { color: var(--text); font-weight: 600; }
+.exception-list {
+  list-style: none;
+  margin: 0 0 0.85rem;
+  padding: 0.85rem 1rem;
+  background: #eceef1;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+.exception-list li { padding: 0.15rem 0; }
+.exception-list li::before { content: "· "; color: var(--muted); font-weight: 700; }
+.easy-read-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin: 0.85rem 0 0.45rem;
+}
+.easy-read-foot {
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 0.75rem 0 0.25rem;
+  border-top: 1px solid var(--line);
+  margin-top: 0.5rem;
+}
+.stat-card.ad-card .stat-pct { font-size: 1.35rem; }
+.stat-card.ad-card .stat-val { font-size: 0.82rem; font-weight: 600; }
 .week-leak {
   font-size: 0.88rem;
   color: var(--muted);
@@ -1353,7 +1383,34 @@ function platformStatCard(c) {
   </div>`;
 }
 
-function renderEasyIntro(data) {
+function exceptionLines(data) {
+  const lines = [];
+  const slow = storeSlowdown(data);
+  if (slow && filters.showCompare) {
+    lines.push('Store slower vs last week (' + slow.revPct.toFixed(0) + '% revenue)');
+  }
+  const leak = leakSummary(data);
+  if (leak) lines.push('Leakage: ' + leak);
+  const pull = (data.actions?.pull_back || []).find(a => a.channel && a.channel !== '—');
+  if (pull) lines.push('Pull back ' + pull.channel + ' — ' + shortText(pull.reason, 55));
+  else {
+    const scale = (data.actions?.spend_more || []).find(a => a.channel && a.channel !== '—');
+    if (scale) lines.push('Scale ' + scale.channel + ' — ' + shortText(scale.reason, 55));
+  }
+  const todo = (data.strategy_todos || [])[0];
+  if (todo && lines.length < 3) lines.push('Next: ' + shortText(todo.action, 65));
+  return lines.slice(0, 3);
+}
+
+function adStatCard(a) {
+  return `<div class="stat-card flat ad-card" data-channel="meta">
+    <div class="stat-pct">${roas(a.roas)}</div>
+    <div class="stat-val">${shortText(a.ad, 24)}</div>
+    <div class="stat-lbl">${fmt(a.spend)} · ${a.purch ?? '—'} purch</div>
+  </div>`;
+}
+
+function renderEasyRead(data) {
   const k = data.kpis || {};
   const p = priorKpis(data);
   const w = data.window || {};
@@ -1363,20 +1420,27 @@ function renderEasyIntro(data) {
   const adSalesP = adAttributedSalesPrior(data);
   const mer = adSales && k.total_ad_spend ? round2(adSales / k.total_ad_spend) : k.blended_mer;
   const merP = adSalesP && p.total_ad_spend ? round2(adSalesP / p.total_ad_spend) : p.blended_mer;
-  const leak = leakSummary(data);
   const platforms = (data.channels || []).map(platformStatCard).join('');
+  const topAds = (data.meta_top_ads || []).slice(0, 3).map(adStatCard).join('');
+  const exceptions = exceptionLines(data);
   return `
-    <section class="easy-intro" data-view="simple summary performance">
+    <section class="easy-intro easy-read" data-view="simple summary performance actions deep">
       <p class="stat-period">${w.label || 'This period'} · vs ${w.prior_label || 'last period'}</p>
       <div class="stat-grid">
-        ${statCard('Total store sales', rev, revP, fmt, { hero: true })}
-        ${statCard('Orders', k.paid_orders, p.paid_orders, v => v)}
+        ${statCard('Total sales', rev, revP, fmt)}
+        ${statCard('Orders', k.paid_orders, p.paid_orders, v => v ?? '—')}
         ${statCard('Ad spend', k.total_ad_spend, p.total_ad_spend, fmt)}
         ${statCard('Ad ROAS', mer, merP, roas)}
       </div>
       <div class="stat-grid">${platforms}</div>
-      ${leak ? `<p class="stat-leak"><strong>Leakage:</strong> ${leak}</p>` : ''}
+      ${exceptions.length ? `<ul class="exception-list">${exceptions.map(l => `<li>${l}</li>`).join('')}</ul>` : ''}
+      ${topAds ? `<p class="easy-read-label">Top ads (platform)</p><div class="stat-grid">${topAds}</div>` : ''}
+      <p class="easy-read-foot">All details ↓ for campaigns, budget, history, and full tables</p>
     </section>`;
+}
+
+function renderEasyIntro(data) {
+  return renderEasyRead(data);
 }
 
 function renderShopifyPeriod(data) {
@@ -1500,7 +1564,7 @@ function renderSimpleActions(data) {
   const todos = (data.strategy_todos || []).slice(0, 3);
   if (!todos.length) return '';
   return `
-    <section data-view="simple actions">
+    <section data-view="detailed actions">
       <h2>To-do</h2>
       <div class="glance-stack">
         ${todos.map(t => glanceRow(shortText(t.action, 80), t.owner || '—', t.expected || '')).join('')}
@@ -1612,10 +1676,9 @@ function renderCampaignGlance(data) {
     channelSlug(c.channel)
   )).join('');
   return `
-    <section data-view="simple summary performance deep">
-      <h2>Ads</h2>
-      <div class="glance-stack">${adCards || glanceRow('No ad data', '', 'Run refresh with Blend wired')}</div>
-      <h2>Campaigns</h2>
+    <section data-view="detailed summary performance deep">
+      <h2>Ads and campaigns · cards</h2>
+      <div class="glance-stack">${adCards}</div>
       <div class="glance-stack">${campCards}</div>
     </section>`;
 }
@@ -1752,7 +1815,7 @@ function renderDecisionsCompact(data) {
   (act.watch || []).slice(0, 2).forEach(a => lines.push(['watch', a.channel, a.item]));
   if (!lines.length) return '';
   return `
-    <section data-view="simple actions">
+    <section data-view="detailed actions">
       <h2>Decisions</h2>
       <div class="glance-stack">
         ${lines.slice(0, 4).map(([tag, ch, text]) =>
@@ -2121,9 +2184,9 @@ function render(raw) {
   const f = data.ga4_funnel || {};
 
   document.getElementById('app').innerHTML = `
-    ${renderHealthStrip(data)}
-    ${renderEasyIntro(data)}
+    ${renderEasyRead(data)}
 
+    ${renderHealthStrip(data)}
     ${renderSimpleChannels(data)}
     ${renderCampaignGlance(data)}
     ${renderCampaignTables(data)}
