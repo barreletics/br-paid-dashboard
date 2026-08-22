@@ -349,6 +349,80 @@ h2 {
 .glance-card .num { font-size: 1.75rem; font-weight: 700; line-height: 1.1; }
 .glance-card .name { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; }
 .glance-card .chg { font-size: 0.78rem; font-weight: 600; margin-top: 0.35rem; }
+.easy-intro { margin-bottom: 1.25rem; }
+.easy-intro .intro-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 1rem 0 0.55rem;
+}
+.easy-intro .intro-label:first-of-type { margin-top: 0.85rem; }
+.week-verdict {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.2rem 1.35rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+.week-verdict.down { border-left: 5px solid #6b7280; background: #eceef1; }
+.week-verdict.up { border-left: 5px solid var(--good); background: var(--good-bg); }
+.week-verdict.flat { border-left: 5px solid var(--line); }
+.verdict-main { display: flex; align-items: center; gap: 0.85rem; }
+.verdict-arrow {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--muted);
+}
+.week-verdict.up .verdict-arrow { color: var(--good); }
+.week-verdict.down .verdict-arrow { color: #374151; }
+.verdict-line { font-size: 1.35rem; font-weight: 700; line-height: 1.2; }
+.verdict-sub { font-size: 0.88rem; color: var(--muted); margin-top: 0.25rem; }
+.verdict-numbers { display: flex; gap: 1.25rem; text-align: right; }
+.verdict-numbers .mini-stat .big { display: block; font-size: 1.35rem; font-weight: 700; }
+.verdict-numbers .mini-stat .lbl { font-size: 0.78rem; color: var(--muted); }
+.intro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.65rem;
+}
+.intro-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+}
+.intro-card.leak { background: #f8f9fa; border-color: #dfe3e8; }
+.intro-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.88rem;
+}
+.intro-card-metric { font-size: 1.45rem; font-weight: 700; line-height: 1.1; margin-bottom: 0.25rem; }
+.intro-card-metric .muted { font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+.intro-card-row { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+.intro-card-trend { font-size: 0.8rem; font-weight: 600; margin-top: 0.4rem; }
+.card-note {
+  font-size: 0.76rem;
+  margin-top: 0.45rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  line-height: 1.35;
+}
+.card-note.warn { color: #92400e; }
+@media (max-width: 640px) {
+  .week-verdict { grid-template-columns: 1fr; }
+  .verdict-numbers { text-align: left; }
+}
 .health-strip {
   display: flex;
   flex-wrap: wrap;
@@ -1200,6 +1274,166 @@ function adAttributedOrders(data) {
   return (data.channels || []).reduce((s, c) => s + Number(c.shopify_orders || 0), 0);
 }
 
+function trendArrow(cur, prev) {
+  const ch = pctChange(cur, prev);
+  if (ch.text === '—') return { arrow: '→', pct: '—', cls: 'flat', word: 'flat', ch };
+  const pct = ch.text.replace('+', '').replace('-', '');
+  if (ch.cls === 'pct-up') return { arrow: '↑', pct, cls: 'up', word: 'up', ch };
+  if (ch.cls === 'pct-down') return { arrow: '↓', pct, cls: 'down', word: 'down', ch };
+  return { arrow: '→', pct: ch.text, cls: 'flat', word: 'about flat', ch };
+}
+
+function channelLabel(name) {
+  return (name || '').replace('Google PMax', 'Google');
+}
+
+function leakageItems(data) {
+  const items = [];
+  (data.channels || []).forEach(c => {
+    const label = channelLabel(c.name);
+    const plat = Number(c.platform_purchases) || 0;
+    const shop = Number(c.shopify_orders) || 0;
+    const spend = Number(c.spend) || 0;
+    if (plat > shop + 2 && plat > 0) {
+      items.push({
+        title: label + ' · platform overclaim',
+        metric: plat + ' platform vs ' + shop + ' Shopify',
+        note: 'Pixel counts more than store UTMs — judge on Shopify orders',
+      });
+    }
+    if (spend >= 100 && shop === 0) {
+      items.push({
+        title: label + ' · spend leak',
+        metric: fmt(spend) + ' spend · 0 Shopify orders',
+        note: c.interpretation || 'No store attribution this period',
+      });
+    }
+    if (c.status === 'pull_back') {
+      items.push({
+        title: label + ' · pull back',
+        metric: roas(channelRoas(c)) + ' Shopify ROAS',
+        note: 'Below target — reduce or fix before scaling',
+      });
+    }
+  });
+  const anomaly = (data.anomalies || []).find(a =>
+    /meta|platform|overclaim|pinterest|zero/i.test(a.metric + a.cause)
+  );
+  if (anomaly && items.length < 4) {
+    items.push({
+      title: anomaly.metric,
+      metric: anomaly.change + (anomaly.vs ? ' · ' + anomaly.vs : ''),
+      note: anomaly.response || anomaly.cause,
+    });
+  }
+  return items.slice(0, 3);
+}
+
+function platformCard(c) {
+  const label = channelLabel(c.name);
+  const slug = channelSlug(c.name);
+  const roasNow = channelRoas(c);
+  const roasCh = pctChange(roasNow, channelRoas(c, 'last'));
+  const ordCh = pctChange(c.shopify_orders, c.shopify_orders_last);
+  const call = c.status === 'good' ? 'On track' : c.status === 'watch' ? 'Watch' : c.status === 'pull_back' ? 'Pull back' : (c.status || '').replace('_', ' ');
+  const plat = Number(c.platform_purchases) || 0;
+  const shop = Number(c.shopify_orders) || 0;
+  const leakNote = plat > shop + 2
+    ? `<div class="card-note warn">Platform ${plat} purch · Shopify ${shop} orders</div>`
+    : '';
+  const ordArr = trendArrow(c.shopify_orders, c.shopify_orders_last);
+  return `<div class="intro-card platform-card" data-channel="${slug}">
+    <div class="intro-card-head"><strong>${label}</strong><span class="status-chip ${c.status}">${call}</span></div>
+    <div class="intro-card-metric">${roas(roasNow)} <span class="muted">Shopify ROAS</span></div>
+    <div class="intro-card-row">${fmt(c.spend)} spend · ${shop} orders · ${fmt(channelRev(c))} revenue</div>
+    <div class="intro-card-trend col-prior ${ordCh.cls}">${ordArr.arrow} ${ordCh.text} orders · ${roasCh.text} ROAS vs last</div>
+    ${leakNote}
+  </div>`;
+}
+
+function renderEasyIntro(data) {
+  const k = data.kpis || {};
+  const p = priorKpis(data);
+  const w = data.window || {};
+  const rev = storeRev(k);
+  const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
+  const revTrend = trendArrow(rev, revP);
+  const ordTrend = trendArrow(k.paid_orders, p.paid_orders);
+  const adSales = adAttributedSales(data);
+  const adSalesP = adAttributedSalesPrior(data);
+  const adOrders = adAttributedOrders(data);
+  const afterAds = afterAdSpend(k);
+  const afterAdsP = afterAdSpend(p);
+  const mer = adSales && k.total_ad_spend ? round2(adSales / k.total_ad_spend) : k.blended_mer;
+  const merP = adSalesP && p.total_ad_spend ? round2(adSalesP / p.total_ad_spend) : p.blended_mer;
+  const verdictCls = revTrend.cls === 'flat' ? ordTrend.cls : revTrend.cls;
+  const verdictWord = revTrend.cls === 'flat' ? ordTrend.word : revTrend.word;
+  const verdictPct = revTrend.cls === 'flat' ? ordTrend.pct : revTrend.pct;
+  const verdictArrow = revTrend.cls === 'flat' ? ordTrend.arrow : revTrend.arrow;
+  const econCards = [
+    ['Total sales', rev, revP, fmt],
+    ['From ads', adSales, adSalesP, fmt],
+    ['Ad spend', k.total_ad_spend, p.total_ad_spend, fmt],
+    ['Ad ROAS', mer, merP, roas],
+  ];
+  const platforms = (data.channels || []).map(platformCard).join('');
+  const leaks = leakageItems(data).map(item => `
+    <div class="intro-card leak">
+      <div class="intro-card-head"><strong>${item.title}</strong></div>
+      <div class="intro-card-metric" style="font-size:1.1rem">${item.metric}</div>
+      <div class="card-note">${item.note}</div>
+    </div>`).join('');
+  const todo = (data.strategy_todos || [])[0];
+  const nextLine = todo
+    ? `<p class="profit-note" style="margin-top:0.75rem"><strong>Next:</strong> ${todo.action.replace(/ — .*/, '').slice(0, 90)}${todo.action.length > 90 ? '…' : ''}</p>`
+    : '';
+  const verdictText = verdictPct === '—'
+    ? 'This week · ' + (w.label || 'current period')
+    : `This week is ${verdictWord} ${verdictPct}`;
+  return `
+    <section class="easy-intro" data-view="simple summary performance">
+      <div class="week-verdict ${verdictCls}">
+        <div class="verdict-main">
+          <span class="verdict-arrow">${verdictArrow}</span>
+          <div>
+            <div class="verdict-line">${verdictText}</div>
+            <div class="verdict-sub">Store sales · ${w.label || 'this period'} vs ${w.prior_label || 'last period'}</div>
+          </div>
+        </div>
+        <div class="verdict-numbers">
+          <div class="mini-stat">
+            <span class="big">${fmt(rev)}</span>
+            <span class="lbl">${k.paid_orders ?? '—'} orders</span>
+          </div>
+          <div class="mini-stat col-prior">
+            <span class="big">${fmt(revP)}</span>
+            <span class="lbl">${p.paid_orders ?? '—'} orders last</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="intro-label">By platform</div>
+      <div class="intro-grid platform-grid">${platforms}</div>
+
+      ${leaks ? `<div class="intro-label">Leakage and gaps</div><div class="intro-grid leak-grid">${leaks}</div>` : ''}
+
+      <div class="intro-label">Key numbers</div>
+      <div class="glance-grid" style="margin-bottom:0.5rem">
+        ${econCards.map(([name, cur, prev, fn]) => {
+          const ch = pctChange(cur, prev);
+          const arr = trendArrow(cur, prev);
+          return `<div class="glance-card">
+            <div class="num">${fn ? fn(cur) : cur}</div>
+            <div class="name">${name}</div>
+            <div class="chg col-prior ${ch.cls}">${arr.arrow} ${ch.text} vs last</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <p class="profit-note">${adOrders} ad-tagged of ${k.paid_orders ?? '—'} store orders · After ad spend ${fmt(afterAds)} (${trendArrow(afterAds, afterAdsP).arrow} ${pctChange(afterAds, afterAdsP).text} vs last)</p>
+      ${nextLine}
+    </section>`;
+}
+
 function renderShopifyPeriod(data) {
   const k = data.kpis || {};
   const p = priorKpis(data);
@@ -1304,8 +1538,8 @@ function renderSimpleChannels(data) {
     </tr>`;
   }).join('');
   return `
-    <section data-view="simple summary performance">
-      <h2>By channel</h2>
+    <section data-view="detailed performance">
+      <h2>By channel · full table</h2>
       <p class="section-hint">ROAS uses Shopify-attributed orders only (not what Meta or Pinterest claim).</p>
       <table>
         <thead><tr>
@@ -1467,14 +1701,7 @@ function renderCampaignSnapshot(data) {
 }
 
 function renderFlags(data) {
-  const storeFlag = storeSlowdown(data);
   const items = [
-    ...(storeFlag ? [{
-      cls: 'bad store-slowdown',
-      title: storeFlag.title,
-      action: storeFlag.action,
-      storeSlowdown: true,
-    }] : []),
     ...(data.anomalies || []).slice(0, 2).map(a => ({
       cls: 'watch',
       title: a.metric + ' · ' + a.change,
@@ -1490,7 +1717,7 @@ function renderFlags(data) {
   return `
     <section data-view="simple summary">
       <h2>Flags</h2>
-      ${items.map(f => `<div class="flag-item ${f.cls}"${f.storeSlowdown ? ' data-store-slowdown' : ''}><strong>${f.title}</strong><div class="flag-action">${f.action}</div></div>`).join('')}
+      ${items.map(f => `<div class="flag-item ${f.cls}"><strong>${f.title}</strong><div class="flag-action">${f.action}</div></div>`).join('')}
     </section>`;
 }
 
@@ -1909,14 +2136,7 @@ function render(raw) {
 
   document.getElementById('app').innerHTML = `
     ${renderHealthStrip(data)}
-    ${renderStoreSlowdownBanner(data)}
-    ${renderShopifyPeriod(data)}
-    ${renderAtAGlance(data)}
-
-    <section data-view="simple summary">
-      <h2>At a glance</h2>
-      <div class="simple-lede">${renderHeadlines(data)}</div>
-    </section>
+    ${renderEasyIntro(data)}
 
     ${renderSimpleChannels(data)}
     ${renderCampaignSnapshot(data)}
