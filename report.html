@@ -379,19 +379,38 @@ h2 {
   font-size: 0.85rem;
 }
 .flag-item.bad { border-left-color: var(--bad); }
-.flag-item.store-slowdown { border-left-color: var(--bad); background: var(--card); }
+.flag-item.store-slowdown {
+  border-left-color: #6b7280;
+  background: #eceef1;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+}
+.flag-item.store-slowdown strong { color: var(--text); font-size: 1rem; }
+.flag-item.store-slowdown .flag-action { font-size: 0.88rem; color: var(--text); }
 .flag-item .flag-action { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
 .store-slowdown-banner {
-  background: var(--card);
-  border: 1px solid #fecaca;
-  border-left: 4px solid var(--bad);
-  border-radius: 10px;
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.85rem;
-  font-size: 0.88rem;
+  background: #eceef1;
+  border: 1px solid #d1d5db;
+  border-left: 5px solid #6b7280;
+  border-radius: 12px;
+  padding: 1.15rem 1.35rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
 }
-.store-slowdown-banner strong { display: block; margin-bottom: 0.25rem; color: #991b1b; }
-.store-slowdown-banner .flag-action { font-size: 0.82rem; color: var(--text); margin-top: 0.35rem; line-height: 1.45; }
+.store-slowdown-banner strong {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--text);
+  font-size: 1.12rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.store-slowdown-banner .flag-action {
+  font-size: 0.95rem;
+  color: var(--text);
+  margin-top: 0.35rem;
+  line-height: 1.5;
+}
 .decision-row {
   display: flex;
   gap: 0.5rem;
