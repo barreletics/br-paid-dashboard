@@ -1065,12 +1065,13 @@ function renderAtAGlance(data) {
       <h2>The numbers</h2>
       <div class="sales-banner">
         <div>
-          <div class="sales-lbl">Store sales · ${w.label || 'this period'}</div>
+          <div class="sales-lbl">Store sales · ${w.label || 'this period'} · whole store</div>
           <div class="sales-val">${fmt(sales)}</div>
           <div class="chg col-prior ${salesCh.cls}" style="font-size:0.85rem;margin-top:0.35rem">${trendPlain(sales, salesP)}</div>
         </div>
         <div class="sales-sub">${k.paid_orders ?? '—'} paid orders<br>AOV ${k.aov ? fmt(k.aov) : '—'}</div>
       </div>
+      <p class="profit-note" style="margin-top:0;margin-bottom:0.75rem">Includes direct, email, organic, and paid — ads often lift the whole store, not just tagged orders. Channel table below is UTM-attributed only.</p>
       <div class="glance-grid">
         ${cards.map(([name, cur, prev, fn, highlight]) => {
           const ch = pctChange(cur, prev);
