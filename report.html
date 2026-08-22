@@ -330,6 +330,79 @@ footer {
 }
 .guide-paths strong { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: #d1d5db; margin-bottom: 0.25rem; }
 .guide-truth { font-size: 0.78rem !important; margin-bottom: 0 !important; color: #d1d5db !important; }
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1.25rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.8rem;
+}
+.filter-group { display: flex; align-items: center; gap: 0.4rem; }
+.filter-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.filter-bar select {
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.filter-bar label { display: flex; align-items: center; gap: 0.35rem; cursor: pointer; color: var(--muted); }
+.wow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+.wow-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.85rem;
+}
+.wow-card .metric { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 0.35rem; }
+.wow-card .this-val { font-size: 1.35rem; font-weight: 700; }
+.wow-card .wow-last { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+.wow-card .delta { font-size: 0.8rem; font-weight: 600; margin-top: 0.2rem; }
+.compare-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+.compare-head .period-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: var(--good-bg);
+  color: var(--good);
+  border: 1px solid #bbf7d0;
+}
+.compare-head .period-tag.prior {
+  background: #f3f4f6;
+  color: var(--muted);
+  border-color: var(--line);
+}
+.trend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+.trend-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+.trend-panel h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 0.65rem; }
 @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -350,6 +423,33 @@ footer {
     <span id="refresh-status" class="timestamp-live">—</span>
     <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()">Refresh</button>
   </span>
+</div>
+<div id="filter-bar" class="filter-bar" style="display:none">
+  <div class="filter-group">
+    <span class="filter-label">View</span>
+    <select id="filter-view" aria-label="Section view">
+      <option value="all">All sections</option>
+      <option value="summary">Summary and compare</option>
+      <option value="performance">Performance and pacing</option>
+      <option value="actions">Actions and priorities</option>
+      <option value="deep">Campaigns and deep dive</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Channel</span>
+    <select id="filter-channel" aria-label="Channel filter">
+      <option value="all">All channels</option>
+      <option value="meta">Meta only</option>
+      <option value="google">Google only</option>
+      <option value="pinterest">Pinterest only</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label><input type="checkbox" id="filter-compare" checked> Compare vs last period</label>
+  </div>
+  <div class="filter-group">
+    <label><input type="checkbox" id="filter-target" checked> Show targets</label>
+  </div>
 </div>
 <div id="app"></div>
 <footer>
@@ -506,8 +606,8 @@ function renderKpiTarget(rows) {
     const tgt = r.unit === '$' ? fmt(r.target) : r.target + (r.unit === '×' ? '×' : '');
     const ch = pctChange(r.this_period, r.last_period);
     return `<tr>
-      <td>${r.kpi}</td><td><strong>${cur}</strong></td><td>${prev}</td><td>${tgt}</td>
-      <td class="${ch.cls}">${ch.text}</td><td class="status ${r.status}">${r.status}</td>
+      <td>${r.kpi}</td><td><strong>${cur}</strong></td><td class="col-prior">${prev}</td><td class="col-target">${tgt}</td>
+      <td class="col-prior ${ch.cls}">${ch.text}</td><td class="status ${r.status}">${r.status}</td>
     </tr>`;
   }).join('');
 }
@@ -585,7 +685,8 @@ function renderSectionKeys() {
     ['KPI vs target', 'This period vs last period vs goal · good / watch / bad'],
     ['Strategy and to-dos', 'Concrete changes to make this week — owners and due dates'],
     ['Spend / Pull / Create / Watch', 'Where to add budget, cut, build new, or monitor'],
-    ['Channel performance', 'Shopify ROAS = truth (UTM revenue ÷ spend) · platform numbers are reference only'],
+    ['This vs last period', 'Side-by-side cards and channel table — rolling prior window of same length'],
+    ['Historical trend', 'Orders, revenue, and MER over recent snapshots — builds each refresh'],
     ['Budget pacing · MTD', 'MTD = month to date · spend so far this month vs monthly plan'],
     ['Anomalies', 'Metrics that moved >15% WoW — cause and recommended response'],
     ['Campaign status', 'What is live, paused, or in learning — next milestone per campaign'],
@@ -613,34 +714,195 @@ function sectionHint(text) {
   return text ? `<p class="section-hint">${text}</p>` : '';
 }
 
+const filters = { channel: 'all', view: 'all', showCompare: true, showTarget: true };
+let dashboardData = null;
+
+function channelSlug(name) {
+  const n = (name || '').toLowerCase();
+  if (n.includes('meta')) return 'meta';
+  if (n.includes('google')) return 'google';
+  if (n.includes('pinterest')) return 'pinterest';
+  return 'other';
+}
+
+function priorKpis(data) {
+  if (data.prior_period?.kpis) return data.prior_period.kpis;
+  const rows = data.kpi_vs_target || [];
+  const get = (n) => rows.find(r => r.kpi === n);
+  const spendLast = (data.channels || []).reduce((s, c) => s + (c.spend_last || 0), 0);
+  return {
+    paid_orders: get('Paid orders')?.last_period ?? '—',
+    paid_revenue: get('Shopify revenue')?.last_period ?? 0,
+    total_ad_spend: spendLast || null,
+    blended_mer: get('Blended MER')?.last_period ?? null,
+    aov: null,
+    cpa_blended: null,
+  };
+}
+
+function wowMetric(label, cur, prev, fmtFn) {
+  const ch = pctChange(cur, prev);
+  const fmtCur = fmtFn ? fmtFn(cur) : cur;
+  const fmtPrev = fmtFn ? fmtFn(prev) : prev;
+  return `<div class="wow-card">
+    <div class="metric">${label}</div>
+    <div class="this-val">${fmtCur ?? '—'}</div>
+    <div class="wow-last col-prior">Last: ${fmtPrev ?? '—'}</div>
+    <div class="delta col-prior ${ch.cls}">${ch.text !== '—' ? ch.text + ' vs last period' : '—'}</div>
+  </div>`;
+}
+
+function renderWowCompare(data) {
+  const k = data.kpis || {};
+  const p = priorKpis(data);
+  const w = data.window || {};
+  return `
+    <section data-view="summary performance">
+      <div class="compare-head">
+        <h2 style="margin:0">This period vs last period</h2>
+        <div>
+          <span class="period-tag">This · ${w.label || '—'}</span>
+          <span class="period-tag prior col-prior">Last · ${w.prior_label || data.prior_period?.window?.label || '—'}</span>
+        </div>
+      </div>
+      ${sectionHint('Side-by-side store and paid totals — same length window immediately before this one.')}
+      <div class="wow-grid">
+        ${wowMetric('Store orders', k.paid_orders, p.paid_orders)}
+        ${wowMetric('Store revenue', k.paid_revenue, p.paid_revenue, fmt)}
+        ${wowMetric('Ad spend', k.total_ad_spend, p.total_ad_spend, fmt)}
+        ${wowMetric('Blended MER', k.blended_mer, p.blended_mer, roas)}
+        ${wowMetric('Meta Shopify ROAS', data.channels?.[0]?.shopify_roas, data.channels?.[0]?.shopify_roas_last, roas)}
+        ${wowMetric('Google Shopify ROAS', data.channels?.[1]?.shopify_roas, data.channels?.[1]?.shopify_roas_last, roas)}
+      </div>
+    </section>`;
+}
+
+function renderChannelWow(data) {
+  const rows = (data.channels || []).map(c => {
+    const slug = channelSlug(c.name);
+    const ordCh = pctChange(c.shopify_orders, c.shopify_orders_last);
+    const revCh = pctChange(c.shopify_revenue, c.shopify_revenue_last);
+    const roasCh = pctChange(c.shopify_roas, c.shopify_roas_last);
+    const spendCh = pctChange(c.spend, c.spend_last);
+    return `<tr data-channel="${slug}">
+      <td><strong>${c.name}</strong></td>
+      <td>${c.shopify_orders}</td><td class="col-prior">${c.shopify_orders_last ?? '—'}</td><td class="col-prior ${ordCh.cls}">${ordCh.text}</td>
+      <td>${fmt(c.shopify_revenue)}</td><td class="col-prior">${fmt(c.shopify_revenue_last || 0)}</td><td class="col-prior ${revCh.cls}">${revCh.text}</td>
+      <td>${fmt(c.spend)}</td><td class="col-prior">${fmt(c.spend_last || 0)}</td><td class="col-prior ${spendCh.cls}">${spendCh.text}</td>
+      <td><strong>${roas(c.shopify_roas)}</strong></td><td class="col-prior">${roas(c.shopify_roas_last)}</td><td class="col-prior ${roasCh.cls}">${roasCh.text}</td>
+      <td class="status ${c.status}">${(c.status || '').replace('_', ' ')}</td>
+    </tr>
+    <tr data-channel="${slug}"><td colspan="13" style="font-size:0.8rem;color:var(--muted)">${c.interpretation || ''}</td></tr>`;
+  }).join('');
+  return `
+    <section data-view="summary performance">
+      <h2>Channel compare · this period vs last</h2>
+      ${sectionHint('Paid channel scorecard with WoW on orders, Shopify revenue, spend, and ROAS. Toggle columns with filters above.')}
+      <table>
+        <thead><tr>
+          <th>Channel</th>
+          <th>Orders</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
+          <th>Shopify $</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
+          <th>Spend</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
+          <th>ROAS</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan="13">No channel data</td></tr>'}</tbody>
+      </table>
+    </section>`;
+}
+
+function renderHistoryTrend(data) {
+  const hist = (data.history_weekly || []).slice(-8);
+  if (hist.length < 2) return '';
+  const maxOrd = Math.max(...hist.map(h => h.orders || 0), 1);
+  const maxRev = Math.max(...hist.map(h => h.revenue || 0), 1);
+  const maxMer = Math.max(...hist.map(h => h.mer || 0), 0.1);
+  const ordBars = hist.map(h => {
+    const pct = Math.round((h.orders || 0) / maxOrd * 100);
+    return `<div class="bar-row"><span class="bar-label">${h.label.replace(', 2026', '')}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-val">${h.orders}</span></div>`;
+  }).join('');
+  const revBars = hist.map(h => {
+    const pct = Math.round((h.revenue || 0) / maxRev * 100);
+    return `<div class="bar-row"><span class="bar-label">${h.label.replace(', 2026', '')}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-val">${Math.round((h.revenue || 0) / 1000)}k</span></div>`;
+  }).join('');
+  const merBars = hist.map(h => {
+    const pct = Math.round((h.mer || 0) / maxMer * 100);
+    return `<div class="bar-row"><span class="bar-label">${h.label.replace(', 2026', '')}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-val">${(h.mer || 0).toFixed(1)}</span></div>`;
+  }).join('');
+  return `
+    <section data-view="summary performance">
+      <h2>Historical trend</h2>
+      ${sectionHint('Rolling snapshots build over time — each refresh appends the current window. Use for direction, not exact audit.')}
+      <div class="trend-grid">
+        <div class="trend-panel"><h3>Store orders</h3>${ordBars}</div>
+        <div class="trend-panel"><h3>Store revenue</h3>${revBars}</div>
+        <div class="trend-panel"><h3>Blended MER</h3>${merBars}</div>
+      </div>
+    </section>`;
+}
+
+function applyFilters() {
+  const ch = filters.channel;
+  const view = filters.view;
+  document.querySelectorAll('[data-view]').forEach(el => {
+    const views = (el.dataset.view || '').split(/\s+/);
+    const viewOk = view === 'all' || views.includes(view);
+    const chAttr = el.dataset.channel;
+    const chOk = !chAttr || ch === 'all' || chAttr === ch;
+    el.style.display = (viewOk && chOk) ? '' : 'none';
+  });
+  document.querySelectorAll('tr[data-channel]').forEach(tr => {
+    const chOk = ch === 'all' || tr.dataset.channel === ch;
+    tr.style.display = chOk ? '' : 'none';
+  });
+  document.querySelectorAll('.col-prior, .wow-last').forEach(el => {
+    el.style.display = filters.showCompare ? '' : 'none';
+  });
+  document.querySelectorAll('.col-target').forEach(el => {
+    el.style.display = filters.showTarget ? '' : 'none';
+  });
+}
+
+function initFilters() {
+  const bar = document.getElementById('filter-bar');
+  bar.style.display = 'flex';
+  const saved = sessionStorage.getItem('br-dashboard-filters');
+  if (saved) Object.assign(filters, JSON.parse(saved));
+  document.getElementById('filter-view').value = filters.view;
+  document.getElementById('filter-channel').value = filters.channel;
+  document.getElementById('filter-compare').checked = filters.showCompare;
+  document.getElementById('filter-target').checked = filters.showTarget;
+  ['filter-view', 'filter-channel'].forEach(id => {
+    document.getElementById(id).addEventListener('change', e => {
+      filters[id === 'filter-view' ? 'view' : 'channel'] = e.target.value;
+      sessionStorage.setItem('br-dashboard-filters', JSON.stringify(filters));
+      applyFilters();
+    });
+  });
+  ['filter-compare', 'filter-target'].forEach(id => {
+    document.getElementById(id).addEventListener('change', e => {
+      filters[id === 'filter-compare' ? 'showCompare' : 'showTarget'] = e.target.checked;
+      sessionStorage.setItem('br-dashboard-filters', JSON.stringify(filters));
+      applyFilters();
+    });
+  });
+}
+
 function render(data) {
+  dashboardData = data;
   setTimestamp(data);
   const k = data.kpis || {};
   const q = qualitySummary(data.data_quality);
   document.getElementById('quality-badge').className = 'badge ' + q.cls;
   document.getElementById('quality-badge').textContent = q.text;
 
-  const channelRows = (data.channels || []).map(c => {
-    const roasCh = pctChange(c.shopify_roas, c.shopify_roas_last);
-    const ordCh = pctChange(c.shopify_orders, c.shopify_orders_last);
-    return `<tr>
-      <td>${c.name}</td>
-      <td>${fmt(c.spend)}<br><span class="sub">${roasCh.cls === 'pct-up' ? '▲' : roasCh.cls === 'pct-down' ? '▼' : '—'} vs ${fmt(c.spend_last || 0)}</span></td>
-      <td>${c.shopify_orders} <span class="${ordCh.cls}">${ordCh.text}</span></td>
-      <td>${fmt(c.shopify_revenue)}</td>
-      <td><strong>${roas(c.shopify_roas)}</strong> <span class="${roasCh.cls}">${roasCh.text}</span></td>
-      <td>${c.shopify_cpa ? fmt(c.shopify_cpa) : '—'}</td>
-      <td class="status ${c.status}">${(c.status || '').replace('_', ' ')}</td>
-    </tr>
-    <tr><td colspan="7" style="font-size:0.8rem;color:var(--muted)">${c.interpretation || ''}</td></tr>`;
-  }).join('');
-
   const anomalyRows = (data.anomalies || []).map(a => `<tr>
     <td>${a.metric}</td><td><strong>${a.change}</strong> ${a.vs || ''}</td>
     <td>${a.cause}</td><td>${a.response}</td>
   </tr>`).join('');
 
-  const campRows = (data.campaign_status || []).map(c => `<tr>
+  const campRows = (data.campaign_status || []).map(c => `<tr data-channel="${channelSlug(c.channel)}">
     <td>${c.channel}</td><td>${c.campaign}</td>
     <td><span class="status-chip ${c.status}">${c.status}</span></td>
     <td>${fmt(c.spend_period)}</td><td>${c.key_metric}</td><td>${c.next_milestone}</td>
@@ -681,7 +943,7 @@ function render(data) {
   const f = data.ga4_funnel || {};
 
   document.getElementById('app').innerHTML = `
-    <div class="analyst-guide">
+    <div class="analyst-guide" data-view="summary">
       <h2>Start here — how to read this brief</h2>
       <p>This dashboard is written like a standing analyst and strategist memo for the team. Each section tells you what happened, why it matters, and what to consider doing next — without needing to dig through Ads Manager first.</p>
       <div class="guide-paths">
@@ -692,49 +954,44 @@ function render(data) {
       <p class="guide-truth"><strong>Ground rule:</strong> Shopify UTM orders = truth for ROAS and CPA. Platform purchase counts (especially Meta) can overclaim — we show both so you can decide with confidence.</p>
     </div>
 
-    <details class="key-details" open>
+    <details class="key-details" data-view="summary">
       <summary>Section key and glossary (what everything means)</summary>
       <div class="glossary-row">${renderGlossary(data.glossary)}</div>
       <div class="key-grid">${renderSectionKeys()}</div>
     </details>
 
-    <section>
+    <section data-view="summary actions">
       <h2>Strategy and to-dos this week</h2>
       ${sectionHint('Suggested changes and considerations — treat as your action list. Open = do it; Watch = monitor before acting.')}
       <ul class="todo-wrap todo-list">${renderTodos(data.strategy_todos)}</ul>
     </section>
 
-    <section>
+    <section data-view="summary">
       <h2>Executive summary</h2>
       ${sectionHint('Short narrative for leadership — wins, concerns, and forward note.')}
       <div class="exec-box">${renderExec(data.executive_summary)}</div>
     </section>
 
-    <div class="kpi-row">
-      <div class="kpi"><div class="val">${k.paid_orders ?? '—'}</div><div class="lbl">Paid orders</div></div>
-      <div class="kpi"><div class="val">${fmt(k.paid_revenue)}</div><div class="lbl">Shopify revenue</div></div>
-      <div class="kpi"><div class="val">${fmt(k.total_ad_spend)}</div><div class="lbl">Ad spend</div></div>
-      <div class="kpi"><div class="val">${roas(k.blended_mer)}</div><div class="lbl">Blended MER</div></div>
-      <div class="kpi"><div class="val">${k.aov ? fmt(k.aov) : '—'}</div><div class="lbl">AOV</div></div>
-      <div class="kpi"><div class="val">${k.cpa_blended ? fmt(k.cpa_blended) : '—'}</div><div class="lbl">Blended CPA</div></div>
-    </div>
+    ${renderWowCompare(data)}
+    ${renderChannelWow(data)}
+    ${renderHistoryTrend(data)}
 
-    <section>
+    <section data-view="performance">
       <h2>KPI vs target · this period vs last</h2>
-      ${sectionHint('Each KPI shows this period, last period, weekly target, and week-over-week (WoW) change.')}
+      ${sectionHint('Each KPI shows this period, last period, weekly target, and week-over-week (WoW) change. Use filters to hide last period or targets.')}
       <table>
-        <thead><tr><th>KPI</th><th>This period</th><th>Last period</th><th>Target</th><th>WoW</th><th>Status</th></tr></thead>
+        <thead><tr><th>KPI</th><th>This period</th><th class="col-prior">Last period</th><th class="col-target">Target</th><th class="col-prior">WoW</th><th>Status</th></tr></thead>
         <tbody>${renderKpiTarget(data.kpi_vs_target)}</tbody>
       </table>
     </section>
 
-    <section>
+    <section data-view="actions">
       <h2>Recommended actions</h2>
       ${sectionHint('Spend more = scale · Pull back = reduce or pause · Create = new builds · Watch = check again next week.')}
       <div class="grid-4">${renderActions(data.actions)}</div>
     </section>
 
-    <section>
+    <section data-view="actions">
       <h2>Next week priorities</h2>
       ${sectionHint('Top 3 ranked priorities with owner, due date, and expected outcome.')}
       <table>
@@ -743,18 +1000,7 @@ function render(data) {
       </table>
     </section>
 
-    <section>
-      <h2>Channel performance · Shopify ROAS = truth</h2>
-      ${sectionHint('ROAS and CPA use Shopify UTM orders only. Platform purchase counts can overclaim (especially Meta).')}
-      <table>
-        <thead><tr>
-          <th>Channel</th><th>Spend</th><th>Orders</th><th>Shopify $</th><th>ROAS</th><th>CPA</th><th>Status</th>
-        </tr></thead>
-        <tbody>${channelRows}</tbody>
-      </table>
-    </section>
-
-    <div class="two-col">
+    <div class="two-col" data-view="performance">
       <section>
         <h2>Budget pacing · MTD</h2>
         ${sectionHint('MTD = Month To Date (spend from the 1st of this month through today). Used % = MTD ÷ monthly plan.')}
@@ -773,7 +1019,7 @@ function render(data) {
       </section>
     </div>
 
-    <section>
+    <section data-view="deep">
       <h2>Anomalies · cause and response</h2>
       ${sectionHint('Flags when a metric moved more than ~15% vs the prior period — what happened and what to do.')}
       <table>
@@ -782,7 +1028,7 @@ function render(data) {
       </table>
     </section>
 
-    <section>
+    <section data-view="deep">
       <h2>Campaign status</h2>
       <table>
         <thead><tr><th>Channel</th><th>Campaign</th><th>Status</th><th>Spend</th><th>Key metric</th><th>Next milestone</th></tr></thead>
@@ -790,7 +1036,7 @@ function render(data) {
       </table>
     </section>
 
-    <section>
+    <section data-view="deep" data-channel="meta">
       <h2>Creative performance</h2>
       <div class="two-col">
         <div class="action-card spend">
@@ -808,7 +1054,7 @@ function render(data) {
       <ul>${(cr.new_tests || []).map(x => `<li><strong>${x.name}</strong> · ${x.launched} — ${x.early}</li>`).join('') || '<li>None</li>'}</ul>
     </section>
 
-    <section>
+    <section data-view="deep">
       <h2>Agency activity log</h2>
       <table>
         <thead><tr><th>Date</th><th>Owner</th><th>Change</th></tr></thead>
@@ -816,7 +1062,7 @@ function render(data) {
       </table>
     </section>
 
-    <section>
+    <section data-view="deep">
       <h2>Challenges and roadblocks</h2>
       <table>
         <thead><tr><th>Issue</th><th>Impact</th><th>Plan</th></tr></thead>
@@ -824,7 +1070,7 @@ function render(data) {
       </table>
     </section>
 
-    <div class="two-col">
+    <div class="two-col" data-view="performance deep">
       <section>
         <h2>Daily paid orders (Shopify)</h2>
         <div class="bar-chart">${renderDaily(data.daily_orders)}</div>
@@ -838,7 +1084,7 @@ function render(data) {
       </section>
     </div>
 
-    <section>
+    <section data-view="deep" data-channel="meta">
       <h2>Meta top ads (platform)</h2>
       <table>
         <thead><tr><th>Campaign</th><th>Ad</th><th>Spend</th><th>Purch</th><th>ROAS</th></tr></thead>
@@ -846,7 +1092,7 @@ function render(data) {
       </table>
     </section>
 
-    <section>
+    <section data-view="deep" data-channel="meta">
       <h2>GA4 Paid Social funnel (direction only)</h2>
       <table>
         <tbody>
@@ -860,11 +1106,16 @@ function render(data) {
       <p class="sub" style="margin-top:0.5rem">${f.note || ''}</p>
     </section>
 
-    <section>
+    <section data-view="summary">
       <h2>Data confidence</h2>
       <div class="quality">${renderQuality(data.data_quality)}</div>
     </section>
   `;
+  if (!window._filtersInit) {
+    initFilters();
+    window._filtersInit = true;
+  }
+  applyFilters();
 }
 
 function boot() {
@@ -885,7 +1136,7 @@ function boot() {
 }
 
 reportConfig = {"report_window_days": 7, "window_ends": "today", "monthly_plan": {"Meta": 7500, "Google PMax": 1500, "Pinterest": 800, "total": 9800}, "weekly_order_target": 63, "weekly_revenue_target": 7000, "report_recipients": [{"name": "Andrew", "email": "", "sections": "all"}, {"name": "Stefanie", "email": "stefanie@barreletics.com", "sections": "executive,kpi,budget"}, {"name": "Zaki", "email": "", "sections": "campaigns,creative,actions,agency"}]};
-render({"generated_at": "2026-08-22T12:20:40.728803-04:00", "window": {"start": "2026-08-16", "end": "2026-08-22", "label": "Aug 16\u201322, 2026", "days": 7, "mode": "rolling", "through": "today", "prior_start": "2026-08-09", "prior_end": "2026-08-15", "prior_label": "Aug 9\u201315, 2026"}, "executive_summary": ["Store held volume (96 paid orders) but revenue dipped ~3% vs prior 10 days ($9.9k vs $10.2k) as AOV softened.", "Google PMax is the standout \u2014 Shopify UTM ROAS ~6.7\u00d7; maintain spend and monitor delivery.", "Meta is active but under target on Shopify UTMs (~1.3\u00d7 vs 1.5\u00d7 goal); platform overclaims purchases (54 vs 35).", "Pinterest spent ~$271 with zero Shopify orders \u2014 Checkout now paused; Creative Test Aug 19 in learning.", "Next week: hold Meta budget, keep Google running, close Pinterest tag + winner campaign plan."], "kpi_vs_target": [{"kpi": "Paid orders", "this_period": 53, "last_period": 68, "target": 90, "unit": "orders", "status": "good"}, {"kpi": "Shopify revenue", "this_period": 5645, "last_period": 6918, "target": 10000, "unit": "$", "status": "watch"}, {"kpi": "Blended MER", "this_period": 1.71, "last_period": 2.1, "target": 3.0, "unit": "\u00d7", "status": "good"}, {"kpi": "Meta Shopify ROAS", "this_period": 0.62, "last_period": 1.23, "target": 1.5, "unit": "\u00d7", "status": "watch"}, {"kpi": "Google Shopify ROAS", "this_period": 3.44, "last_period": 4.07, "target": 3.0, "unit": "\u00d7", "status": "good"}, {"kpi": "Pinterest Shopify orders", "this_period": 0, "last_period": 0, "target": 2, "unit": "orders", "status": "bad"}], "budget_pacing": {"month": "2026-08", "month_to_date_spend": 6200, "monthly_plan": 10500, "projected_month_spend": 9300, "pacing_status": "on_track", "note": "MTD spend estimated from recent 20-day run rate; set monthly_plan in dashboard/config.json", "by_channel": [{"channel": "Meta", "mtd_spend": 4700, "monthly_plan": 7500, "status": "on_track"}, {"channel": "Google", "mtd_spend": 980, "monthly_plan": 1500, "status": "on_track"}, {"channel": "Pinterest", "mtd_spend": 520, "monthly_plan": 800, "status": "watch"}]}, "data_quality": {"shopify": {"status": "ok", "source": "shopify_rest", "note": "Paid orders + UTM attribution"}, "blend_meta": {"status": "ok", "source": "blend_bps-2c81", "note": "Campaign + ad level"}, "blend_google": {"status": "ok", "source": "blend_bps-2c81", "note": "PMax 23842882230"}, "blend_pinterest": {"status": "partial", "source": "blend_bps-2c81", "note": "Spend ok; checkout value not returned"}, "ga4": {"status": "ok", "source": "ga4_300437005", "note": "Funnel direction only"}, "shopify_mcp": {"status": "skip", "source": "n/a", "note": "Use REST script for weekly"}, "wow_prior_period": {"status": "ok", "source": "shopify_rest", "note": "Aug 3\u201312 baseline"}}, "kpis": {"paid_orders": 53, "paid_revenue": 5645.36, "total_ad_spend": 3292, "blended_mer": 1.71, "cpa_blended": 62.11, "aov": 106.52}, "channels": [{"name": "Meta", "spend": 2503, "spend_last": 2200, "shopify_orders": 17, "shopify_orders_last": 28, "shopify_revenue": 1548, "shopify_revenue_last": 2697, "shopify_roas": 0.62, "shopify_roas_last": 1.23, "shopify_cpa": 147.24, "platform_purchases": 54, "platform_revenue": 5246, "platform_roas": 2.1, "status": "watch", "interpretation": "Volume flat but ROAS down on Shopify UTMs; platform overclaim widening."}, {"name": "Google PMax", "spend": 518, "spend_last": 420, "shopify_orders": 16, "shopify_orders_last": 19, "shopify_revenue": 1782, "shopify_revenue_last": 1711, "shopify_roas": 3.44, "shopify_roas_last": 4.07, "shopify_cpa": 32.38, "platform_purchases": 24, "platform_revenue": 2266, "platform_roas": 4.38, "status": "good", "interpretation": "Strongest week \u2014 orders +65% WoW on modest spend increase."}, {"name": "Pinterest", "spend": 271, "spend_last": 250, "shopify_orders": 0, "shopify_orders_last": 0, "shopify_revenue": 0, "shopify_revenue_last": 0, "shopify_roas": 0.0, "shopify_roas_last": 0.0, "shopify_cpa": null, "platform_purchases": 0, "platform_revenue": 0, "platform_roas": 0, "status": "pull_back", "interpretation": "Spend without Shopify attribution \u2014 tag and plan gap."}], "anomalies": [{"metric": "Google Shopify orders", "change": "+65%", "vs": "prior 10 days", "cause": "PMax delivery improved while tROAS held; more high-intent shopping traffic converting.", "response": "Maintain \u2014 no tROAS experiments unless spend drops >30% WoW."}, {"metric": "Meta platform vs Shopify purchases", "change": "+54%", "vs": "overclaim gap", "cause": "Pixel/CAPI counting more purchases than Shopify Meta UTMs attribute.", "response": "Judge creatives on Shopify UTM orders only; review Events Manager monthly."}, {"metric": "Daily store orders", "change": "-47%", "vs": "Aug 13 peak to mid-window", "cause": "Normal intra-week seasonality plus softer Tue Aug 17 (Meta 0 purch day in GA4).", "response": "Watch next 7 days; do not react to single-day dips."}, {"metric": "Meta Shopify ROAS", "change": "-20%", "vs": "prior 10 days", "cause": "Collection-page winners paused; Prospecting budget raised Aug 15.", "response": "Hold further Prospecting raises until Shopify ROAS \u22651.5\u00d7 for 7 days."}], "campaign_status": [{"channel": "Meta", "campaign": "Prospecting CBO", "status": "ACTIVE", "spend_period": 905, "key_metric": "Shopify ROAS ~2.3\u00d7 platform \u00b7 ~1.4\u00d7 Shopify est.", "next_milestone": "Hold $100/day cap until Shopify UTM improves"}, {"channel": "Meta", "campaign": "Creative Test", "status": "ACTIVE", "spend_period": 1598, "key_metric": "Closed Sole new ads ~7 purch early", "next_milestone": "Do not pause Closed Sole before 7 full days"}, {"channel": "Meta", "campaign": "Retargeting", "status": "PAUSED", "spend_period": 0, "key_metric": "Was not converting pre-pause", "next_milestone": "Rebuild only \u2014 do not restore July setup"}, {"channel": "Google", "campaign": "PMax US Test", "status": "ACTIVE", "spend_period": 518, "key_metric": "Shopify ROAS ~6.7\u00d7", "next_milestone": "Monitor delivery; flag if spend falls"}, {"channel": "Pinterest", "campaign": "Shopping Ads", "status": "RUNNING", "spend_period": 97, "key_metric": "~$10/day cap", "next_milestone": "Scale only after tag check + UI access fixed"}, {"channel": "Pinterest", "campaign": "Checkout", "status": "PAUSED", "spend_period": 95, "key_metric": "Paused mid-window", "next_milestone": "Keep off until new plan"}, {"channel": "Pinterest", "campaign": "Creative Test Aug 19", "status": "LEARNING", "spend_period": 79, "key_metric": "0 Shopify orders so far", "next_milestone": "7-day readout Aug 26"}], "creative": {"top_performer": {"channel": "Google", "name": "PMax (aggregate)", "metric": "33 Shopify orders \u00b7 ~6.7\u00d7 ROAS"}, "top_meta_ad": {"name": "Video #01 Corrected (Prospecting)", "spend": 717, "purch": 17, "roas": 2.35, "note": "Platform ROAS \u2014 verify Shopify UTM attach rate"}, "fatiguing_or_paused": [{"name": "Pilates athletes Collection page", "action": "Paused Aug 20", "was": "14 platform purch in period"}, {"name": "No Socks Collection page", "action": "Paused Aug 14", "was": "Prior week winner"}], "new_tests": [{"name": "Pilates has evolved \u00b7 Closed Sole", "launched": "Aug 19", "early": "7 platform purch \u00b7 ~2.1\u00d7"}, {"name": "Pinterest Creative Test", "launched": "Aug 19", "early": "69 clicks \u00b7 0 Shopify orders"}]}, "agency_activity": [{"date": "Aug 15", "owner": "Zaki", "action": "Prospecting budget $85 \u2192 $100/day"}, {"date": "Aug 19", "owner": "Zaki", "action": "Launched Pilates has evolved ads (Collection + Closed Sole)"}, {"date": "Aug 20", "owner": "Zaki", "action": "Paused Pilates athletes Collection page ad"}, {"date": "Aug 14", "owner": "Zaki", "action": "Paused No Socks Collection page ad"}, {"date": "Aug 19", "owner": "Unknown", "action": "Pinterest Creative Test campaign launched"}, {"date": "Mid-window", "owner": "Unknown", "action": "Pinterest Checkout paused"}], "challenges": [{"issue": "Meta Shopify ROAS below 1.5\u00d7 target", "impact": "Budget raises not justified on store dollars", "plan": "Hold Prospecting cap; replace paused Collection winners carefully"}, {"issue": "Pinterest zero Shopify attribution", "impact": "~$271/10d spend unproven on store", "plan": "Tag test order; Shopping access ticket; winner Conversions build"}, {"issue": "Meta pixel overclaim", "impact": "Platform ROAS looks ~2\u00d7 vs Shopify ~1.3\u00d7", "plan": "Weekly Shopify UTM gate on all Meta decisions"}, {"issue": "Agency Shopping Ads UI access (Zaki)", "impact": "Cannot manage Shopping budget in Ads Manager", "plan": "Pinterest ticket follow-up"}], "actions": {"spend_more": [{"channel": "Google PMax", "reason": "Shopify UTM ROAS ~6.7\u00d7 \u2014 best paid efficiency", "owner": "Zaki", "due": "Ongoing"}], "pull_back": [{"channel": "Pinterest", "reason": "~$271 \u00b7 0 Shopify orders \u2014 Checkout stays off", "owner": "Andrew/agent", "due": "Immediate"}, {"channel": "Meta", "reason": "Shopify ROAS ~1.3\u00d7 \u2014 no budget raises", "owner": "Zaki", "due": "Until 7-day gate passes"}], "create": [{"channel": "Meta", "item": "Run Closed Sole 7 full days before pause", "owner": "Zaki", "due": "Aug 26"}, {"channel": "Pinterest", "item": "Winner Conversions after tag verified", "owner": "Andrew/agent", "due": "Sep 1"}], "watch": [{"channel": "Meta", "item": "ATC\u2192checkout 122\u219215; Aug 17 zero-purch day", "owner": "Andrew", "due": "Weekly"}, {"channel": "Pinterest", "item": "Creative Test 7-day readout", "owner": "Zaki", "due": "Aug 26"}, {"channel": "Store", "item": "Daily order trend vs Aug 13 peak", "owner": "Andrew", "due": "Weekly"}]}, "next_week_priorities": [{"priority": 1, "action": "Hold Meta Prospecting at $100/day", "owner": "Zaki", "due": "Aug 29", "expected": "Shopify Meta ROAS stabilizes \u22651.4\u00d7"}, {"priority": 2, "action": "Pinterest tag verification + Creative Test readout", "owner": "Zaki", "due": "Aug 26", "expected": "Know if Aug 19 test continues or pauses"}, {"priority": 3, "action": "Google PMax \u2014 confirm no delivery constraint", "owner": "Zaki", "due": "Aug 29", "expected": "Spend holds ~$400\u2013550/week"}], "strategy_todos": [{"id": 1, "status": "open", "action": "Hold Meta Prospecting budget \u2014 no raises until Shopify UTM ROAS \u22651.5\u00d7 for 7 days", "owner": "Zaki", "due": "Ongoing"}, {"id": 2, "status": "open", "action": "Keep Google PMax running \u2014 best channel (~6.7\u00d7 Shopify ROAS)", "owner": "Zaki", "due": "Ongoing"}, {"id": 3, "status": "open", "action": "Keep Pinterest Checkout paused; read out Aug 19 Creative Test Aug 26", "owner": "Zaki", "due": "Aug 26"}, {"id": 4, "status": "open", "action": "Run Closed Sole creative 7 full days before any pause decision", "owner": "Zaki", "due": "Aug 26"}, {"id": 5, "status": "open", "action": "Verify Pinterest checkout tag on a test order before scaling Shopping", "owner": "Andrew", "due": "Sep 1"}, {"id": 6, "status": "open", "action": "Launch winner-based Pinterest Conversions after tag is healthy", "owner": "Andrew + agent", "due": "Sep 1"}, {"id": 7, "status": "watch", "action": "Watch Meta ATC\u2192checkout (122\u219215) and platform vs Shopify purchase gap", "owner": "Andrew", "due": "Weekly"}], "glossary": {"MTD": "Month To Date \u2014 ad spend from the 1st of this month through today", "MER": "Marketing Efficiency Ratio \u2014 total Shopify revenue \u00f7 total ad spend", "ROAS": "Return on ad spend \u2014 Shopify UTM-attributed revenue \u00f7 channel spend (our truth metric)", "CPA": "Cost per acquisition \u2014 ad spend \u00f7 Shopify attributed orders", "WoW": "Week over week \u2014 this period vs the immediately prior period of same length", "UTM": "Tracking tags on order landing URLs \u2014 Shopify ground truth for which ad drove the sale"}, "organic_snapshot": {"note": "GA4 direction only \u2014 not mixed into paid ROAS", "channels": [{"name": "Organic Search", "sessions": 366, "purchases": 5, "revenue": 572}, {"name": "Direct", "sessions": 455, "purchases": 15, "revenue": 1269}, {"name": "Email", "sessions": 32, "purchases": 3, "revenue": 385}, {"name": "Organic Social", "sessions": 420, "purchases": 4, "revenue": 370}]}, "meta_top_ads": [{"campaign": "Prospecting CBO", "ad": "Video #01 Corrected", "spend": 717, "purch": 17, "roas": 2.35}, {"campaign": "Creative Test", "ad": "Pilates athletes Collection page", "spend": 781, "purch": 14, "roas": 1.68}, {"campaign": "Creative Test", "ad": "Pilates has evolved Closed Sole", "spend": 289, "purch": 7, "roas": 2.13}], "ga4_funnel": {"paid_social_sessions": 2096, "add_to_carts": 122, "checkouts": 15, "purchases": 25, "atc_to_checkout_rate": 12.3, "note": "GA4 purchases \u2260 Shopify \u2014 direction only"}, "daily_orders": {"2026-08-16": 7, "2026-08-17": 8, "2026-08-18": 7, "2026-08-19": 10, "2026-08-20": 9, "2026-08-21": 9, "2026-08-22": 3}, "history_weekly": [{"label": "Aug 3\u201312", "orders": 85, "revenue": 10208, "ad_spend": 2870, "mer": 3.56}, {"label": "Aug 13\u201322", "orders": 96, "revenue": 9883, "ad_spend": 3292, "mer": 3.0}, {"label": "Aug 16\u201322, 2026", "orders": 53, "revenue": 5645, "ad_spend": 3292, "mer": 1.71}], "thresholds": {"meta_shopify_roas_target": 1.5, "google_shopify_roas_target": 3.0, "pinterest_max_spend_no_orders": 150, "anomaly_pct_threshold": 15}});
+render({"generated_at": "2026-08-22T12:25:15.500856-04:00", "window": {"start": "2026-08-16", "end": "2026-08-22", "label": "Aug 16\u201322, 2026", "days": 7, "mode": "rolling", "through": "today", "prior_start": "2026-08-09", "prior_end": "2026-08-15", "prior_label": "Aug 9\u201315, 2026"}, "executive_summary": ["Store held volume (96 paid orders) but revenue dipped ~3% vs prior 10 days ($9.9k vs $10.2k) as AOV softened.", "Google PMax is the standout \u2014 Shopify UTM ROAS ~6.7\u00d7; maintain spend and monitor delivery.", "Meta is active but under target on Shopify UTMs (~1.3\u00d7 vs 1.5\u00d7 goal); platform overclaims purchases (54 vs 35).", "Pinterest spent ~$271 with zero Shopify orders \u2014 Checkout now paused; Creative Test Aug 19 in learning.", "Next week: hold Meta budget, keep Google running, close Pinterest tag + winner campaign plan."], "kpi_vs_target": [{"kpi": "Paid orders", "this_period": 53, "last_period": 68, "target": 90, "unit": "orders", "status": "good"}, {"kpi": "Shopify revenue", "this_period": 5645, "last_period": 6918, "target": 10000, "unit": "$", "status": "watch"}, {"kpi": "Blended MER", "this_period": 1.71, "last_period": 2.1, "target": 3.0, "unit": "\u00d7", "status": "good"}, {"kpi": "Meta Shopify ROAS", "this_period": 0.62, "last_period": 1.23, "target": 1.5, "unit": "\u00d7", "status": "watch"}, {"kpi": "Google Shopify ROAS", "this_period": 3.44, "last_period": 4.07, "target": 3.0, "unit": "\u00d7", "status": "good"}, {"kpi": "Pinterest Shopify orders", "this_period": 0, "last_period": 0, "target": 2, "unit": "orders", "status": "bad"}], "budget_pacing": {"month": "2026-08", "month_to_date_spend": 6200, "monthly_plan": 10500, "projected_month_spend": 9300, "pacing_status": "on_track", "note": "MTD spend estimated from recent 20-day run rate; set monthly_plan in dashboard/config.json", "by_channel": [{"channel": "Meta", "mtd_spend": 4700, "monthly_plan": 7500, "status": "on_track"}, {"channel": "Google", "mtd_spend": 980, "monthly_plan": 1500, "status": "on_track"}, {"channel": "Pinterest", "mtd_spend": 520, "monthly_plan": 800, "status": "watch"}]}, "data_quality": {"shopify": {"status": "ok", "source": "shopify_rest", "note": "Paid orders + UTM attribution"}, "blend_meta": {"status": "ok", "source": "blend_bps-2c81", "note": "Campaign + ad level"}, "blend_google": {"status": "ok", "source": "blend_bps-2c81", "note": "PMax 23842882230"}, "blend_pinterest": {"status": "partial", "source": "blend_bps-2c81", "note": "Spend ok; checkout value not returned"}, "ga4": {"status": "ok", "source": "ga4_300437005", "note": "Funnel direction only"}, "shopify_mcp": {"status": "skip", "source": "n/a", "note": "Use REST script for weekly"}, "wow_prior_period": {"status": "ok", "source": "shopify_rest", "note": "Aug 3\u201312 baseline"}}, "kpis": {"paid_orders": 53, "paid_revenue": 5645.36, "total_ad_spend": 3292, "blended_mer": 1.71, "cpa_blended": 62.11, "aov": 106.52}, "channels": [{"name": "Meta", "spend": 2503, "spend_last": 2200, "shopify_orders": 17, "shopify_orders_last": 28, "shopify_revenue": 1548, "shopify_revenue_last": 2697, "shopify_roas": 0.62, "shopify_roas_last": 1.23, "shopify_cpa": 147.24, "platform_purchases": 54, "platform_revenue": 5246, "platform_roas": 2.1, "status": "watch", "interpretation": "Volume flat but ROAS down on Shopify UTMs; platform overclaim widening."}, {"name": "Google PMax", "spend": 518, "spend_last": 420, "shopify_orders": 16, "shopify_orders_last": 19, "shopify_revenue": 1782, "shopify_revenue_last": 1711, "shopify_roas": 3.44, "shopify_roas_last": 4.07, "shopify_cpa": 32.38, "platform_purchases": 24, "platform_revenue": 2266, "platform_roas": 4.38, "status": "good", "interpretation": "Strongest week \u2014 orders +65% WoW on modest spend increase."}, {"name": "Pinterest", "spend": 271, "spend_last": 250, "shopify_orders": 0, "shopify_orders_last": 0, "shopify_revenue": 0, "shopify_revenue_last": 0, "shopify_roas": 0.0, "shopify_roas_last": 0.0, "shopify_cpa": null, "platform_purchases": 0, "platform_revenue": 0, "platform_roas": 0, "status": "pull_back", "interpretation": "Spend without Shopify attribution \u2014 tag and plan gap."}], "anomalies": [{"metric": "Google Shopify orders", "change": "+65%", "vs": "prior 10 days", "cause": "PMax delivery improved while tROAS held; more high-intent shopping traffic converting.", "response": "Maintain \u2014 no tROAS experiments unless spend drops >30% WoW."}, {"metric": "Meta platform vs Shopify purchases", "change": "+54%", "vs": "overclaim gap", "cause": "Pixel/CAPI counting more purchases than Shopify Meta UTMs attribute.", "response": "Judge creatives on Shopify UTM orders only; review Events Manager monthly."}, {"metric": "Daily store orders", "change": "-47%", "vs": "Aug 13 peak to mid-window", "cause": "Normal intra-week seasonality plus softer Tue Aug 17 (Meta 0 purch day in GA4).", "response": "Watch next 7 days; do not react to single-day dips."}, {"metric": "Meta Shopify ROAS", "change": "-20%", "vs": "prior 10 days", "cause": "Collection-page winners paused; Prospecting budget raised Aug 15.", "response": "Hold further Prospecting raises until Shopify ROAS \u22651.5\u00d7 for 7 days."}], "campaign_status": [{"channel": "Meta", "campaign": "Prospecting CBO", "status": "ACTIVE", "spend_period": 905, "key_metric": "Shopify ROAS ~2.3\u00d7 platform \u00b7 ~1.4\u00d7 Shopify est.", "next_milestone": "Hold $100/day cap until Shopify UTM improves"}, {"channel": "Meta", "campaign": "Creative Test", "status": "ACTIVE", "spend_period": 1598, "key_metric": "Closed Sole new ads ~7 purch early", "next_milestone": "Do not pause Closed Sole before 7 full days"}, {"channel": "Meta", "campaign": "Retargeting", "status": "PAUSED", "spend_period": 0, "key_metric": "Was not converting pre-pause", "next_milestone": "Rebuild only \u2014 do not restore July setup"}, {"channel": "Google", "campaign": "PMax US Test", "status": "ACTIVE", "spend_period": 518, "key_metric": "Shopify ROAS ~6.7\u00d7", "next_milestone": "Monitor delivery; flag if spend falls"}, {"channel": "Pinterest", "campaign": "Shopping Ads", "status": "RUNNING", "spend_period": 97, "key_metric": "~$10/day cap", "next_milestone": "Scale only after tag check + UI access fixed"}, {"channel": "Pinterest", "campaign": "Checkout", "status": "PAUSED", "spend_period": 95, "key_metric": "Paused mid-window", "next_milestone": "Keep off until new plan"}, {"channel": "Pinterest", "campaign": "Creative Test Aug 19", "status": "LEARNING", "spend_period": 79, "key_metric": "0 Shopify orders so far", "next_milestone": "7-day readout Aug 26"}], "creative": {"top_performer": {"channel": "Google", "name": "PMax (aggregate)", "metric": "33 Shopify orders \u00b7 ~6.7\u00d7 ROAS"}, "top_meta_ad": {"name": "Video #01 Corrected (Prospecting)", "spend": 717, "purch": 17, "roas": 2.35, "note": "Platform ROAS \u2014 verify Shopify UTM attach rate"}, "fatiguing_or_paused": [{"name": "Pilates athletes Collection page", "action": "Paused Aug 20", "was": "14 platform purch in period"}, {"name": "No Socks Collection page", "action": "Paused Aug 14", "was": "Prior week winner"}], "new_tests": [{"name": "Pilates has evolved \u00b7 Closed Sole", "launched": "Aug 19", "early": "7 platform purch \u00b7 ~2.1\u00d7"}, {"name": "Pinterest Creative Test", "launched": "Aug 19", "early": "69 clicks \u00b7 0 Shopify orders"}]}, "agency_activity": [{"date": "Aug 15", "owner": "Zaki", "action": "Prospecting budget $85 \u2192 $100/day"}, {"date": "Aug 19", "owner": "Zaki", "action": "Launched Pilates has evolved ads (Collection + Closed Sole)"}, {"date": "Aug 20", "owner": "Zaki", "action": "Paused Pilates athletes Collection page ad"}, {"date": "Aug 14", "owner": "Zaki", "action": "Paused No Socks Collection page ad"}, {"date": "Aug 19", "owner": "Unknown", "action": "Pinterest Creative Test campaign launched"}, {"date": "Mid-window", "owner": "Unknown", "action": "Pinterest Checkout paused"}], "challenges": [{"issue": "Meta Shopify ROAS below 1.5\u00d7 target", "impact": "Budget raises not justified on store dollars", "plan": "Hold Prospecting cap; replace paused Collection winners carefully"}, {"issue": "Pinterest zero Shopify attribution", "impact": "~$271/10d spend unproven on store", "plan": "Tag test order; Shopping access ticket; winner Conversions build"}, {"issue": "Meta pixel overclaim", "impact": "Platform ROAS looks ~2\u00d7 vs Shopify ~1.3\u00d7", "plan": "Weekly Shopify UTM gate on all Meta decisions"}, {"issue": "Agency Shopping Ads UI access (Zaki)", "impact": "Cannot manage Shopping budget in Ads Manager", "plan": "Pinterest ticket follow-up"}], "actions": {"spend_more": [{"channel": "Google PMax", "reason": "Shopify UTM ROAS ~6.7\u00d7 \u2014 best paid efficiency", "owner": "Zaki", "due": "Ongoing"}], "pull_back": [{"channel": "Pinterest", "reason": "~$271 \u00b7 0 Shopify orders \u2014 Checkout stays off", "owner": "Andrew/agent", "due": "Immediate"}, {"channel": "Meta", "reason": "Shopify ROAS ~1.3\u00d7 \u2014 no budget raises", "owner": "Zaki", "due": "Until 7-day gate passes"}], "create": [{"channel": "Meta", "item": "Run Closed Sole 7 full days before pause", "owner": "Zaki", "due": "Aug 26"}, {"channel": "Pinterest", "item": "Winner Conversions after tag verified", "owner": "Andrew/agent", "due": "Sep 1"}], "watch": [{"channel": "Meta", "item": "ATC\u2192checkout 122\u219215; Aug 17 zero-purch day", "owner": "Andrew", "due": "Weekly"}, {"channel": "Pinterest", "item": "Creative Test 7-day readout", "owner": "Zaki", "due": "Aug 26"}, {"channel": "Store", "item": "Daily order trend vs Aug 13 peak", "owner": "Andrew", "due": "Weekly"}]}, "next_week_priorities": [{"priority": 1, "action": "Hold Meta Prospecting at $100/day", "owner": "Zaki", "due": "Aug 29", "expected": "Shopify Meta ROAS stabilizes \u22651.4\u00d7"}, {"priority": 2, "action": "Pinterest tag verification + Creative Test readout", "owner": "Zaki", "due": "Aug 26", "expected": "Know if Aug 19 test continues or pauses"}, {"priority": 3, "action": "Google PMax \u2014 confirm no delivery constraint", "owner": "Zaki", "due": "Aug 29", "expected": "Spend holds ~$400\u2013550/week"}], "strategy_todos": [{"id": 1, "status": "open", "action": "Hold Meta Prospecting budget \u2014 no raises until Shopify UTM ROAS \u22651.5\u00d7 for 7 days", "owner": "Zaki", "due": "Ongoing"}, {"id": 2, "status": "open", "action": "Keep Google PMax running \u2014 best channel (~6.7\u00d7 Shopify ROAS)", "owner": "Zaki", "due": "Ongoing"}, {"id": 3, "status": "open", "action": "Keep Pinterest Checkout paused; read out Aug 19 Creative Test Aug 26", "owner": "Zaki", "due": "Aug 26"}, {"id": 4, "status": "open", "action": "Run Closed Sole creative 7 full days before any pause decision", "owner": "Zaki", "due": "Aug 26"}, {"id": 5, "status": "open", "action": "Verify Pinterest checkout tag on a test order before scaling Shopping", "owner": "Andrew", "due": "Sep 1"}, {"id": 6, "status": "open", "action": "Launch winner-based Pinterest Conversions after tag is healthy", "owner": "Andrew + agent", "due": "Sep 1"}, {"id": 7, "status": "watch", "action": "Watch Meta ATC\u2192checkout (122\u219215) and platform vs Shopify purchase gap", "owner": "Andrew", "due": "Weekly"}], "glossary": {"MTD": "Month To Date \u2014 ad spend from the 1st of this month through today", "MER": "Marketing Efficiency Ratio \u2014 total Shopify revenue \u00f7 total ad spend", "ROAS": "Return on ad spend \u2014 Shopify UTM-attributed revenue \u00f7 channel spend (our truth metric)", "CPA": "Cost per acquisition \u2014 ad spend \u00f7 Shopify attributed orders", "WoW": "Week over week \u2014 this period vs the immediately prior period of same length", "UTM": "Tracking tags on order landing URLs \u2014 Shopify ground truth for which ad drove the sale"}, "organic_snapshot": {"note": "GA4 direction only \u2014 not mixed into paid ROAS", "channels": [{"name": "Organic Search", "sessions": 366, "purchases": 5, "revenue": 572}, {"name": "Direct", "sessions": 455, "purchases": 15, "revenue": 1269}, {"name": "Email", "sessions": 32, "purchases": 3, "revenue": 385}, {"name": "Organic Social", "sessions": 420, "purchases": 4, "revenue": 370}]}, "meta_top_ads": [{"campaign": "Prospecting CBO", "ad": "Video #01 Corrected", "spend": 717, "purch": 17, "roas": 2.35}, {"campaign": "Creative Test", "ad": "Pilates athletes Collection page", "spend": 781, "purch": 14, "roas": 1.68}, {"campaign": "Creative Test", "ad": "Pilates has evolved Closed Sole", "spend": 289, "purch": 7, "roas": 2.13}], "ga4_funnel": {"paid_social_sessions": 2096, "add_to_carts": 122, "checkouts": 15, "purchases": 25, "atc_to_checkout_rate": 12.3, "note": "GA4 purchases \u2260 Shopify \u2014 direction only"}, "daily_orders": {"2026-08-16": 7, "2026-08-17": 8, "2026-08-18": 7, "2026-08-19": 10, "2026-08-20": 9, "2026-08-21": 9, "2026-08-22": 3}, "history_weekly": [{"label": "Aug 3\u201312", "orders": 85, "revenue": 10208, "ad_spend": 2870, "mer": 3.56}, {"label": "Aug 13\u201322", "orders": 96, "revenue": 9883, "ad_spend": 3292, "mer": 3.0}, {"label": "Aug 16\u201322, 2026", "start": "2026-08-16", "end": "2026-08-22", "orders": 53, "revenue": 5645, "ad_spend": 3292, "mer": 1.71, "channels": {"Meta": {"orders": 17, "revenue": 1548, "roas": 0.62}, "Google": {"orders": 16, "revenue": 1782, "roas": 3.44}, "Pinterest": {"orders": 0, "revenue": 0, "roas": 0.0}}}], "thresholds": {"meta_shopify_roas_target": 1.5, "google_shopify_roas_target": 3.0, "pinterest_max_spend_no_orders": 150, "anomaly_pct_threshold": 15}, "prior_period": {"window": {"start": "2026-08-09", "end": "2026-08-15", "label": "Aug 9\u201315, 2026", "days": 7}, "kpis": {"paid_orders": 68, "paid_revenue": 6918.41, "total_ad_spend": 2870, "blended_mer": 2.41, "aov": 101.74, "cpa_blended": 42.21}, "channels": {"Meta": {"shopify_orders": 28, "shopify_revenue": 2697, "shopify_roas": 1.23}, "Google": {"shopify_orders": 19, "shopify_revenue": 1711, "shopify_roas": 4.07}, "Pinterest": {"shopify_orders": 0, "shopify_revenue": 0, "shopify_roas": 0.0}}}});
 </script>
 </body>
 </html>

@@ -190,13 +190,58 @@ def main() -> None:
             else:
                 row["last_period"] = round(last_v, 2) if _unit == "×" else round(last_v)
 
+    prior_orders = int(prior_s.get("paid_orders", 0))
+    prior_revenue = float(prior_s.get("paid_revenue", 0))
+    prior_spend = sum(float(c.get("spend_last") or 0) for c in channels) or total_spend
+
+    payload["prior_period"] = {
+        "window": {
+            "start": prior_start.isoformat(),
+            "end": prior_end.isoformat(),
+            "label": format_label(prior_start, prior_end),
+            "days": days,
+        },
+        "kpis": {
+            "paid_orders": prior_orders,
+            "paid_revenue": round(prior_revenue, 2),
+            "total_ad_spend": round(prior_spend),
+            "blended_mer": round(prior_revenue / prior_spend, 2) if prior_spend else 0,
+            "aov": round(prior_revenue / prior_orders, 2) if prior_orders else None,
+            "cpa_blended": round(prior_spend / prior_orders, 2) if prior_orders else None,
+        },
+        "channels": {
+            "Meta": {
+                "shopify_orders": meta_o_last,
+                "shopify_revenue": round(meta_r_last),
+                "shopify_roas": roas(meta_r_last, float(channels[0].get("spend_last") or 0) if channels else 0),
+            },
+            "Google": {
+                "shopify_orders": goog_o_last,
+                "shopify_revenue": round(goog_r_last),
+                "shopify_roas": roas(goog_r_last, float(channels[1].get("spend_last") or 0) if len(channels) > 1 else 0),
+            },
+            "Pinterest": {
+                "shopify_orders": pin_o_last,
+                "shopify_revenue": round(pin_r_last),
+                "shopify_roas": roas(pin_r_last, float(channels[2].get("spend_last") or 0) if len(channels) > 2 else 0),
+            },
+        },
+    }
+
     history = load_json(HISTORY) if HISTORY.exists() else []
     entry = {
         "label": payload["window"]["label"],
+        "start": cur_start.isoformat(),
+        "end": cur_end.isoformat(),
         "orders": paid_orders,
         "revenue": round(paid_revenue),
         "ad_spend": round(total_spend),
         "mer": payload["kpis"]["blended_mer"],
+        "channels": {
+            "Meta": {"orders": meta_o, "revenue": round(meta_r), "roas": roas(meta_r, float(channels[0].get("spend") or 0) if channels else 0)},
+            "Google": {"orders": goog_o, "revenue": round(goog_r), "roas": roas(goog_r, float(channels[1].get("spend") or 0) if len(channels) > 1 else 0)},
+            "Pinterest": {"orders": pin_o, "revenue": round(pin_r), "roas": roas(pin_r, float(channels[2].get("spend") or 0) if len(channels) > 2 else 0)},
+        },
     }
     if history and history[-1].get("label") == entry["label"]:
         history[-1] = entry

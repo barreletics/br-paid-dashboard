@@ -330,6 +330,79 @@ footer {
 }
 .guide-paths strong { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: #d1d5db; margin-bottom: 0.25rem; }
 .guide-truth { font-size: 0.78rem !important; margin-bottom: 0 !important; color: #d1d5db !important; }
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1.25rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.8rem;
+}
+.filter-group { display: flex; align-items: center; gap: 0.4rem; }
+.filter-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.filter-bar select {
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.filter-bar label { display: flex; align-items: center; gap: 0.35rem; cursor: pointer; color: var(--muted); }
+.wow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+.wow-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.85rem;
+}
+.wow-card .metric { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 0.35rem; }
+.wow-card .this-val { font-size: 1.35rem; font-weight: 700; }
+.wow-card .wow-last { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+.wow-card .delta { font-size: 0.8rem; font-weight: 600; margin-top: 0.2rem; }
+.compare-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+.compare-head .period-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: var(--good-bg);
+  color: var(--good);
+  border: 1px solid #bbf7d0;
+}
+.compare-head .period-tag.prior {
+  background: #f3f4f6;
+  color: var(--muted);
+  border-color: var(--line);
+}
+.trend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+.trend-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+.trend-panel h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 0.65rem; }
 @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -350,6 +423,33 @@ footer {
     <span id="refresh-status" class="timestamp-live">—</span>
     <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()">Refresh</button>
   </span>
+</div>
+<div id="filter-bar" class="filter-bar" style="display:none">
+  <div class="filter-group">
+    <span class="filter-label">View</span>
+    <select id="filter-view" aria-label="Section view">
+      <option value="all">All sections</option>
+      <option value="summary">Summary and compare</option>
+      <option value="performance">Performance and pacing</option>
+      <option value="actions">Actions and priorities</option>
+      <option value="deep">Campaigns and deep dive</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Channel</span>
+    <select id="filter-channel" aria-label="Channel filter">
+      <option value="all">All channels</option>
+      <option value="meta">Meta only</option>
+      <option value="google">Google only</option>
+      <option value="pinterest">Pinterest only</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label><input type="checkbox" id="filter-compare" checked> Compare vs last period</label>
+  </div>
+  <div class="filter-group">
+    <label><input type="checkbox" id="filter-target" checked> Show targets</label>
+  </div>
 </div>
 <div id="app"></div>
 <footer>
@@ -506,8 +606,8 @@ function renderKpiTarget(rows) {
     const tgt = r.unit === '$' ? fmt(r.target) : r.target + (r.unit === '×' ? '×' : '');
     const ch = pctChange(r.this_period, r.last_period);
     return `<tr>
-      <td>${r.kpi}</td><td><strong>${cur}</strong></td><td>${prev}</td><td>${tgt}</td>
-      <td class="${ch.cls}">${ch.text}</td><td class="status ${r.status}">${r.status}</td>
+      <td>${r.kpi}</td><td><strong>${cur}</strong></td><td class="col-prior">${prev}</td><td class="col-target">${tgt}</td>
+      <td class="col-prior ${ch.cls}">${ch.text}</td><td class="status ${r.status}">${r.status}</td>
     </tr>`;
   }).join('');
 }
@@ -585,7 +685,8 @@ function renderSectionKeys() {
     ['KPI vs target', 'This period vs last period vs goal · good / watch / bad'],
     ['Strategy and to-dos', 'Concrete changes to make this week — owners and due dates'],
     ['Spend / Pull / Create / Watch', 'Where to add budget, cut, build new, or monitor'],
-    ['Channel performance', 'Shopify ROAS = truth (UTM revenue ÷ spend) · platform numbers are reference only'],
+    ['This vs last period', 'Side-by-side cards and channel table — rolling prior window of same length'],
+    ['Historical trend', 'Orders, revenue, and MER over recent snapshots — builds each refresh'],
     ['Budget pacing · MTD', 'MTD = month to date · spend so far this month vs monthly plan'],
     ['Anomalies', 'Metrics that moved >15% WoW — cause and recommended response'],
     ['Campaign status', 'What is live, paused, or in learning — next milestone per campaign'],
@@ -613,34 +714,195 @@ function sectionHint(text) {
   return text ? `<p class="section-hint">${text}</p>` : '';
 }
 
+const filters = { channel: 'all', view: 'all', showCompare: true, showTarget: true };
+let dashboardData = null;
+
+function channelSlug(name) {
+  const n = (name || '').toLowerCase();
+  if (n.includes('meta')) return 'meta';
+  if (n.includes('google')) return 'google';
+  if (n.includes('pinterest')) return 'pinterest';
+  return 'other';
+}
+
+function priorKpis(data) {
+  if (data.prior_period?.kpis) return data.prior_period.kpis;
+  const rows = data.kpi_vs_target || [];
+  const get = (n) => rows.find(r => r.kpi === n);
+  const spendLast = (data.channels || []).reduce((s, c) => s + (c.spend_last || 0), 0);
+  return {
+    paid_orders: get('Paid orders')?.last_period ?? '—',
+    paid_revenue: get('Shopify revenue')?.last_period ?? 0,
+    total_ad_spend: spendLast || null,
+    blended_mer: get('Blended MER')?.last_period ?? null,
+    aov: null,
+    cpa_blended: null,
+  };
+}
+
+function wowMetric(label, cur, prev, fmtFn) {
+  const ch = pctChange(cur, prev);
+  const fmtCur = fmtFn ? fmtFn(cur) : cur;
+  const fmtPrev = fmtFn ? fmtFn(prev) : prev;
+  return `<div class="wow-card">
+    <div class="metric">${label}</div>
+    <div class="this-val">${fmtCur ?? '—'}</div>
+    <div class="wow-last col-prior">Last: ${fmtPrev ?? '—'}</div>
+    <div class="delta col-prior ${ch.cls}">${ch.text !== '—' ? ch.text + ' vs last period' : '—'}</div>
+  </div>`;
+}
+
+function renderWowCompare(data) {
+  const k = data.kpis || {};
+  const p = priorKpis(data);
+  const w = data.window || {};
+  return `
+    <section data-view="summary performance">
+      <div class="compare-head">
+        <h2 style="margin:0">This period vs last period</h2>
+        <div>
+          <span class="period-tag">This · ${w.label || '—'}</span>
+          <span class="period-tag prior col-prior">Last · ${w.prior_label || data.prior_period?.window?.label || '—'}</span>
+        </div>
+      </div>
+      ${sectionHint('Side-by-side store and paid totals — same length window immediately before this one.')}
+      <div class="wow-grid">
+        ${wowMetric('Store orders', k.paid_orders, p.paid_orders)}
+        ${wowMetric('Store revenue', k.paid_revenue, p.paid_revenue, fmt)}
+        ${wowMetric('Ad spend', k.total_ad_spend, p.total_ad_spend, fmt)}
+        ${wowMetric('Blended MER', k.blended_mer, p.blended_mer, roas)}
+        ${wowMetric('Meta Shopify ROAS', data.channels?.[0]?.shopify_roas, data.channels?.[0]?.shopify_roas_last, roas)}
+        ${wowMetric('Google Shopify ROAS', data.channels?.[1]?.shopify_roas, data.channels?.[1]?.shopify_roas_last, roas)}
+      </div>
+    </section>`;
+}
+
+function renderChannelWow(data) {
+  const rows = (data.channels || []).map(c => {
+    const slug = channelSlug(c.name);
+    const ordCh = pctChange(c.shopify_orders, c.shopify_orders_last);
+    const revCh = pctChange(c.shopify_revenue, c.shopify_revenue_last);
+    const roasCh = pctChange(c.shopify_roas, c.shopify_roas_last);
+    const spendCh = pctChange(c.spend, c.spend_last);
+    return `<tr data-channel="${slug}">
+      <td><strong>${c.name}</strong></td>
+      <td>${c.shopify_orders}</td><td class="col-prior">${c.shopify_orders_last ?? '—'}</td><td class="col-prior ${ordCh.cls}">${ordCh.text}</td>
+      <td>${fmt(c.shopify_revenue)}</td><td class="col-prior">${fmt(c.shopify_revenue_last || 0)}</td><td class="col-prior ${revCh.cls}">${revCh.text}</td>
+      <td>${fmt(c.spend)}</td><td class="col-prior">${fmt(c.spend_last || 0)}</td><td class="col-prior ${spendCh.cls}">${spendCh.text}</td>
+      <td><strong>${roas(c.shopify_roas)}</strong></td><td class="col-prior">${roas(c.shopify_roas_last)}</td><td class="col-prior ${roasCh.cls}">${roasCh.text}</td>
+      <td class="status ${c.status}">${(c.status || '').replace('_', ' ')}</td>
+    </tr>
+    <tr data-channel="${slug}"><td colspan="13" style="font-size:0.8rem;color:var(--muted)">${c.interpretation || ''}</td></tr>`;
+  }).join('');
+  return `
+    <section data-view="summary performance">
+      <h2>Channel compare · this period vs last</h2>
+      ${sectionHint('Paid channel scorecard with WoW on orders, Shopify revenue, spend, and ROAS. Toggle columns with filters above.')}
+      <table>
+        <thead><tr>
+          <th>Channel</th>
+          <th>Orders</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
+          <th>Shopify $</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
+          <th>Spend</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
+          <th>ROAS</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan="13">No channel data</td></tr>'}</tbody>
+      </table>
+    </section>`;
+}
+
+function renderHistoryTrend(data) {
+  const hist = (data.history_weekly || []).slice(-8);
+  if (hist.length < 2) return '';
+  const maxOrd = Math.max(...hist.map(h => h.orders || 0), 1);
+  const maxRev = Math.max(...hist.map(h => h.revenue || 0), 1);
+  const maxMer = Math.max(...hist.map(h => h.mer || 0), 0.1);
+  const ordBars = hist.map(h => {
+    const pct = Math.round((h.orders || 0) / maxOrd * 100);
+    return `<div class="bar-row"><span class="bar-label">${h.label.replace(', 2026', '')}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-val">${h.orders}</span></div>`;
+  }).join('');
+  const revBars = hist.map(h => {
+    const pct = Math.round((h.revenue || 0) / maxRev * 100);
+    return `<div class="bar-row"><span class="bar-label">${h.label.replace(', 2026', '')}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-val">${Math.round((h.revenue || 0) / 1000)}k</span></div>`;
+  }).join('');
+  const merBars = hist.map(h => {
+    const pct = Math.round((h.mer || 0) / maxMer * 100);
+    return `<div class="bar-row"><span class="bar-label">${h.label.replace(', 2026', '')}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-val">${(h.mer || 0).toFixed(1)}</span></div>`;
+  }).join('');
+  return `
+    <section data-view="summary performance">
+      <h2>Historical trend</h2>
+      ${sectionHint('Rolling snapshots build over time — each refresh appends the current window. Use for direction, not exact audit.')}
+      <div class="trend-grid">
+        <div class="trend-panel"><h3>Store orders</h3>${ordBars}</div>
+        <div class="trend-panel"><h3>Store revenue</h3>${revBars}</div>
+        <div class="trend-panel"><h3>Blended MER</h3>${merBars}</div>
+      </div>
+    </section>`;
+}
+
+function applyFilters() {
+  const ch = filters.channel;
+  const view = filters.view;
+  document.querySelectorAll('[data-view]').forEach(el => {
+    const views = (el.dataset.view || '').split(/\s+/);
+    const viewOk = view === 'all' || views.includes(view);
+    const chAttr = el.dataset.channel;
+    const chOk = !chAttr || ch === 'all' || chAttr === ch;
+    el.style.display = (viewOk && chOk) ? '' : 'none';
+  });
+  document.querySelectorAll('tr[data-channel]').forEach(tr => {
+    const chOk = ch === 'all' || tr.dataset.channel === ch;
+    tr.style.display = chOk ? '' : 'none';
+  });
+  document.querySelectorAll('.col-prior, .wow-last').forEach(el => {
+    el.style.display = filters.showCompare ? '' : 'none';
+  });
+  document.querySelectorAll('.col-target').forEach(el => {
+    el.style.display = filters.showTarget ? '' : 'none';
+  });
+}
+
+function initFilters() {
+  const bar = document.getElementById('filter-bar');
+  bar.style.display = 'flex';
+  const saved = sessionStorage.getItem('br-dashboard-filters');
+  if (saved) Object.assign(filters, JSON.parse(saved));
+  document.getElementById('filter-view').value = filters.view;
+  document.getElementById('filter-channel').value = filters.channel;
+  document.getElementById('filter-compare').checked = filters.showCompare;
+  document.getElementById('filter-target').checked = filters.showTarget;
+  ['filter-view', 'filter-channel'].forEach(id => {
+    document.getElementById(id).addEventListener('change', e => {
+      filters[id === 'filter-view' ? 'view' : 'channel'] = e.target.value;
+      sessionStorage.setItem('br-dashboard-filters', JSON.stringify(filters));
+      applyFilters();
+    });
+  });
+  ['filter-compare', 'filter-target'].forEach(id => {
+    document.getElementById(id).addEventListener('change', e => {
+      filters[id === 'filter-compare' ? 'showCompare' : 'showTarget'] = e.target.checked;
+      sessionStorage.setItem('br-dashboard-filters', JSON.stringify(filters));
+      applyFilters();
+    });
+  });
+}
+
 function render(data) {
+  dashboardData = data;
   setTimestamp(data);
   const k = data.kpis || {};
   const q = qualitySummary(data.data_quality);
   document.getElementById('quality-badge').className = 'badge ' + q.cls;
   document.getElementById('quality-badge').textContent = q.text;
 
-  const channelRows = (data.channels || []).map(c => {
-    const roasCh = pctChange(c.shopify_roas, c.shopify_roas_last);
-    const ordCh = pctChange(c.shopify_orders, c.shopify_orders_last);
-    return `<tr>
-      <td>${c.name}</td>
-      <td>${fmt(c.spend)}<br><span class="sub">${roasCh.cls === 'pct-up' ? '▲' : roasCh.cls === 'pct-down' ? '▼' : '—'} vs ${fmt(c.spend_last || 0)}</span></td>
-      <td>${c.shopify_orders} <span class="${ordCh.cls}">${ordCh.text}</span></td>
-      <td>${fmt(c.shopify_revenue)}</td>
-      <td><strong>${roas(c.shopify_roas)}</strong> <span class="${roasCh.cls}">${roasCh.text}</span></td>
-      <td>${c.shopify_cpa ? fmt(c.shopify_cpa) : '—'}</td>
-      <td class="status ${c.status}">${(c.status || '').replace('_', ' ')}</td>
-    </tr>
-    <tr><td colspan="7" style="font-size:0.8rem;color:var(--muted)">${c.interpretation || ''}</td></tr>`;
-  }).join('');
-
   const anomalyRows = (data.anomalies || []).map(a => `<tr>
     <td>${a.metric}</td><td><strong>${a.change}</strong> ${a.vs || ''}</td>
     <td>${a.cause}</td><td>${a.response}</td>
   </tr>`).join('');
 
-  const campRows = (data.campaign_status || []).map(c => `<tr>
+  const campRows = (data.campaign_status || []).map(c => `<tr data-channel="${channelSlug(c.channel)}">
     <td>${c.channel}</td><td>${c.campaign}</td>
     <td><span class="status-chip ${c.status}">${c.status}</span></td>
     <td>${fmt(c.spend_period)}</td><td>${c.key_metric}</td><td>${c.next_milestone}</td>
@@ -681,7 +943,7 @@ function render(data) {
   const f = data.ga4_funnel || {};
 
   document.getElementById('app').innerHTML = `
-    <div class="analyst-guide">
+    <div class="analyst-guide" data-view="summary">
       <h2>Start here — how to read this brief</h2>
       <p>This dashboard is written like a standing analyst and strategist memo for the team. Each section tells you what happened, why it matters, and what to consider doing next — without needing to dig through Ads Manager first.</p>
       <div class="guide-paths">
@@ -692,49 +954,44 @@ function render(data) {
       <p class="guide-truth"><strong>Ground rule:</strong> Shopify UTM orders = truth for ROAS and CPA. Platform purchase counts (especially Meta) can overclaim — we show both so you can decide with confidence.</p>
     </div>
 
-    <details class="key-details" open>
+    <details class="key-details" data-view="summary">
       <summary>Section key and glossary (what everything means)</summary>
       <div class="glossary-row">${renderGlossary(data.glossary)}</div>
       <div class="key-grid">${renderSectionKeys()}</div>
     </details>
 
-    <section>
+    <section data-view="summary actions">
       <h2>Strategy and to-dos this week</h2>
       ${sectionHint('Suggested changes and considerations — treat as your action list. Open = do it; Watch = monitor before acting.')}
       <ul class="todo-wrap todo-list">${renderTodos(data.strategy_todos)}</ul>
     </section>
 
-    <section>
+    <section data-view="summary">
       <h2>Executive summary</h2>
       ${sectionHint('Short narrative for leadership — wins, concerns, and forward note.')}
       <div class="exec-box">${renderExec(data.executive_summary)}</div>
     </section>
 
-    <div class="kpi-row">
-      <div class="kpi"><div class="val">${k.paid_orders ?? '—'}</div><div class="lbl">Paid orders</div></div>
-      <div class="kpi"><div class="val">${fmt(k.paid_revenue)}</div><div class="lbl">Shopify revenue</div></div>
-      <div class="kpi"><div class="val">${fmt(k.total_ad_spend)}</div><div class="lbl">Ad spend</div></div>
-      <div class="kpi"><div class="val">${roas(k.blended_mer)}</div><div class="lbl">Blended MER</div></div>
-      <div class="kpi"><div class="val">${k.aov ? fmt(k.aov) : '—'}</div><div class="lbl">AOV</div></div>
-      <div class="kpi"><div class="val">${k.cpa_blended ? fmt(k.cpa_blended) : '—'}</div><div class="lbl">Blended CPA</div></div>
-    </div>
+    ${renderWowCompare(data)}
+    ${renderChannelWow(data)}
+    ${renderHistoryTrend(data)}
 
-    <section>
+    <section data-view="performance">
       <h2>KPI vs target · this period vs last</h2>
-      ${sectionHint('Each KPI shows this period, last period, weekly target, and week-over-week (WoW) change.')}
+      ${sectionHint('Each KPI shows this period, last period, weekly target, and week-over-week (WoW) change. Use filters to hide last period or targets.')}
       <table>
-        <thead><tr><th>KPI</th><th>This period</th><th>Last period</th><th>Target</th><th>WoW</th><th>Status</th></tr></thead>
+        <thead><tr><th>KPI</th><th>This period</th><th class="col-prior">Last period</th><th class="col-target">Target</th><th class="col-prior">WoW</th><th>Status</th></tr></thead>
         <tbody>${renderKpiTarget(data.kpi_vs_target)}</tbody>
       </table>
     </section>
 
-    <section>
+    <section data-view="actions">
       <h2>Recommended actions</h2>
       ${sectionHint('Spend more = scale · Pull back = reduce or pause · Create = new builds · Watch = check again next week.')}
       <div class="grid-4">${renderActions(data.actions)}</div>
     </section>
 
-    <section>
+    <section data-view="actions">
       <h2>Next week priorities</h2>
       ${sectionHint('Top 3 ranked priorities with owner, due date, and expected outcome.')}
       <table>
@@ -743,18 +1000,7 @@ function render(data) {
       </table>
     </section>
 
-    <section>
-      <h2>Channel performance · Shopify ROAS = truth</h2>
-      ${sectionHint('ROAS and CPA use Shopify UTM orders only. Platform purchase counts can overclaim (especially Meta).')}
-      <table>
-        <thead><tr>
-          <th>Channel</th><th>Spend</th><th>Orders</th><th>Shopify $</th><th>ROAS</th><th>CPA</th><th>Status</th>
-        </tr></thead>
-        <tbody>${channelRows}</tbody>
-      </table>
-    </section>
-
-    <div class="two-col">
+    <div class="two-col" data-view="performance">
       <section>
         <h2>Budget pacing · MTD</h2>
         ${sectionHint('MTD = Month To Date (spend from the 1st of this month through today). Used % = MTD ÷ monthly plan.')}
@@ -773,7 +1019,7 @@ function render(data) {
       </section>
     </div>
 
-    <section>
+    <section data-view="deep">
       <h2>Anomalies · cause and response</h2>
       ${sectionHint('Flags when a metric moved more than ~15% vs the prior period — what happened and what to do.')}
       <table>
@@ -782,7 +1028,7 @@ function render(data) {
       </table>
     </section>
 
-    <section>
+    <section data-view="deep">
       <h2>Campaign status</h2>
       <table>
         <thead><tr><th>Channel</th><th>Campaign</th><th>Status</th><th>Spend</th><th>Key metric</th><th>Next milestone</th></tr></thead>
@@ -790,7 +1036,7 @@ function render(data) {
       </table>
     </section>
 
-    <section>
+    <section data-view="deep" data-channel="meta">
       <h2>Creative performance</h2>
       <div class="two-col">
         <div class="action-card spend">
@@ -808,7 +1054,7 @@ function render(data) {
       <ul>${(cr.new_tests || []).map(x => `<li><strong>${x.name}</strong> · ${x.launched} — ${x.early}</li>`).join('') || '<li>None</li>'}</ul>
     </section>
 
-    <section>
+    <section data-view="deep">
       <h2>Agency activity log</h2>
       <table>
         <thead><tr><th>Date</th><th>Owner</th><th>Change</th></tr></thead>
@@ -816,7 +1062,7 @@ function render(data) {
       </table>
     </section>
 
-    <section>
+    <section data-view="deep">
       <h2>Challenges and roadblocks</h2>
       <table>
         <thead><tr><th>Issue</th><th>Impact</th><th>Plan</th></tr></thead>
@@ -824,7 +1070,7 @@ function render(data) {
       </table>
     </section>
 
-    <div class="two-col">
+    <div class="two-col" data-view="performance deep">
       <section>
         <h2>Daily paid orders (Shopify)</h2>
         <div class="bar-chart">${renderDaily(data.daily_orders)}</div>
@@ -838,7 +1084,7 @@ function render(data) {
       </section>
     </div>
 
-    <section>
+    <section data-view="deep" data-channel="meta">
       <h2>Meta top ads (platform)</h2>
       <table>
         <thead><tr><th>Campaign</th><th>Ad</th><th>Spend</th><th>Purch</th><th>ROAS</th></tr></thead>
@@ -846,7 +1092,7 @@ function render(data) {
       </table>
     </section>
 
-    <section>
+    <section data-view="deep" data-channel="meta">
       <h2>GA4 Paid Social funnel (direction only)</h2>
       <table>
         <tbody>
@@ -860,11 +1106,16 @@ function render(data) {
       <p class="sub" style="margin-top:0.5rem">${f.note || ''}</p>
     </section>
 
-    <section>
+    <section data-view="summary">
       <h2>Data confidence</h2>
       <div class="quality">${renderQuality(data.data_quality)}</div>
     </section>
   `;
+  if (!window._filtersInit) {
+    initFilters();
+    window._filtersInit = true;
+  }
+  applyFilters();
 }
 
 function boot() {

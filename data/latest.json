@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-22T12:20:40.728803-04:00",
+  "generated_at": "2026-08-22T12:25:15.500856-04:00",
   "window": {
     "start": "2026-08-16",
     "end": "2026-08-22",
@@ -600,10 +600,29 @@
     },
     {
       "label": "Aug 16\u201322, 2026",
+      "start": "2026-08-16",
+      "end": "2026-08-22",
       "orders": 53,
       "revenue": 5645,
       "ad_spend": 3292,
-      "mer": 1.71
+      "mer": 1.71,
+      "channels": {
+        "Meta": {
+          "orders": 17,
+          "revenue": 1548,
+          "roas": 0.62
+        },
+        "Google": {
+          "orders": 16,
+          "revenue": 1782,
+          "roas": 3.44
+        },
+        "Pinterest": {
+          "orders": 0,
+          "revenue": 0,
+          "roas": 0.0
+        }
+      }
     }
   ],
   "thresholds": {
@@ -611,5 +630,38 @@
     "google_shopify_roas_target": 3.0,
     "pinterest_max_spend_no_orders": 150,
     "anomaly_pct_threshold": 15
+  },
+  "prior_period": {
+    "window": {
+      "start": "2026-08-09",
+      "end": "2026-08-15",
+      "label": "Aug 9\u201315, 2026",
+      "days": 7
+    },
+    "kpis": {
+      "paid_orders": 68,
+      "paid_revenue": 6918.41,
+      "total_ad_spend": 2870,
+      "blended_mer": 2.41,
+      "aov": 101.74,
+      "cpa_blended": 42.21
+    },
+    "channels": {
+      "Meta": {
+        "shopify_orders": 28,
+        "shopify_revenue": 2697,
+        "shopify_roas": 1.23
+      },
+      "Google": {
+        "shopify_orders": 19,
+        "shopify_revenue": 1711,
+        "shopify_roas": 4.07
+      },
+      "Pinterest": {
+        "shopify_orders": 0,
+        "shopify_revenue": 0,
+        "shopify_roas": 0.0
+      }
+    }
   }
 }
