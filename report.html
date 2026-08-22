@@ -194,6 +194,19 @@ h2 {
   padding: 1rem 1.15rem;
 }
 .simple-lede li { margin: 0.45rem 0; }
+.headline-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.headline-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.headline-list li:last-child { border-bottom: none; }
+.headline-list strong { font-weight: 700; }
 .sales-dual {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1061,6 +1074,31 @@ function adAttributedOrders(data) {
   return (data.channels || []).reduce((s, c) => s + Number(c.shopify_orders || 0), 0);
 }
 
+function renderHeadlines(data) {
+  const k = data.kpis || {};
+  const p = priorKpis(data);
+  const ch = data.channels || [];
+  const meta = ch.find(c => (c.name || '').includes('Meta'));
+  const goog = ch.find(c => (c.name || '').includes('Google'));
+  const pin = ch.find(c => (c.name || '').includes('Pinterest'));
+  const call = (c) => {
+    if (!c) return '';
+    if (c.status === 'good') return 'on track';
+    if (c.status === 'watch') return 'watch';
+    if (c.status === 'pull_back') return 'pull back';
+    return (c.status || '').replace('_', ' ');
+  };
+  const lines = [
+    `<strong>Store</strong> · ${fmt(k.paid_revenue)} · ${k.paid_orders} orders · ${trendPlain(k.paid_revenue, p.paid_revenue)}`,
+    meta ? `<strong>Meta</strong> · ${roas(channelRoas(meta))} ROAS · ${meta.shopify_orders} orders · ${call(meta)}` : '',
+    goog ? `<strong>Google</strong> · ${roas(channelRoas(goog))} ROAS · ${goog.shopify_orders} orders · ${call(goog)}` : '',
+    pin ? `<strong>Pinterest</strong> · ${pin.shopify_orders} orders · ${fmt(pin.spend)} spend · ${call(pin)}` : '',
+  ].filter(Boolean);
+  const todo = (data.strategy_todos || [])[0];
+  if (todo) lines.push(`<strong>Next</strong> · ${todo.action.replace(/ — .*/, '').slice(0, 80)}${todo.action.length > 80 ? '…' : ''}`);
+  return `<ul class="headline-list">${lines.map(l => `<li>${l}</li>`).join('')}</ul>`;
+}
+
 function renderAtAGlance(data) {
   const k = data.kpis || {};
   const p = priorKpis(data);
@@ -1071,34 +1109,18 @@ function renderAtAGlance(data) {
   const adOrders = adAttributedOrders(data);
   const afterAds = afterAdSpend(k);
   const afterAdsP = afterAdSpend(p);
-  const totalCh = pctChange(totalSales, totalSalesP);
-  const adCh = pctChange(adSales, adSalesP);
   const mer = adSales && k.total_ad_spend ? round2(adSales / k.total_ad_spend) : k.blended_mer;
   const merP = adSalesP && p.total_ad_spend ? round2(adSalesP / p.total_ad_spend) : p.blended_mer;
-  const w = data.window || {};
   const cards = [
+    ['Total sales', totalSales, totalSalesP, fmt, true],
+    ['Sales from ads', adSales, adSalesP, fmt, true],
     ['After ad spend', afterAds, afterAdsP, fmt, true],
     ['Ad spend', k.total_ad_spend, p.total_ad_spend, fmt, false],
     ['Ad ROAS', mer, merP, roas, false],
-    ['Store orders', k.paid_orders, p.paid_orders, null, false],
   ];
   return `
     <section data-view="simple summary performance">
       <h2>The numbers</h2>
-      <div class="sales-dual">
-        <div class="sales-banner">
-          <div class="sales-lbl">Total sales · whole store</div>
-          <div class="sales-val">${fmt(totalSales)}</div>
-          <div class="chg col-prior ${totalCh.cls}" style="font-size:0.85rem;margin-top:0.35rem">${trendPlain(totalSales, totalSalesP)}</div>
-          <div class="sales-sub" style="text-align:left;margin-top:0.5rem">${k.paid_orders ?? '—'} orders · direct, email, organic, and paid</div>
-        </div>
-        <div class="sales-banner">
-          <div class="sales-lbl">Sales from ads · UTM tagged</div>
-          <div class="sales-val">${fmt(adSales)}</div>
-          <div class="chg col-prior ${adCh.cls}" style="font-size:0.85rem;margin-top:0.35rem">${trendPlain(adSales, adSalesP)}</div>
-          <div class="sales-sub" style="text-align:left;margin-top:0.5rem">${adOrders} orders · Meta, Google, Pinterest only</div>
-        </div>
-      </div>
       <div class="glance-grid">
         ${cards.map(([name, cur, prev, fn, highlight]) => {
           const ch = pctChange(cur, prev);
@@ -1109,7 +1131,7 @@ function renderAtAGlance(data) {
           </div>`;
         }).join('')}
       </div>
-      <p class="profit-note"><strong>After ad spend</strong> = total sales minus ad spend. <strong>Ad ROAS</strong> = sales from ads ÷ ad spend. Does not include returns, product cost, or overhead.</p>
+      <p class="profit-note">${k.paid_orders ?? '—'} store orders · ${adOrders} ad-tagged orders · After ad spend excludes returns, product cost, and overhead</p>
     </section>`;
 }
 
@@ -1662,13 +1684,14 @@ function render(raw) {
   const f = data.ga4_funnel || {};
 
   document.getElementById('app').innerHTML = `
-    <section data-view="simple summary">
-      <h2>What happened</h2>
-      <div class="simple-lede">${renderExec(data.executive_summary)}</div>
-    </section>
-
     ${renderHealthStrip(data)}
     ${renderAtAGlance(data)}
+
+    <section data-view="simple summary">
+      <h2>At a glance</h2>
+      <div class="simple-lede">${renderHeadlines(data)}</div>
+    </section>
+
     ${renderSimpleChannels(data)}
     ${renderCampaignSnapshot(data)}
     ${renderFlags(data)}
