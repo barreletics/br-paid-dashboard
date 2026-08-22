@@ -1,0 +1,374 @@
+{
+  "generated_at": "2026-08-22T11:45:00-04:00",
+  "window": {
+    "start": "2026-08-13",
+    "end": "2026-08-22",
+    "label": "Aug 13–22, 2026",
+    "days": 10,
+    "prior_label": "Aug 3–12, 2026"
+  },
+  "executive_summary": [
+    "Store held volume (96 paid orders) but revenue dipped ~3% vs prior 10 days ($9.9k vs $10.2k) as AOV softened.",
+    "Google PMax is the standout — Shopify UTM ROAS ~6.7×; maintain spend and monitor delivery.",
+    "Meta is active but under target on Shopify UTMs (~1.3× vs 1.5× goal); platform overclaims purchases (54 vs 35).",
+    "Pinterest spent ~$271 with zero Shopify orders — Checkout now paused; Creative Test Aug 19 in learning.",
+    "Next week: hold Meta budget, keep Google running, close Pinterest tag + winner campaign plan."
+  ],
+  "kpi_vs_target": [
+    {
+      "kpi": "Paid orders",
+      "this_period": 96,
+      "last_period": 85,
+      "target": 90,
+      "unit": "orders",
+      "status": "good"
+    },
+    {
+      "kpi": "Shopify revenue",
+      "this_period": 9883,
+      "last_period": 10208,
+      "target": 10000,
+      "unit": "$",
+      "status": "watch"
+    },
+    {
+      "kpi": "Blended MER",
+      "this_period": 3.0,
+      "last_period": 2.8,
+      "target": 3.0,
+      "unit": "×",
+      "status": "good"
+    },
+    {
+      "kpi": "Meta Shopify ROAS",
+      "this_period": 1.27,
+      "last_period": 1.39,
+      "target": 1.5,
+      "unit": "×",
+      "status": "watch"
+    },
+    {
+      "kpi": "Google Shopify ROAS",
+      "this_period": 6.68,
+      "last_period": 3.52,
+      "target": 3.0,
+      "unit": "×",
+      "status": "good"
+    },
+    {
+      "kpi": "Pinterest Shopify orders",
+      "this_period": 0,
+      "last_period": 0,
+      "target": 2,
+      "unit": "orders",
+      "status": "bad"
+    }
+  ],
+  "budget_pacing": {
+    "month": "2026-08",
+    "month_to_date_spend": 6200,
+    "monthly_plan": 10500,
+    "projected_month_spend": 9300,
+    "pacing_status": "on_track",
+    "note": "MTD spend estimated from recent 20-day run rate; set monthly_plan in dashboard/config.json",
+    "by_channel": [
+      { "channel": "Meta", "mtd_spend": 4700, "monthly_plan": 7500, "status": "on_track" },
+      { "channel": "Google", "mtd_spend": 980, "monthly_plan": 1500, "status": "on_track" },
+      { "channel": "Pinterest", "mtd_spend": 520, "monthly_plan": 800, "status": "watch" }
+    ]
+  },
+  "data_quality": {
+    "shopify": { "status": "ok", "source": "shopify_rest", "note": "Paid orders + UTM attribution" },
+    "blend_meta": { "status": "ok", "source": "blend_bps-2c81", "note": "Campaign + ad level" },
+    "blend_google": { "status": "ok", "source": "blend_bps-2c81", "note": "PMax 23842882230" },
+    "blend_pinterest": { "status": "partial", "source": "blend_bps-2c81", "note": "Spend ok; checkout value not returned" },
+    "ga4": { "status": "ok", "source": "ga4_300437005", "note": "Funnel direction only" },
+    "shopify_mcp": { "status": "skip", "source": "n/a", "note": "Use REST script for weekly" },
+    "wow_prior_period": { "status": "ok", "source": "shopify_rest", "note": "Aug 3–12 baseline" }
+  },
+  "kpis": {
+    "paid_orders": 96,
+    "paid_revenue": 9883,
+    "total_ad_spend": 3292,
+    "blended_mer": 3.0,
+    "cpa_blended": 34.29,
+    "aov": 102.95
+  },
+  "channels": [
+    {
+      "name": "Meta",
+      "spend": 2503,
+      "spend_last": 2200,
+      "shopify_orders": 35,
+      "shopify_orders_last": 35,
+      "shopify_revenue": 3171,
+      "shopify_revenue_last": 3477,
+      "shopify_roas": 1.27,
+      "shopify_roas_last": 1.58,
+      "shopify_cpa": 71.51,
+      "platform_purchases": 54,
+      "platform_revenue": 5246,
+      "platform_roas": 2.1,
+      "status": "watch",
+      "interpretation": "Volume flat but ROAS down on Shopify UTMs; platform overclaim widening."
+    },
+    {
+      "name": "Google PMax",
+      "spend": 518,
+      "spend_last": 420,
+      "shopify_orders": 33,
+      "shopify_orders_last": 20,
+      "shopify_revenue": 3459,
+      "shopify_revenue_last": 1824,
+      "shopify_roas": 6.68,
+      "shopify_roas_last": 4.34,
+      "shopify_cpa": 15.7,
+      "platform_purchases": 24,
+      "platform_revenue": 2266,
+      "platform_roas": 4.38,
+      "status": "good",
+      "interpretation": "Strongest week — orders +65% WoW on modest spend increase."
+    },
+    {
+      "name": "Pinterest",
+      "spend": 271,
+      "spend_last": 250,
+      "shopify_orders": 0,
+      "shopify_orders_last": 0,
+      "shopify_revenue": 0,
+      "shopify_revenue_last": 0,
+      "shopify_roas": 0,
+      "shopify_roas_last": 0,
+      "shopify_cpa": null,
+      "platform_purchases": 0,
+      "platform_revenue": 0,
+      "platform_roas": 0,
+      "status": "pull_back",
+      "interpretation": "Spend without Shopify attribution — tag and plan gap."
+    }
+  ],
+  "anomalies": [
+    {
+      "metric": "Google Shopify orders",
+      "change": "+65%",
+      "vs": "prior 10 days",
+      "cause": "PMax delivery improved while tROAS held; more high-intent shopping traffic converting.",
+      "response": "Maintain — no tROAS experiments unless spend drops >30% WoW."
+    },
+    {
+      "metric": "Meta platform vs Shopify purchases",
+      "change": "+54%",
+      "vs": "overclaim gap",
+      "cause": "Pixel/CAPI counting more purchases than Shopify Meta UTMs attribute.",
+      "response": "Judge creatives on Shopify UTM orders only; review Events Manager monthly."
+    },
+    {
+      "metric": "Daily store orders",
+      "change": "-47%",
+      "vs": "Aug 13 peak to mid-window",
+      "cause": "Normal intra-week seasonality plus softer Tue Aug 17 (Meta 0 purch day in GA4).",
+      "response": "Watch next 7 days; do not react to single-day dips."
+    },
+    {
+      "metric": "Meta Shopify ROAS",
+      "change": "-20%",
+      "vs": "prior 10 days",
+      "cause": "Collection-page winners paused; Prospecting budget raised Aug 15.",
+      "response": "Hold further Prospecting raises until Shopify ROAS ≥1.5× for 7 days."
+    }
+  ],
+  "campaign_status": [
+    {
+      "channel": "Meta",
+      "campaign": "Prospecting CBO",
+      "status": "ACTIVE",
+      "spend_period": 905,
+      "key_metric": "Shopify ROAS ~2.3× platform · ~1.4× Shopify est.",
+      "next_milestone": "Hold $100/day cap until Shopify UTM improves"
+    },
+    {
+      "channel": "Meta",
+      "campaign": "Creative Test",
+      "status": "ACTIVE",
+      "spend_period": 1598,
+      "key_metric": "Closed Sole new ads ~7 purch early",
+      "next_milestone": "Do not pause Closed Sole before 7 full days"
+    },
+    {
+      "channel": "Meta",
+      "campaign": "Retargeting",
+      "status": "PAUSED",
+      "spend_period": 0,
+      "key_metric": "Was not converting pre-pause",
+      "next_milestone": "Rebuild only — do not restore July setup"
+    },
+    {
+      "channel": "Google",
+      "campaign": "PMax US Test",
+      "status": "ACTIVE",
+      "spend_period": 518,
+      "key_metric": "Shopify ROAS ~6.7×",
+      "next_milestone": "Monitor delivery; flag if spend falls"
+    },
+    {
+      "channel": "Pinterest",
+      "campaign": "Shopping Ads",
+      "status": "RUNNING",
+      "spend_period": 97,
+      "key_metric": "~$10/day cap",
+      "next_milestone": "Scale only after tag check + UI access fixed"
+    },
+    {
+      "channel": "Pinterest",
+      "campaign": "Checkout",
+      "status": "PAUSED",
+      "spend_period": 95,
+      "key_metric": "Paused mid-window",
+      "next_milestone": "Keep off until new plan"
+    },
+    {
+      "channel": "Pinterest",
+      "campaign": "Creative Test Aug 19",
+      "status": "LEARNING",
+      "spend_period": 79,
+      "key_metric": "0 Shopify orders so far",
+      "next_milestone": "7-day readout Aug 26"
+    }
+  ],
+  "creative": {
+    "top_performer": {
+      "channel": "Google",
+      "name": "PMax (aggregate)",
+      "metric": "33 Shopify orders · ~6.7× ROAS"
+    },
+    "top_meta_ad": {
+      "name": "Video #01 Corrected (Prospecting)",
+      "spend": 717,
+      "purch": 17,
+      "roas": 2.35,
+      "note": "Platform ROAS — verify Shopify UTM attach rate"
+    },
+    "fatiguing_or_paused": [
+      { "name": "Pilates athletes Collection page", "action": "Paused Aug 20", "was": "14 platform purch in period" },
+      { "name": "No Socks Collection page", "action": "Paused Aug 14", "was": "Prior week winner" }
+    ],
+    "new_tests": [
+      { "name": "Pilates has evolved · Closed Sole", "launched": "Aug 19", "early": "7 platform purch · ~2.1×" },
+      { "name": "Pinterest Creative Test", "launched": "Aug 19", "early": "69 clicks · 0 Shopify orders" }
+    ]
+  },
+  "agency_activity": [
+    { "date": "Aug 15", "owner": "Zaki", "action": "Prospecting budget $85 → $100/day" },
+    { "date": "Aug 19", "owner": "Zaki", "action": "Launched Pilates has evolved ads (Collection + Closed Sole)" },
+    { "date": "Aug 20", "owner": "Zaki", "action": "Paused Pilates athletes Collection page ad" },
+    { "date": "Aug 14", "owner": "Zaki", "action": "Paused No Socks Collection page ad" },
+    { "date": "Aug 19", "owner": "Unknown", "action": "Pinterest Creative Test campaign launched" },
+    { "date": "Mid-window", "owner": "Unknown", "action": "Pinterest Checkout paused" }
+  ],
+  "challenges": [
+    {
+      "issue": "Meta Shopify ROAS below 1.5× target",
+      "impact": "Budget raises not justified on store dollars",
+      "plan": "Hold Prospecting cap; replace paused Collection winners carefully"
+    },
+    {
+      "issue": "Pinterest zero Shopify attribution",
+      "impact": "~$271/10d spend unproven on store",
+      "plan": "Tag test order; Shopping access ticket; winner Conversions build"
+    },
+    {
+      "issue": "Meta pixel overclaim",
+      "impact": "Platform ROAS looks ~2× vs Shopify ~1.3×",
+      "plan": "Weekly Shopify UTM gate on all Meta decisions"
+    },
+    {
+      "issue": "Agency Shopping Ads UI access (Zaki)",
+      "impact": "Cannot manage Shopping budget in Ads Manager",
+      "plan": "Pinterest ticket follow-up"
+    }
+  ],
+  "actions": {
+    "spend_more": [
+      { "channel": "Google PMax", "reason": "Shopify UTM ROAS ~6.7× — best paid efficiency", "owner": "Zaki", "due": "Ongoing" }
+    ],
+    "pull_back": [
+      { "channel": "Pinterest", "reason": "~$271 · 0 Shopify orders — Checkout stays off", "owner": "Andrew/agent", "due": "Immediate" },
+      { "channel": "Meta", "reason": "Shopify ROAS ~1.3× — no budget raises", "owner": "Zaki", "due": "Until 7-day gate passes" }
+    ],
+    "create": [
+      { "channel": "Meta", "item": "Run Closed Sole 7 full days before pause", "owner": "Zaki", "due": "Aug 26" },
+      { "channel": "Pinterest", "item": "Winner Conversions after tag verified", "owner": "Andrew/agent", "due": "Sep 1" }
+    ],
+    "watch": [
+      { "channel": "Meta", "item": "ATC→checkout 122→15; Aug 17 zero-purch day", "owner": "Andrew", "due": "Weekly" },
+      { "channel": "Pinterest", "item": "Creative Test 7-day readout", "owner": "Zaki", "due": "Aug 26" },
+      { "channel": "Store", "item": "Daily order trend vs Aug 13 peak", "owner": "Andrew", "due": "Weekly" }
+    ]
+  },
+  "next_week_priorities": [
+    { "priority": 1, "action": "Hold Meta Prospecting at $100/day", "owner": "Zaki", "due": "Aug 29", "expected": "Shopify Meta ROAS stabilizes ≥1.4×" },
+    { "priority": 2, "action": "Pinterest tag verification + Creative Test readout", "owner": "Zaki", "due": "Aug 26", "expected": "Know if Aug 19 test continues or pauses" },
+    { "priority": 3, "action": "Google PMax — confirm no delivery constraint", "owner": "Zaki", "due": "Aug 29", "expected": "Spend holds ~$400–550/week" }
+  ],
+  "strategy_todos": [
+    { "id": 1, "status": "open", "action": "Hold Meta Prospecting budget — no raises until Shopify UTM ROAS ≥1.5× for 7 days", "owner": "Zaki", "due": "Ongoing" },
+    { "id": 2, "status": "open", "action": "Keep Google PMax running — best channel (~6.7× Shopify ROAS)", "owner": "Zaki", "due": "Ongoing" },
+    { "id": 3, "status": "open", "action": "Keep Pinterest Checkout paused; read out Aug 19 Creative Test Aug 26", "owner": "Zaki", "due": "Aug 26" },
+    { "id": 4, "status": "open", "action": "Run Closed Sole creative 7 full days before any pause decision", "owner": "Zaki", "due": "Aug 26" },
+    { "id": 5, "status": "open", "action": "Verify Pinterest checkout tag on a test order before scaling Shopping", "owner": "Andrew", "due": "Sep 1" },
+    { "id": 6, "status": "open", "action": "Launch winner-based Pinterest Conversions after tag is healthy", "owner": "Andrew + agent", "due": "Sep 1" },
+    { "id": 7, "status": "watch", "action": "Watch Meta ATC→checkout (122→15) and platform vs Shopify purchase gap", "owner": "Andrew", "due": "Weekly" }
+  ],
+  "glossary": {
+    "MTD": "Month To Date — ad spend from the 1st of this month through today",
+    "MER": "Marketing Efficiency Ratio — total Shopify revenue ÷ total ad spend",
+    "ROAS": "Return on ad spend — Shopify UTM-attributed revenue ÷ channel spend (our truth metric)",
+    "CPA": "Cost per acquisition — ad spend ÷ Shopify attributed orders",
+    "WoW": "Week over week — this period vs the immediately prior period of same length",
+    "UTM": "Tracking tags on order landing URLs — Shopify ground truth for which ad drove the sale"
+  },
+  "organic_snapshot": {
+    "note": "GA4 direction only — not mixed into paid ROAS",
+    "channels": [
+      { "name": "Organic Search", "sessions": 366, "purchases": 5, "revenue": 572 },
+      { "name": "Direct", "sessions": 455, "purchases": 15, "revenue": 1269 },
+      { "name": "Email", "sessions": 32, "purchases": 3, "revenue": 385 },
+      { "name": "Organic Social", "sessions": 420, "purchases": 4, "revenue": 370 }
+    ]
+  },
+  "meta_top_ads": [
+    { "campaign": "Prospecting CBO", "ad": "Video #01 Corrected", "spend": 717, "purch": 17, "roas": 2.35 },
+    { "campaign": "Creative Test", "ad": "Pilates athletes Collection page", "spend": 781, "purch": 14, "roas": 1.68 },
+    { "campaign": "Creative Test", "ad": "Pilates has evolved Closed Sole", "spend": 289, "purch": 7, "roas": 2.13 }
+  ],
+  "ga4_funnel": {
+    "paid_social_sessions": 2096,
+    "add_to_carts": 122,
+    "checkouts": 15,
+    "purchases": 25,
+    "atc_to_checkout_rate": 12.3,
+    "note": "GA4 purchases ≠ Shopify — direction only"
+  },
+  "daily_orders": {
+    "2026-08-13": 17,
+    "2026-08-14": 15,
+    "2026-08-15": 11,
+    "2026-08-16": 7,
+    "2026-08-17": 8,
+    "2026-08-18": 7,
+    "2026-08-19": 10,
+    "2026-08-20": 9,
+    "2026-08-21": 9,
+    "2026-08-22": 3
+  },
+  "history_weekly": [
+    { "label": "Aug 3–12", "orders": 85, "revenue": 10208, "ad_spend": 2870, "mer": 3.56 },
+    { "label": "Aug 13–22", "orders": 96, "revenue": 9883, "ad_spend": 3292, "mer": 3.0 }
+  ],
+  "thresholds": {
+    "meta_shopify_roas_target": 1.5,
+    "google_shopify_roas_target": 3.0,
+    "pinterest_max_spend_no_orders": 150,
+    "anomaly_pct_threshold": 15
+  }
+}

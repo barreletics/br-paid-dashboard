@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Paid Social Analyst Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f5f7;
+  --card: #fff;
+  --text: #1a1d21;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --good: #15803d;
+  --good-bg: #f0fdf4;
+  --warn: #b45309;
+  --warn-bg: #fffbeb;
+  --bad: #dc2626;
+  --bad-bg: #fef2f2;
+  --accent: #111;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "DM Sans", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid var(--accent);
+}
+.timestamp-bar {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+}
+.timestamp-bar strong { font-weight: 700; }
+.timestamp-live { color: var(--muted); }
+.timestamp-live.fresh { color: var(--good); }
+.timestamp-live.stale { color: var(--warn); }
+.refresh-btn {
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+.refresh-btn:hover { opacity: 0.9; }
+.refresh-btn:disabled { opacity: 0.5; cursor: wait; }
+.key-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.key-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.78rem;
+}
+.key-card strong { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.25rem; }
+.section-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: -0.35rem 0 0.65rem;
+  line-height: 1.4;
+}
+.glossary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--card);
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+}
+.glossary-row span strong { color: var(--text); }
+.todo-list { list-style: none; padding: 0; margin: 0; }
+.todo-item {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.875rem;
+  background: var(--card);
+}
+.todo-item:first-child { border-radius: 8px 8px 0 0; }
+.todo-item:last-child { border-bottom: none; border-radius: 0 0 8px 8px; }
+.todo-box {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--line);
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+.todo-item.watch .todo-box { border-color: var(--warn); }
+.todo-meta { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+.todo-wrap { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-bottom: 1.5rem; }
+details.key-details { margin-bottom: 1.25rem; }
+details.key-details summary {
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+.sub { color: var(--muted); font-size: 0.75rem; }
+.sub { color: var(--muted); font-size: 0.875rem; margin-top: 0.25rem; }
+.badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.badge.ok { border-color: #86efac; color: var(--good); background: var(--good-bg); }
+.badge.partial { border-color: #fcd34d; color: var(--warn); background: var(--warn-bg); }
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.kpi {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+.kpi .val { font-size: 1.5rem; font-weight: 700; }
+.kpi .lbl { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.2rem; }
+section { margin-bottom: 1.75rem; }
+h2 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+.action-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+}
+.action-card h3 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+.action-card.spend h3 { color: var(--good); }
+.action-card.pull h3 { color: var(--bad); }
+.action-card.create h3 { color: #1d4ed8; }
+.action-card.watch h3 { color: var(--warn); }
+.action-card ul { padding-left: 1.1rem; }
+.action-card li { margin: 0.35rem 0; }
+.action-card .tag { font-weight: 600; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  font-size: 0.875rem;
+}
+th {
+  background: var(--accent);
+  color: #fff;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: #fafafa; }
+.status { font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+.status.good { color: var(--good); }
+.status.watch { color: var(--warn); }
+.status.pull_back { color: var(--bad); }
+.bar-chart { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1rem; }
+.bar-row { display: flex; align-items: center; gap: 0.5rem; margin: 0.35rem 0; font-size: 0.8rem; }
+.bar-label { width: 4.5rem; color: var(--muted); flex-shrink: 0; }
+.bar-track { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+.bar-val { width: 1.5rem; text-align: right; font-weight: 600; }
+.quality {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+.q-item {
+  padding: 0.3rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+.q-item.ok { border-color: #bbf7d0; }
+.q-item.partial { border-color: #fde68a; }
+.q-item.skip { opacity: 0.6; }
+footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.error {
+  background: var(--bad-bg);
+  border: 1px solid #fecaca;
+  color: var(--bad);
+  padding: 1rem;
+  border-radius: 10px;
+  margin: 2rem 0;
+}
+.exec-box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem 1.15rem;
+  font-size: 0.925rem;
+}
+.exec-box li { margin: 0.4rem 0; }
+.pct-up { color: var(--good); font-weight: 600; }
+.pct-down { color: var(--bad); font-weight: 600; }
+.pct-flat { color: var(--muted); }
+.status.bad { color: var(--bad); }
+.status-chip {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+.status-chip.ACTIVE, .status-chip.RUNNING, .status-chip.good { background: var(--good-bg); color: var(--good); }
+.status-chip.PAUSED, .status-chip.watch { background: var(--warn-bg); color: var(--warn); }
+.status-chip.LEARNING { background: #eff6ff; color: #1d4ed8; }
+.status-chip.pull_back, .status-chip.bad { background: var(--bad-bg); color: var(--bad); }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.analyst-guide {
+  background: linear-gradient(135deg, #111 0%, #2d2d2d 100%);
+  color: #f9fafb;
+  border-radius: 12px;
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.analyst-guide h2 {
+  color: #fff;
+  font-size: 0.72rem;
+  margin-bottom: 0.5rem;
+}
+.analyst-guide > p {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #e5e7eb;
+  margin-bottom: 0.85rem;
+}
+.guide-paths {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+.guide-paths div {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.guide-paths strong { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: #d1d5db; margin-bottom: 0.25rem; }
+.guide-truth { font-size: 0.78rem !important; margin-bottom: 0 !important; color: #d1d5db !important; }
+@media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Paid Social Analyst Brief</h1>
+    <p class="sub" id="subtitle">Loading…</p>
+    <p class="sub" style="margin-top:0.15rem;font-size:0.78rem">Weekly read from your paid social analysts and strategists — Meta, Google, Pinterest</p>
+  </div>
+  <div id="quality-badge" class="badge">Checking data…</div>
+</header>
+<div id="error" class="error" style="display:none"></div>
+<div id="timestamp-bar" class="timestamp-bar" style="display:none">
+  <span>Data as of <strong id="data-as-of">—</strong> · Period <strong id="data-period">—</strong></span>
+  <span style="display:flex;align-items:center;gap:0.65rem">
+    <span id="refresh-status" class="timestamp-live">—</span>
+    <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()">Refresh</button>
+  </span>
+</div>
+<div id="app"></div>
+<footer>
+  Prepared for the paid social team · ROAS decisions use <strong>Shopify UTM revenue ÷ ad spend</strong> only.
+  Refresh pulls the latest saved data file · scheduled updates 2× daily when automation is live.
+</footer>
+<script>
+const DATA_URL = 'data/latest.json';
+
+function refreshData() {
+  const btn = document.getElementById('refresh-btn');
+  const status = document.getElementById('refresh-status');
+  btn.disabled = true;
+  btn.textContent = 'Refreshing…';
+  status.textContent = 'Pulling latest data…';
+  status.className = 'timestamp-live';
+  fetch(DATA_URL + '?t=' + Date.now())
+    .then(r => { if (!r.ok) throw new Error('Could not load data'); return r.json(); })
+    .then(d => {
+      render(d);
+      status.textContent = 'Updated just now';
+      status.className = 'timestamp-live fresh';
+    })
+    .catch(() => {
+      status.textContent = 'Refresh failed — use server or re-run build';
+      status.className = 'timestamp-live stale';
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.textContent = 'Refresh';
+    });
+}
+
+function fmt(n) {
+  if (n == null || isNaN(n)) return '—';
+  if (n >= 1000) return '$' + Math.round(n).toLocaleString();
+  return '$' + Number(n).toFixed(0);
+}
+function roas(n) {
+  if (n == null || isNaN(n)) return '—';
+  return Number(n).toFixed(2) + '×';
+}
+
+function qualitySummary(dq) {
+  const vals = Object.values(dq || {});
+  if (vals.some(v => v.status === 'error')) return { cls: 'partial', text: 'Data gaps' };
+  if (vals.some(v => v.status === 'partial')) return { cls: 'partial', text: 'Partial data' };
+  return { cls: 'ok', text: 'All sources ok' };
+}
+
+function renderActions(actions) {
+  const blocks = [
+    ['spend_more', 'Spend more', 'spend'],
+    ['pull_back', 'Pull back', 'pull'],
+    ['create', 'Create', 'create'],
+    ['watch', 'Watch', 'watch'],
+  ];
+  return blocks.map(([key, title, cls]) => {
+    const items = (actions[key] || []).map(a => {
+      const text = a.reason || a.item || '';
+      const meta = [a.owner, a.due].filter(Boolean).join(' · ');
+      return `<li><span class="tag">${a.channel || ''}</span> ${text}${meta ? ` <span class="sub">(${meta})</span>` : ''}</li>`;
+    }).join('') || '<li>None this week</li>';
+    return `<div class="action-card ${cls}"><h3>${title}</h3><ul>${items}</ul></div>`;
+  }).join('');
+}
+
+function renderDaily(daily) {
+  const entries = Object.entries(daily || {});
+  if (!entries.length) return '<p class="sub">No daily data</p>';
+  const max = Math.max(...entries.map(([,v]) => v));
+  return entries.map(([d, v]) => {
+    const pct = max ? (v / max * 100) : 0;
+    return `<div class="bar-row">
+      <span class="bar-label">${d.slice(5)}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <span class="bar-val">${v}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderQuality(dq) {
+  return Object.entries(dq || {}).map(([k, v]) =>
+    `<span class="q-item ${v.status}">${k}: ${v.status}${v.note ? ' — ' + v.note : ''}</span>`
+  ).join('');
+}
+
+function pctChange(cur, prev) {
+  if (prev == null || prev === 0) return { text: '—', cls: 'pct-flat' };
+  const p = ((cur - prev) / prev * 100);
+  const cls = p > 2 ? 'pct-up' : p < -2 ? 'pct-down' : 'pct-flat';
+  const sign = p > 0 ? '+' : '';
+  return { text: sign + p.toFixed(0) + '%', cls };
+}
+
+function renderExec(summary) {
+  const items = (summary || []).map(s => `<li>${s}</li>`).join('');
+  return `<ul>${items}</ul>`;
+}
+
+function renderKpiTarget(rows) {
+  return (rows || []).map(r => {
+    const cur = r.unit === '$' ? fmt(r.this_period) : r.this_period + (r.unit === '×' ? '×' : '');
+    const prev = r.unit === '$' ? fmt(r.last_period) : r.last_period + (r.unit === '×' ? '×' : '');
+    const tgt = r.unit === '$' ? fmt(r.target) : r.target + (r.unit === '×' ? '×' : '');
+    const ch = pctChange(r.this_period, r.last_period);
+    return `<tr>
+      <td>${r.kpi}</td><td><strong>${cur}</strong></td><td>${prev}</td><td>${tgt}</td>
+      <td class="${ch.cls}">${ch.text}</td><td class="status ${r.status}">${r.status}</td>
+    </tr>`;
+  }).join('');
+}
+
+function formatEdt(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-US', {
+    timeZone: 'America/Detroit',
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  });
+}
+
+function ageHours(iso) {
+  if (!iso) return 999;
+  return (Date.now() - new Date(iso).getTime()) / 3600000;
+}
+
+function setTimestamp(data) {
+  const bar = document.getElementById('timestamp-bar');
+  const asOf = document.getElementById('data-as-of');
+  const period = document.getElementById('data-period');
+  const status = document.getElementById('refresh-status');
+  bar.style.display = 'flex';
+  asOf.textContent = formatEdt(data.generated_at);
+  period.textContent = data.window?.label || '—';
+  const hrs = ageHours(data.generated_at);
+  if (hrs < 8) {
+    status.textContent = 'Fresh · auto-refresh every 30 min when hosted';
+    status.className = 'timestamp-live fresh';
+  } else if (hrs < 24) {
+    status.textContent = `${Math.round(hrs)}h old · next scheduled pull pending`;
+    status.className = 'timestamp-live';
+  } else {
+    status.textContent = `${Math.round(hrs)}h old · stale — run weekly pull`;
+    status.className = 'timestamp-live stale';
+  }
+}
+
+function renderGlossary(glossary) {
+  if (!glossary) return '';
+  return Object.entries(glossary).map(([k, v]) =>
+    `<span><strong>${k}</strong> — ${v}</span>`
+  ).join('');
+}
+
+function renderSectionKeys() {
+  const keys = [
+    ['Executive summary', '5-line verdict — read this first if time is short'],
+    ['KPI vs target', 'This period vs last period vs goal · good / watch / bad'],
+    ['Strategy and to-dos', 'Concrete changes to make this week — owners and due dates'],
+    ['Spend / Pull / Create / Watch', 'Where to add budget, cut, build new, or monitor'],
+    ['Channel performance', 'Shopify ROAS = truth (UTM revenue ÷ spend) · platform numbers are reference only'],
+    ['Budget pacing · MTD', 'MTD = month to date · spend so far this month vs monthly plan'],
+    ['Anomalies', 'Metrics that moved >15% WoW — cause and recommended response'],
+    ['Campaign status', 'What is live, paused, or in learning — next milestone per campaign'],
+    ['Creative', 'Top ads, paused winners, and new tests in flight'],
+    ['Agency log', 'Changes the agency made in Ads Manager'],
+    ['Challenges', 'Blockers and the plan to fix them'],
+  ];
+  return keys.map(([t, d]) =>
+    `<div class="key-card"><strong>${t}</strong>${d}</div>`
+  ).join('');
+}
+
+function renderTodos(todos) {
+  return (todos || []).map(t => `
+    <li class="todo-item ${t.status === 'watch' ? 'watch' : ''}">
+      <span class="todo-box" title="${t.status === 'watch' ? 'Watch item' : 'To do'}"></span>
+      <div>
+        <div>${t.action}</div>
+        <div class="todo-meta">${t.owner ? 'Owner: ' + t.owner : ''}${t.due ? ' · Due: ' + t.due : ''}${t.status === 'watch' ? ' · Watch (no action yet)' : ''}</div>
+      </div>
+    </li>`).join('');
+}
+
+function sectionHint(text) {
+  return text ? `<p class="section-hint">${text}</p>` : '';
+}
+
+function render(data) {
+  setTimestamp(data);
+  const k = data.kpis || {};
+  const q = qualitySummary(data.data_quality);
+  document.getElementById('quality-badge').className = 'badge ' + q.cls;
+  document.getElementById('quality-badge').textContent = q.text;
+  document.getElementById('subtitle').textContent =
+    `${data.window.label} vs ${data.window.prior_label || 'prior period'}`;
+
+  const channelRows = (data.channels || []).map(c => {
+    const roasCh = pctChange(c.shopify_roas, c.shopify_roas_last);
+    const ordCh = pctChange(c.shopify_orders, c.shopify_orders_last);
+    return `<tr>
+      <td>${c.name}</td>
+      <td>${fmt(c.spend)}<br><span class="sub">${roasCh.cls === 'pct-up' ? '▲' : roasCh.cls === 'pct-down' ? '▼' : '—'} vs ${fmt(c.spend_last || 0)}</span></td>
+      <td>${c.shopify_orders} <span class="${ordCh.cls}">${ordCh.text}</span></td>
+      <td>${fmt(c.shopify_revenue)}</td>
+      <td><strong>${roas(c.shopify_roas)}</strong> <span class="${roasCh.cls}">${roasCh.text}</span></td>
+      <td>${c.shopify_cpa ? fmt(c.shopify_cpa) : '—'}</td>
+      <td class="status ${c.status}">${(c.status || '').replace('_', ' ')}</td>
+    </tr>
+    <tr><td colspan="7" style="font-size:0.8rem;color:var(--muted)">${c.interpretation || ''}</td></tr>`;
+  }).join('');
+
+  const anomalyRows = (data.anomalies || []).map(a => `<tr>
+    <td>${a.metric}</td><td><strong>${a.change}</strong> ${a.vs || ''}</td>
+    <td>${a.cause}</td><td>${a.response}</td>
+  </tr>`).join('');
+
+  const campRows = (data.campaign_status || []).map(c => `<tr>
+    <td>${c.channel}</td><td>${c.campaign}</td>
+    <td><span class="status-chip ${c.status}">${c.status}</span></td>
+    <td>${fmt(c.spend_period)}</td><td>${c.key_metric}</td><td>${c.next_milestone}</td>
+  </tr>`).join('');
+
+  const actRows = (data.agency_activity || []).map(a => `<tr>
+    <td>${a.date}</td><td>${a.owner}</td><td>${a.action}</td>
+  </tr>`).join('');
+
+  const challRows = (data.challenges || []).map(c => `<tr>
+    <td>${c.issue}</td><td>${c.impact}</td><td>${c.plan}</td>
+  </tr>`).join('');
+
+  const priRows = (data.next_week_priorities || []).map(p => `<tr>
+    <td>${p.priority}</td><td>${p.action}</td><td>${p.owner}</td><td>${p.due}</td><td>${p.expected}</td>
+  </tr>`).join('');
+
+  const histRows = (data.history_weekly || []).map(h => `<tr>
+    <td>${h.label}</td><td>${h.orders}</td><td>${fmt(h.revenue)}</td><td>${fmt(h.ad_spend)}</td><td>${roas(h.mer)}</td>
+  </tr>`).join('');
+
+  const bp = data.budget_pacing || {};
+  const bpRows = (bp.by_channel || []).map(b => `<tr>
+    <td>${b.channel}</td><td>${fmt(b.mtd_spend)}</td><td>${fmt(b.monthly_plan)}</td>
+    <td>${b.monthly_plan ? Math.round(b.mtd_spend / b.monthly_plan * 100) + '%' : '—'}</td>
+    <td class="status ${b.status}">${b.status}</td>
+  </tr>`).join('');
+
+  const cr = data.creative || {};
+  const organic = (data.organic_snapshot?.channels || []).map(o => `<tr>
+    <td>${o.name}</td><td>${o.sessions}</td><td>${o.purchases}</td><td>${fmt(o.revenue)}</td>
+  </tr>`).join('');
+
+  const adRows = (data.meta_top_ads || []).map(a => `<tr>
+    <td>${a.campaign}</td><td>${a.ad}</td><td>${fmt(a.spend)}</td><td>${a.purch}</td><td>${roas(a.roas)}</td>
+  </tr>`).join('');
+
+  const f = data.ga4_funnel || {};
+
+  document.getElementById('app').innerHTML = `
+    <div class="analyst-guide">
+      <h2>Start here — how to read this brief</h2>
+      <p>This dashboard is written like a standing analyst and strategist memo for the team. Each section tells you what happened, why it matters, and what to consider doing next — without needing to dig through Ads Manager first.</p>
+      <div class="guide-paths">
+        <div><strong>5 minutes</strong> Executive summary → Strategy to-dos → Recommended actions</div>
+        <div><strong>15 minutes</strong> Add KPI vs target → Channel scorecard → Anomalies and pacing</div>
+        <div><strong>Deep dive</strong> Campaign status, creative tests, agency log, GA4 funnel</div>
+      </div>
+      <p class="guide-truth"><strong>Ground rule:</strong> Shopify UTM orders = truth for ROAS and CPA. Platform purchase counts (especially Meta) can overclaim — we show both so you can decide with confidence.</p>
+    </div>
+
+    <details class="key-details" open>
+      <summary>Section key and glossary (what everything means)</summary>
+      <div class="glossary-row">${renderGlossary(data.glossary)}</div>
+      <div class="key-grid">${renderSectionKeys()}</div>
+    </details>
+
+    <section>
+      <h2>Strategy and to-dos this week</h2>
+      ${sectionHint('Suggested changes and considerations — treat as your action list. Open = do it; Watch = monitor before acting.')}
+      <ul class="todo-wrap todo-list">${renderTodos(data.strategy_todos)}</ul>
+    </section>
+
+    <section>
+      <h2>Executive summary</h2>
+      ${sectionHint('Short narrative for leadership — wins, concerns, and forward note.')}
+      <div class="exec-box">${renderExec(data.executive_summary)}</div>
+    </section>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="val">${k.paid_orders ?? '—'}</div><div class="lbl">Paid orders</div></div>
+      <div class="kpi"><div class="val">${fmt(k.paid_revenue)}</div><div class="lbl">Shopify revenue</div></div>
+      <div class="kpi"><div class="val">${fmt(k.total_ad_spend)}</div><div class="lbl">Ad spend</div></div>
+      <div class="kpi"><div class="val">${roas(k.blended_mer)}</div><div class="lbl">Blended MER</div></div>
+      <div class="kpi"><div class="val">${k.aov ? fmt(k.aov) : '—'}</div><div class="lbl">AOV</div></div>
+      <div class="kpi"><div class="val">${k.cpa_blended ? fmt(k.cpa_blended) : '—'}</div><div class="lbl">Blended CPA</div></div>
+    </div>
+
+    <section>
+      <h2>KPI vs target · this period vs last</h2>
+      ${sectionHint('Each KPI shows this period, last period, weekly target, and week-over-week (WoW) change.')}
+      <table>
+        <thead><tr><th>KPI</th><th>This period</th><th>Last period</th><th>Target</th><th>WoW</th><th>Status</th></tr></thead>
+        <tbody>${renderKpiTarget(data.kpi_vs_target)}</tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Recommended actions</h2>
+      ${sectionHint('Spend more = scale · Pull back = reduce or pause · Create = new builds · Watch = check again next week.')}
+      <div class="grid-4">${renderActions(data.actions)}</div>
+    </section>
+
+    <section>
+      <h2>Next week priorities</h2>
+      ${sectionHint('Top 3 ranked priorities with owner, due date, and expected outcome.')}
+      <table>
+        <thead><tr><th>#</th><th>Action</th><th>Owner</th><th>Due</th><th>Expected outcome</th></tr></thead>
+        <tbody>${priRows || '<tr><td colspan="5">None set</td></tr>'}</tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Channel performance · Shopify ROAS = truth</h2>
+      ${sectionHint('ROAS and CPA use Shopify UTM orders only. Platform purchase counts can overclaim (especially Meta).')}
+      <table>
+        <thead><tr>
+          <th>Channel</th><th>Spend</th><th>Orders</th><th>Shopify $</th><th>ROAS</th><th>CPA</th><th>Status</th>
+        </tr></thead>
+        <tbody>${channelRows}</tbody>
+      </table>
+    </section>
+
+    <div class="two-col">
+      <section>
+        <h2>Budget pacing · MTD</h2>
+        ${sectionHint('MTD = Month To Date (spend from the 1st of this month through today). Used % = MTD ÷ monthly plan.')}
+        <p class="sub">MTD ~${fmt(bp.month_to_date_spend)} of ${fmt(bp.monthly_plan)} plan · projected ${fmt(bp.projected_month_spend)}</p>
+        <table>
+          <thead><tr><th>Channel</th><th>MTD</th><th>Plan</th><th>Used</th><th>Status</th></tr></thead>
+          <tbody>${bpRows}</tbody>
+        </table>
+      </section>
+      <section>
+        <h2>Weekly trend</h2>
+        <table>
+          <thead><tr><th>Period</th><th>Orders</th><th>Revenue</th><th>Spend</th><th>MER</th></tr></thead>
+          <tbody>${histRows}</tbody>
+        </table>
+      </section>
+    </div>
+
+    <section>
+      <h2>Anomalies · cause and response</h2>
+      ${sectionHint('Flags when a metric moved more than ~15% vs the prior period — what happened and what to do.')}
+      <table>
+        <thead><tr><th>Metric</th><th>Move</th><th>Cause</th><th>Response</th></tr></thead>
+        <tbody>${anomalyRows}</tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Campaign status</h2>
+      <table>
+        <thead><tr><th>Channel</th><th>Campaign</th><th>Status</th><th>Spend</th><th>Key metric</th><th>Next milestone</th></tr></thead>
+        <tbody>${campRows}</tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Creative performance</h2>
+      <div class="two-col">
+        <div class="action-card spend">
+          <h3>Top performer</h3>
+          <p><strong>${cr.top_performer?.name || '—'}</strong><br>${cr.top_performer?.metric || ''}</p>
+        </div>
+        <div class="action-card create">
+          <h3>Top Meta ad (platform)</h3>
+          <p><strong>${cr.top_meta_ad?.name || '—'}</strong><br>${cr.top_meta_ad ? fmt(cr.top_meta_ad.spend) + ' · ' + cr.top_meta_ad.purch + ' purch · ' + roas(cr.top_meta_ad.roas) : ''}</p>
+        </div>
+      </div>
+      <h3 style="margin-top:1rem;font-size:0.85rem">Paused / fatiguing</h3>
+      <ul>${(cr.fatiguing_or_paused || []).map(x => `<li><strong>${x.name}</strong> — ${x.action} (${x.was})</li>`).join('') || '<li>None flagged</li>'}</ul>
+      <h3 style="margin-top:0.75rem;font-size:0.85rem">New tests</h3>
+      <ul>${(cr.new_tests || []).map(x => `<li><strong>${x.name}</strong> · ${x.launched} — ${x.early}</li>`).join('') || '<li>None</li>'}</ul>
+    </section>
+
+    <section>
+      <h2>Agency activity log</h2>
+      <table>
+        <thead><tr><th>Date</th><th>Owner</th><th>Change</th></tr></thead>
+        <tbody>${actRows}</tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Challenges and roadblocks</h2>
+      <table>
+        <thead><tr><th>Issue</th><th>Impact</th><th>Plan</th></tr></thead>
+        <tbody>${challRows}</tbody>
+      </table>
+    </section>
+
+    <div class="two-col">
+      <section>
+        <h2>Daily paid orders (Shopify)</h2>
+        <div class="bar-chart">${renderDaily(data.daily_orders)}</div>
+      </section>
+      <section>
+        <h2>Organic and email (GA4 · reference)</h2>
+        <table>
+          <thead><tr><th>Channel</th><th>Sessions</th><th>Purch</th><th>Rev</th></tr></thead>
+          <tbody>${organic}</tbody>
+        </table>
+      </section>
+    </div>
+
+    <section>
+      <h2>Meta top ads (platform)</h2>
+      <table>
+        <thead><tr><th>Campaign</th><th>Ad</th><th>Spend</th><th>Purch</th><th>ROAS</th></tr></thead>
+        <tbody>${adRows}</tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>GA4 Paid Social funnel (direction only)</h2>
+      <table>
+        <tbody>
+          <tr><td>Sessions</td><td>${f.paid_social_sessions ?? '—'}</td></tr>
+          <tr><td>Add to carts</td><td>${f.add_to_carts ?? '—'}</td></tr>
+          <tr><td>Checkouts</td><td>${f.checkouts ?? '—'}</td></tr>
+          <tr><td>GA4 purchases</td><td>${f.purchases ?? '—'}</td></tr>
+          <tr><td>ATC → checkout</td><td>${f.atc_to_checkout_rate != null ? f.atc_to_checkout_rate + '%' : '—'}</td></tr>
+        </tbody>
+      </table>
+      <p class="sub" style="margin-top:0.5rem">${f.note || ''}</p>
+    </section>
+
+    <section>
+      <h2>Data confidence</h2>
+      <div class="quality">${renderQuality(data.data_quality)}</div>
+    </section>
+  `;
+}
+
+fetch(DATA_URL + '?t=' + Date.now())
+  .then(r => { if (!r.ok) throw new Error('Could not load ' + DATA_URL); return r.json(); })
+  .then(render)
+  .catch(err => {
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('error').textContent =
+      err.message + ' — Open report.html or run: python3 -m http.server 8765 in dashboard folder';
+  });
+
+// Live feed: refetch JSON every 30 minutes when served over http(s)
+setInterval(() => {
+  fetch(DATA_URL + '?t=' + Date.now())
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { if (d) render(d); })
+    .catch(() => {});
+}, 30 * 60 * 1000);
+</script>
+</body>
+</html>
