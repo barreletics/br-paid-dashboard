@@ -210,6 +210,58 @@ h2 {
 .glance-card .num { font-size: 1.75rem; font-weight: 700; line-height: 1.1; }
 .glance-card .name { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; }
 .glance-card .chg { font-size: 0.78rem; font-weight: 600; margin-top: 0.35rem; }
+.health-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+}
+.health-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+.health-pill.good { background: var(--good-bg); color: var(--good); border-color: #bbf7d0; }
+.health-pill.watch { background: var(--warn-bg); color: var(--warn); border-color: #fcd34d; }
+.health-pill.bad { background: var(--bad-bg); color: var(--bad); border-color: #fecaca; }
+.health-pill.neutral { color: var(--muted); }
+.compact-table { font-size: 0.82rem; }
+.compact-table td, .compact-table th { padding: 0.45rem 0.6rem; }
+.flag-item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--warn);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+.flag-item.bad { border-left-color: var(--bad); }
+.flag-item .flag-action { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+.decision-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+.decision-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.decision-tag.scale { background: var(--good-bg); color: var(--good); }
+.decision-tag.cut { background: var(--bad-bg); color: var(--bad); }
+.decision-tag.watch { background: var(--warn-bg); color: var(--warn); }
+.decision-tag.build { background: #eff6ff; color: #1d4ed8; }
+.budget-line { font-size: 0.85rem; margin-bottom: 0.5rem; }
 .filter-advanced {
   width: 100%;
   margin-top: 0.25rem;
@@ -1029,6 +1081,175 @@ function renderSimpleActions(data) {
     </section>`;
 }
 
+function overallHealth(data) {
+  const ch = data.channels || [];
+  const bad = ch.some(c => c.status === 'pull_back');
+  const watch = ch.some(c => c.status === 'watch');
+  if (bad) return 'watch';
+  if (watch) return 'watch';
+  return 'good';
+}
+
+function renderHealthStrip(data) {
+  const ch = data.channels || [];
+  const overall = overallHealth(data);
+  const q = data.data_quality || {};
+  const shopOk = q.shopify?.status === 'ok';
+  const pills = [
+    ['Account', overall, overall === 'good' ? 'On track' : 'Needs attention'],
+    ...ch.map(c => {
+      const slug = channelSlug(c.name);
+      const label = c.name.replace('Google PMax', 'Google');
+      const s = c.status === 'good' ? 'good' : c.status === 'watch' ? 'watch' : 'bad';
+      const text = c.status === 'good' ? 'On track' : c.status === 'watch' ? 'Watch' : 'Pull back';
+      return [label, s, text, slug];
+    }),
+    ['Data', shopOk ? 'good' : 'watch', shopOk ? 'Fresh' : 'Partial', null],
+  ];
+  return `
+    <div class="health-strip" data-view="simple summary">
+      ${pills.map(([label, cls, text, slug]) =>
+        `<span class="health-pill ${cls}" ${slug ? `data-channel="${slug}"` : ''}>${label}: ${text}</span>`
+      ).join('')}
+    </div>`;
+}
+
+function renderCampaignSnapshot(data) {
+  const camps = (data.campaign_status || []).slice(0, 8);
+  const ads = (data.meta_top_ads || []).slice(0, 3);
+  const paused = (data.creative?.fatiguing_or_paused || []).slice(0, 3);
+  const campRows = camps.map(c => {
+    const slug = channelSlug(c.channel);
+    return `<tr data-channel="${slug}">
+      <td>${c.channel}</td>
+      <td><strong>${c.campaign}</strong></td>
+      <td><span class="status-chip ${c.status}">${c.status}</span></td>
+      <td>${fmt(c.spend_period)}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${c.next_milestone || c.key_metric || '—'}</td>
+    </tr>`;
+  }).join('');
+  const adRows = ads.map(a => `<tr data-channel="meta">
+    <td>Meta · ad</td>
+    <td><strong>${a.ad}</strong></td>
+    <td>—</td>
+    <td>${fmt(a.spend)}</td>
+    <td style="font-size:0.78rem">${a.purch} platform purch · ${roas(a.roas)}</td>
+  </tr>`).join('');
+  const pausedRows = paused.map(p => `<tr data-channel="meta">
+    <td>Meta · paused</td>
+    <td><strong>${p.name}</strong></td>
+    <td><span class="status-chip PAUSED">PAUSED</span></td>
+    <td>—</td>
+    <td style="font-size:0.78rem">${p.action} · ${p.was}</td>
+  </tr>`).join('');
+  if (!campRows && !adRows) return '';
+  return `
+    <section data-view="simple summary deep">
+      <h2>Campaigns and ads</h2>
+      <p class="section-hint">Named items for quick agency decisions — updated on weekly refresh until live ad pull is wired.</p>
+      <table class="compact-table">
+        <thead><tr><th>Ch</th><th>Name</th><th>Status</th><th>Spend</th><th>Next / note</th></tr></thead>
+        <tbody>${campRows}${adRows}${pausedRows}</tbody>
+      </table>
+    </section>`;
+}
+
+function renderFlags(data) {
+  const items = [
+    ...(data.anomalies || []).slice(0, 2).map(a => ({
+      cls: 'watch',
+      title: a.metric + ' · ' + a.change,
+      action: a.response || a.cause
+    })),
+    ...(data.challenges || []).slice(0, 2).map(c => ({
+      cls: c.issue?.toLowerCase().includes('zero') ? 'bad' : 'watch',
+      title: c.issue,
+      action: c.plan
+    }))
+  ].slice(0, 4);
+  if (!items.length) return '';
+  return `
+    <section data-view="simple summary">
+      <h2>Flags</h2>
+      ${items.map(f => `<div class="flag-item ${f.cls}"><strong>${f.title}</strong><div class="flag-action">${f.action}</div></div>`).join('')}
+    </section>`;
+}
+
+function renderAgencyLog(data) {
+  const rows = (data.agency_activity || []).slice(0, 5);
+  if (!rows.length) return '';
+  return `
+    <section data-view="simple summary">
+      <h2>Agency changes</h2>
+      <table class="compact-table">
+        <thead><tr><th>Date</th><th>Who</th><th>Change</th></tr></thead>
+        <tbody>${rows.map(a => `<tr><td>${a.date}</td><td>${a.owner}</td><td>${a.action}</td></tr>`).join('')}</tbody>
+      </table>
+    </section>`;
+}
+
+function renderBudgetStrip(data) {
+  const bp = data.budget_pacing || {};
+  if (!bp.month_to_date_spend) return '';
+  const rows = (bp.by_channel || []).map(b =>
+    `<tr><td>${b.channel}</td><td>${fmt(b.mtd_spend)}</td><td>${fmt(b.monthly_plan)}</td>
+    <td>${b.monthly_plan ? Math.round(b.mtd_spend / b.monthly_plan * 100) + '%' : '—'}</td>
+    <td class="status ${b.status}">${b.status === 'on_track' ? 'On track' : b.status}</td></tr>`
+  ).join('');
+  return `
+    <section data-view="simple performance">
+      <h2>Budget pacing</h2>
+      <p class="budget-line">Month to date: <strong>${fmt(bp.month_to_date_spend)}</strong> of ${fmt(bp.monthly_plan)} plan · projected ${fmt(bp.projected_month_spend)}</p>
+      <table class="compact-table">
+        <thead><tr><th>Channel</th><th>MTD</th><th>Plan</th><th>Used</th><th>Status</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </section>`;
+}
+
+function renderDecisionsCompact(data) {
+  const act = data.actions || {};
+  const lines = [];
+  (act.spend_more || []).forEach(a => {
+    if (a.channel === '—') return;
+    lines.push(['scale', a.channel, a.reason]);
+  });
+  (act.pull_back || []).forEach(a => {
+    if (a.channel === '—') return;
+    lines.push(['cut', a.channel, a.reason]);
+  });
+  (act.create || []).slice(0, 2).forEach(a => lines.push(['build', a.channel, a.item]));
+  (act.watch || []).slice(0, 2).forEach(a => lines.push(['watch', a.channel, a.item]));
+  if (!lines.length) return '';
+  return `
+    <section data-view="simple actions">
+      <h2>Decisions</h2>
+      ${lines.map(([tag, ch, text]) =>
+        `<div class="decision-row"><span class="decision-tag ${tag}">${tag}</span><span><strong>${ch}</strong> — ${text}</span></div>`
+      ).join('')}
+    </section>`;
+}
+
+function renderDailySpark(data) {
+  const daily = data.daily_orders || {};
+  const entries = Object.entries(daily).sort();
+  if (entries.length < 2) return '';
+  const max = Math.max(...entries.map(([, v]) => v), 1);
+  const bars = entries.map(([d, v]) => {
+    const pct = Math.round(v / max * 100);
+    const day = d.slice(5).replace('-', '/');
+    return `<div class="bar-row"><span class="bar-label">${day}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-val">${v}</span></div>`;
+  }).join('');
+  const peak = entries.reduce((a, b) => b[1] > a[1] ? b : a);
+  const low = entries.reduce((a, b) => b[1] < a[1] ? b : a);
+  return `
+    <section data-view="simple performance">
+      <h2>Daily orders</h2>
+      <p class="section-hint">Best: ${peak[0]} (${peak[1]}) · Slowest: ${low[0]} (${low[1]})</p>
+      <div class="bar-chart">${bars}</div>
+    </section>`;
+}
+
 function wowMetric(label, cur, prev, fmtFn, monthVal) {
   const ch = pctChange(cur, prev);
   const mch = monthVal != null ? pctChange(cur, monthVal) : null;
@@ -1179,6 +1400,10 @@ function applyFilters() {
   document.querySelectorAll('tr[data-channel]').forEach(tr => {
     const chOk = ch === 'all' || tr.dataset.channel === ch;
     tr.style.display = chOk ? '' : 'none';
+  });
+  document.querySelectorAll('.health-pill[data-channel]').forEach(el => {
+    const chOk = ch === 'all' || el.dataset.channel === ch;
+    el.style.display = chOk ? '' : 'none';
   });
   document.querySelectorAll('.col-prior, .wow-last').forEach(el => {
     el.style.display = filters.showCompare ? '' : 'none';
@@ -1366,8 +1591,15 @@ function render(raw) {
       <div class="simple-lede">${renderExec(data.executive_summary)}</div>
     </section>
 
+    ${renderHealthStrip(data)}
     ${renderAtAGlance(data)}
     ${renderSimpleChannels(data)}
+    ${renderCampaignSnapshot(data)}
+    ${renderFlags(data)}
+    ${renderBudgetStrip(data)}
+    ${renderDailySpark(data)}
+    ${renderDecisionsCompact(data)}
+    ${renderAgencyLog(data)}
     ${renderSimpleActions(data)}
 
     <details data-view="detailed summary" class="key-details">
