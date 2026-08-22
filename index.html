@@ -194,6 +194,31 @@ h2 {
   padding: 1rem 1.15rem;
 }
 .simple-lede li { margin: 0.45rem 0; }
+.sales-banner {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.sales-banner .sales-val { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+.sales-banner .sales-lbl { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.2rem; }
+.sales-banner .sales-sub { font-size: 0.85rem; color: var(--muted); text-align: right; }
+.profit-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: -0.5rem 0 1rem;
+  line-height: 1.45;
+}
+.glance-card.highlight {
+  border-color: var(--accent);
+  background: #fafafa;
+}
 .glance-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1012,32 +1037,51 @@ function trendPlain(cur, prev) {
   return 'About flat vs last period';
 }
 
+function afterAdSpend(kpis) {
+  const sales = Number(kpis?.paid_revenue) || 0;
+  const spend = Number(kpis?.total_ad_spend) || 0;
+  return sales - spend;
+}
+
 function renderAtAGlance(data) {
   const k = data.kpis || {};
   const p = priorKpis(data);
-  const rev = storeRev(k);
-  const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
-  const mer = filters.useNetRevenue ? (k.blended_mer_net ?? k.blended_mer) : k.blended_mer;
-  const merP = filters.useNetRevenue ? (p.blended_mer_net ?? p.blended_mer) : p.blended_mer;
+  const sales = Number(k.paid_revenue) || 0;
+  const salesP = Number(p.paid_revenue) || 0;
+  const afterAds = afterAdSpend(k);
+  const afterAdsP = afterAdSpend(p);
+  const salesCh = pctChange(sales, salesP);
+  const mer = k.blended_mer;
+  const merP = p.blended_mer;
+  const w = data.window || {};
   const cards = [
-    ['Orders', k.paid_orders, p.paid_orders, null],
-    ['Revenue', rev, revP, fmt],
-    ['Ad spend', k.total_ad_spend, p.total_ad_spend, fmt],
-    ['Return on spend', mer, merP, roas],
+    ['After ad spend', afterAds, afterAdsP, fmt, true],
+    ['Ad spend', k.total_ad_spend, p.total_ad_spend, fmt, false],
+    ['Return on spend', mer, merP, roas, false],
+    ['Orders', k.paid_orders, p.paid_orders, null, false],
   ];
   return `
     <section data-view="simple summary performance">
       <h2>The numbers</h2>
+      <div class="sales-banner">
+        <div>
+          <div class="sales-lbl">Store sales · ${w.label || 'this period'}</div>
+          <div class="sales-val">${fmt(sales)}</div>
+          <div class="chg col-prior ${salesCh.cls}" style="font-size:0.85rem;margin-top:0.35rem">${trendPlain(sales, salesP)}</div>
+        </div>
+        <div class="sales-sub">${k.paid_orders ?? '—'} paid orders<br>AOV ${k.aov ? fmt(k.aov) : '—'}</div>
+      </div>
       <div class="glance-grid">
-        ${cards.map(([name, cur, prev, fn]) => {
+        ${cards.map(([name, cur, prev, fn, highlight]) => {
           const ch = pctChange(cur, prev);
-          return `<div class="glance-card">
+          return `<div class="glance-card${highlight ? ' highlight' : ''}">
             <div class="num">${fn ? fn(cur) : cur}</div>
             <div class="name">${name}</div>
             <div class="chg col-prior ${ch.cls}">${trendPlain(cur, prev)}</div>
           </div>`;
         }).join('')}
       </div>
+      <p class="profit-note"><strong>After ad spend</strong> = store sales minus ad spend only. Does not include returns, product cost, or company overhead.</p>
     </section>`;
 }
 
