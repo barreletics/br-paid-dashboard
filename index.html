@@ -353,6 +353,35 @@ footer {
   background: #fff;
 }
 .filter-bar label { display: flex; align-items: center; gap: 0.35rem; cursor: pointer; color: var(--muted); }
+.filter-bar input[type="date"] {
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.custom-range { display: none; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
+.export-btn {
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+}
+.export-btn:hover { background: #f9fafb; }
+.compare-head .period-tag.month {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+.net-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.65rem;
+}
 .wow-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -426,6 +455,21 @@ footer {
 </div>
 <div id="filter-bar" class="filter-bar" style="display:none">
   <div class="filter-group">
+    <span class="filter-label">Period</span>
+    <select id="filter-period" aria-label="Report period">
+      <option value="7">Rolling 7 days</option>
+      <option value="14">Rolling 14 days</option>
+      <option value="30">Rolling 30 days</option>
+      <option value="custom">Custom range</option>
+    </select>
+  </div>
+  <div id="custom-range" class="filter-group custom-range">
+    <input type="date" id="custom-start" aria-label="Start date">
+    <span class="sub">to</span>
+    <input type="date" id="custom-end" aria-label="End date">
+    <button type="button" class="export-btn" id="apply-custom">Apply</button>
+  </div>
+  <div class="filter-group">
     <span class="filter-label">View</span>
     <select id="filter-view" aria-label="Section view">
       <option value="all">All sections</option>
@@ -445,10 +489,19 @@ footer {
     </select>
   </div>
   <div class="filter-group">
+    <label><input type="checkbox" id="filter-month"> vs same period last month (~4 wks)</label>
+  </div>
+  <div class="filter-group">
+    <label><input type="checkbox" id="filter-net"> Net revenue (after returns)</label>
+  </div>
+  <div class="filter-group">
     <label><input type="checkbox" id="filter-compare" checked> Compare vs last period</label>
   </div>
   <div class="filter-group">
     <label><input type="checkbox" id="filter-target" checked> Show targets</label>
+  </div>
+  <div class="filter-group">
+    <button type="button" class="export-btn" id="export-csv">Export CSV</button>
   </div>
 </div>
 <div id="app"></div>
@@ -484,13 +537,20 @@ function formatWindowLabel(start, end) {
 }
 
 function computeRollingWindow(cfg) {
-  const days = cfg.report_window_days || 7;
+  const days = filters.periodMode === 'custom' && filters.customStart && filters.customEnd
+    ? daysBetween(filters.customStart, filters.customEnd)
+    : (filters.periodDays || cfg.report_window_days || 7);
   const through = cfg.window_ends || 'today';
   let end = detroitYMD();
   if (through === 'yesterday') end = addDays(end, -1);
-  const start = addDays(end, -(days - 1));
+  if (filters.periodMode === 'custom' && filters.customEnd) end = filters.customEnd;
+  const start = filters.periodMode === 'custom' && filters.customStart
+    ? filters.customStart
+    : addDays(end, -(days - 1));
   const priorEnd = addDays(start, -1);
   const priorStart = addDays(priorEnd, -(days - 1));
+  const monthEnd = addDays(start, -28);
+  const monthStart = addDays(monthEnd, -(days - 1));
   return {
     start,
     end,
@@ -500,8 +560,27 @@ function computeRollingWindow(cfg) {
     prior_start: priorStart,
     prior_end: priorEnd,
     prior_label: formatWindowLabel(priorStart, priorEnd),
-    mode: 'rolling'
+    month_start: monthStart,
+    month_end: monthEnd,
+    month_label: formatWindowLabel(monthStart, monthEnd),
+    mode: filters.periodMode === 'custom' ? 'custom' : 'rolling'
   };
+}
+
+function daysBetween(start, end) {
+  const a = new Date(start + 'T12:00:00');
+  const b = new Date(end + 'T12:00:00');
+  return Math.max(1, Math.round((b - a) / 86400000) + 1);
+}
+
+function sumDaily(map, start, end) {
+  let total = 0;
+  let d = start;
+  while (d <= end) {
+    total += Number(map[d] || 0);
+    d = addDays(d, 1);
+  }
+  return total;
 }
 
 function expectedWindow() {
@@ -631,23 +710,28 @@ function ageHours(iso) {
   return (Date.now() - new Date(iso).getTime()) / 3600000;
 }
 
-function setTimestamp(data) {
+function setTimestamp(data, raw) {
   const bar = document.getElementById('timestamp-bar');
   const asOf = document.getElementById('data-as-of');
   const period = document.getElementById('data-period');
   const status = document.getElementById('refresh-status');
   const banner = document.getElementById('window-banner');
-  const expected = expectedWindow();
+  const expected = computeRollingWindow(reportConfig);
   bar.style.display = 'flex';
-  asOf.textContent = formatEdt(data.generated_at);
-  period.textContent = expected.label + ' (rolling ' + expected.days + 'd)';
+  asOf.textContent = formatEdt(raw?.generated_at || data.generated_at);
+  period.textContent = (data.window?.label || expected.label) + ' (' + (data.window?.days || expected.days) + 'd' + (filters.periodMode === 'custom' ? ' custom' : '') + ')';
   document.getElementById('subtitle').textContent =
-    expected.label + ' vs ' + expected.prior_label;
+    (data.window?.label || expected.label) + ' vs ' + (data.window?.prior_label || expected.prior_label);
 
   const dataEnd = data.window?.end;
   const dataStart = data.window?.start;
-  const inSync = dataStart === expected.start && dataEnd === expected.end;
-  if (!inSync && data.window?.label) {
+  const inSync = filters.periodMode !== 'custom' && dataStart === expected.start && dataEnd === expected.end;
+  if (filters.periodMode === 'custom') {
+    banner.style.display = data.window?.custom_partial ? 'block' : 'none';
+    if (data.window?.custom_partial) {
+      banner.innerHTML = '<strong>Custom range.</strong> Store orders/revenue summed from daily data. Channel ROAS uses saved snapshot — run refresh for full custom pull.';
+    }
+  } else if (!inSync && data.window?.label) {
     banner.style.display = 'block';
     banner.innerHTML =
       '<strong>Data refresh pending.</strong> Numbers below are for ' + (data.window.label || (dataStart + ' – ' + dataEnd)) +
@@ -687,6 +771,7 @@ function renderSectionKeys() {
     ['Spend / Pull / Create / Watch', 'Where to add budget, cut, build new, or monitor'],
     ['This vs last period', 'Side-by-side cards and channel table — rolling prior window of same length'],
     ['Historical trend', 'Orders, revenue, and MER over recent snapshots — builds each refresh'],
+    ['Filters', 'Period 7/14/30 or custom dates · channel · net revenue · vs last month · export CSV'],
     ['Budget pacing · MTD', 'MTD = month to date · spend so far this month vs monthly plan'],
     ['Anomalies', 'Metrics that moved >15% WoW — cause and recommended response'],
     ['Campaign status', 'What is live, paused, or in learning — next milestone per campaign'],
@@ -714,8 +799,90 @@ function sectionHint(text) {
   return text ? `<p class="section-hint">${text}</p>` : '';
 }
 
-const filters = { channel: 'all', view: 'all', showCompare: true, showTarget: true };
+const filters = {
+  channel: 'all',
+  view: 'all',
+  showCompare: true,
+  showTarget: true,
+  showMonthCompare: false,
+  useNetRevenue: false,
+  periodDays: 7,
+  periodMode: 'preset',
+  customStart: '',
+  customEnd: ''
+};
 let dashboardData = null;
+
+function storeRev(k) {
+  if (!k) return 0;
+  return filters.useNetRevenue ? (k.paid_revenue_net ?? k.paid_revenue) : k.paid_revenue;
+}
+
+function channelRev(c) {
+  if (!c) return 0;
+  return filters.useNetRevenue ? (c.shopify_revenue_net ?? c.shopify_revenue) : c.shopify_revenue;
+}
+
+function channelRevPrior(c, field) {
+  const gross = c[field] ?? 0;
+  if (!filters.useNetRevenue) return gross;
+  const netField = field.replace('shopify_revenue', 'shopify_revenue_net');
+  return c[netField] ?? gross;
+}
+
+function channelRoas(c, revField) {
+  const r = filters.useNetRevenue
+    ? (c.shopify_roas_net ?? c.shopify_roas)
+    : c.shopify_roas;
+  if (revField === 'last') return filters.useNetRevenue ? roas(channelRevPrior(c, 'shopify_revenue_last'), c.spend_last) : c.shopify_roas_last;
+  if (revField === 'month') return c.shopify_roas_month ?? roas(channelRevPrior(c, 'shopify_revenue_month'), c.spend);
+  return r;
+}
+
+function activeData(raw) {
+  if (!raw) return raw;
+  if (filters.periodMode === 'preset' && raw.windows?.[String(filters.periodDays)]) {
+    const snap = raw.windows[String(filters.periodDays)];
+    return { ...raw, ...snap, _source: raw };
+  }
+  if (filters.periodMode === 'custom' && filters.customStart && filters.customEnd) {
+    return sliceCustomRange(raw, filters.customStart, filters.customEnd);
+  }
+  return raw;
+}
+
+function sliceCustomRange(raw, start, end) {
+  const orders = sumDaily(raw.daily_orders || {}, start, end);
+  const gross = sumDaily(raw.daily_revenue || {}, start, end);
+  const net = sumDaily(raw.daily_revenue_net || {}, start, end);
+  const days = daysBetween(start, end);
+  return {
+    ...raw,
+    window: {
+      start,
+      end,
+      days,
+      label: formatWindowLabel(start, end),
+      mode: 'custom',
+      custom_partial: true
+    },
+    kpis: {
+      ...(raw.kpis || {}),
+      paid_orders: orders,
+      paid_revenue: gross,
+      paid_revenue_net: net,
+      returns_adjusted: gross - net,
+      custom_partial: true
+    },
+    channels: raw.channels || [],
+    prior_period: raw.prior_period,
+    prior_month: raw.prior_month
+  };
+}
+
+function monthKpis(data) {
+  return data.prior_month?.kpis || {};
+}
 
 function channelSlug(name) {
   const n = (name || '').toLowerCase();
@@ -733,81 +900,115 @@ function priorKpis(data) {
   return {
     paid_orders: get('Paid orders')?.last_period ?? '—',
     paid_revenue: get('Shopify revenue')?.last_period ?? 0,
+    paid_revenue_net: get('Shopify revenue')?.last_period ?? 0,
     total_ad_spend: spendLast || null,
     blended_mer: get('Blended MER')?.last_period ?? null,
+    blended_mer_net: get('Blended MER')?.last_period ?? null,
     aov: null,
     cpa_blended: null,
   };
 }
 
-function wowMetric(label, cur, prev, fmtFn) {
+function wowMetric(label, cur, prev, fmtFn, monthVal) {
   const ch = pctChange(cur, prev);
+  const mch = monthVal != null ? pctChange(cur, monthVal) : null;
   const fmtCur = fmtFn ? fmtFn(cur) : cur;
   const fmtPrev = fmtFn ? fmtFn(prev) : prev;
+  const fmtMonth = monthVal != null && fmtFn ? fmtFn(monthVal) : monthVal;
   return `<div class="wow-card">
     <div class="metric">${label}</div>
     <div class="this-val">${fmtCur ?? '—'}</div>
     <div class="wow-last col-prior">Last: ${fmtPrev ?? '—'}</div>
-    <div class="delta col-prior ${ch.cls}">${ch.text !== '—' ? ch.text + ' vs last period' : '—'}</div>
+    <div class="delta col-prior ${ch.cls}">${ch.text !== '—' ? ch.text + ' vs last' : '—'}</div>
+    ${monthVal != null ? `<div class="wow-last col-month">~4 wks ago: ${fmtMonth ?? '—'}</div><div class="delta col-month ${mch.cls}">${mch.text !== '—' ? mch.text + ' vs month' : '—'}</div>` : ''}
   </div>`;
 }
 
 function renderWowCompare(data) {
   const k = data.kpis || {};
   const p = priorKpis(data);
+  const m = monthKpis(data);
   const w = data.window || {};
+  const useNet = filters.useNetRevenue;
+  const rev = storeRev(k);
+  const revP = useNet ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
+  const revM = useNet ? (m.paid_revenue_net ?? m.paid_revenue) : m.paid_revenue;
+  const mer = useNet ? (k.blended_mer_net ?? k.blended_mer) : k.blended_mer;
+  const merP = useNet ? (p.blended_mer_net ?? p.blended_mer) : p.blended_mer;
+  const merM = useNet ? (m.blended_mer_net ?? m.blended_mer) : m.blended_mer;
+  const monthOn = filters.showMonthCompare;
   return `
     <section data-view="summary performance">
       <div class="compare-head">
-        <h2 style="margin:0">This period vs last period</h2>
+        <h2 style="margin:0">This period vs last period${monthOn ? ' vs ~4 weeks ago' : ''}</h2>
         <div>
           <span class="period-tag">This · ${w.label || '—'}</span>
           <span class="period-tag prior col-prior">Last · ${w.prior_label || data.prior_period?.window?.label || '—'}</span>
+          ${monthOn ? `<span class="period-tag month col-month">~4 wks · ${w.month_label || data.prior_month?.window?.label || '—'}</span>` : ''}
         </div>
       </div>
-      ${sectionHint('Side-by-side store and paid totals — same length window immediately before this one.')}
+      ${useNet ? `<p class="net-note">Showing <strong>net revenue</strong> (after returns/refunds on order). Returns this period: ${fmt(k.returns_adjusted || 0)}.</p>` : ''}
+      ${data.kpis?.custom_partial || data.window?.custom_partial ? `<p class="net-note">Custom range: store orders/revenue from daily totals only — channel ROAS not recalculated.</p>` : ''}
+      ${k.spend_estimated ? `<p class="net-note">Ad spend scaled from weekly rate for ${w.days}-day window (estimate).</p>` : ''}
+      ${sectionHint('Side-by-side store and paid totals. Last = prior window of same length. Month = same length ~4 weeks earlier.')}
       <div class="wow-grid">
-        ${wowMetric('Store orders', k.paid_orders, p.paid_orders)}
-        ${wowMetric('Store revenue', k.paid_revenue, p.paid_revenue, fmt)}
-        ${wowMetric('Ad spend', k.total_ad_spend, p.total_ad_spend, fmt)}
-        ${wowMetric('Blended MER', k.blended_mer, p.blended_mer, roas)}
-        ${wowMetric('Meta Shopify ROAS', data.channels?.[0]?.shopify_roas, data.channels?.[0]?.shopify_roas_last, roas)}
-        ${wowMetric('Google Shopify ROAS', data.channels?.[1]?.shopify_roas, data.channels?.[1]?.shopify_roas_last, roas)}
+        ${wowMetric('Store orders', k.paid_orders, p.paid_orders, null, monthOn ? m.paid_orders : null)}
+        ${wowMetric('Store revenue', rev, revP, fmt, monthOn ? revM : null)}
+        ${wowMetric('Ad spend', k.total_ad_spend, p.total_ad_spend, fmt, monthOn ? m.total_ad_spend : null)}
+        ${wowMetric('Blended MER', mer, merP, roas, monthOn ? merM : null)}
+        ${wowMetric('Meta Shopify ROAS', channelRoas(data.channels?.[0]), data.channels?.[0]?.shopify_roas_last, roas, monthOn ? data.channels?.[0]?.shopify_roas_month : null)}
+        ${wowMetric('Google Shopify ROAS', channelRoas(data.channels?.[1]), data.channels?.[1]?.shopify_roas_last, roas, monthOn ? data.channels?.[1]?.shopify_roas_month : null)}
       </div>
     </section>`;
 }
 
 function renderChannelWow(data) {
+  const monthOn = filters.showMonthCompare;
   const rows = (data.channels || []).map(c => {
     const slug = channelSlug(c.name);
+    const rev = channelRev(c);
+    const revLast = channelRevPrior(c, 'shopify_revenue_last');
+    const revMonth = channelRevPrior(c, 'shopify_revenue_month');
     const ordCh = pctChange(c.shopify_orders, c.shopify_orders_last);
-    const revCh = pctChange(c.shopify_revenue, c.shopify_revenue_last);
-    const roasCh = pctChange(c.shopify_roas, c.shopify_roas_last);
+    const revCh = pctChange(rev, revLast);
+    const roasNow = channelRoas(c);
+    const roasLast = channelRoas(c, 'last');
+    const roasMonth = channelRoas(c, 'month');
+    const roasCh = pctChange(roasNow, roasLast);
     const spendCh = pctChange(c.spend, c.spend_last);
+    const ordMonthCh = pctChange(c.shopify_orders, c.shopify_orders_month);
+    const revMonthCh = pctChange(rev, revMonth);
     return `<tr data-channel="${slug}">
       <td><strong>${c.name}</strong></td>
       <td>${c.shopify_orders}</td><td class="col-prior">${c.shopify_orders_last ?? '—'}</td><td class="col-prior ${ordCh.cls}">${ordCh.text}</td>
-      <td>${fmt(c.shopify_revenue)}</td><td class="col-prior">${fmt(c.shopify_revenue_last || 0)}</td><td class="col-prior ${revCh.cls}">${revCh.text}</td>
+      ${monthOn ? `<td class="col-month">${c.shopify_orders_month ?? '—'}</td><td class="col-month ${ordMonthCh.cls}">${ordMonthCh.text}</td>` : ''}
+      <td>${fmt(rev)}</td><td class="col-prior">${fmt(revLast || 0)}</td><td class="col-prior ${revCh.cls}">${revCh.text}</td>
+      ${monthOn ? `<td class="col-month">${fmt(revMonth || 0)}</td><td class="col-month ${revMonthCh.cls}">${revMonthCh.text}</td>` : ''}
       <td>${fmt(c.spend)}</td><td class="col-prior">${fmt(c.spend_last || 0)}</td><td class="col-prior ${spendCh.cls}">${spendCh.text}</td>
-      <td><strong>${roas(c.shopify_roas)}</strong></td><td class="col-prior">${roas(c.shopify_roas_last)}</td><td class="col-prior ${roasCh.cls}">${roasCh.text}</td>
+      <td><strong>${roas(roasNow)}</strong></td><td class="col-prior">${roas(roasLast)}</td><td class="col-prior ${roasCh.cls}">${roasCh.text}</td>
+      ${monthOn ? `<td class="col-month">${roas(roasMonth)}</td>` : ''}
       <td class="status ${c.status}">${(c.status || '').replace('_', ' ')}</td>
     </tr>
-    <tr data-channel="${slug}"><td colspan="13" style="font-size:0.8rem;color:var(--muted)">${c.interpretation || ''}</td></tr>`;
+    <tr data-channel="${slug}"><td colspan="${monthOn ? 17 : 13}" style="font-size:0.8rem;color:var(--muted)">${c.interpretation || ''}</td></tr>`;
   }).join('');
+  const cols = monthOn ? 17 : 13;
   return `
     <section data-view="summary performance">
-      <h2>Channel compare · this period vs last</h2>
-      ${sectionHint('Paid channel scorecard with WoW on orders, Shopify revenue, spend, and ROAS. Toggle columns with filters above.')}
+      <h2>Channel compare · this vs last${monthOn ? ' vs ~4 weeks ago' : ''}</h2>
+      ${sectionHint('Paid channel scorecard. Toggle net revenue, month compare, and column visibility with filters above.')}
       <table>
         <thead><tr>
           <th>Channel</th>
           <th>Orders</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
-          <th>Shopify $</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
+          ${monthOn ? '<th class="col-month">~4 wks</th><th class="col-month">Δ</th>' : ''}
+          <th>Shopify $${filters.useNetRevenue ? ' (net)' : ''}</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
+          ${monthOn ? '<th class="col-month">~4 wks</th><th class="col-month">Δ</th>' : ''}
           <th>Spend</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
           <th>ROAS</th><th class="col-prior">Last</th><th class="col-prior">Δ</th>
+          ${monthOn ? '<th class="col-month">~4 wks</th>' : ''}
           <th>Status</th>
         </tr></thead>
-        <tbody>${rows || '<tr><td colspan="13">No channel data</td></tr>'}</tbody>
+        <tbody>${rows || `<tr><td colspan="${cols}">No channel data</td></tr>`}</tbody>
       </table>
     </section>`;
 }
@@ -859,9 +1060,62 @@ function applyFilters() {
   document.querySelectorAll('.col-prior, .wow-last').forEach(el => {
     el.style.display = filters.showCompare ? '' : 'none';
   });
+  document.querySelectorAll('.col-month').forEach(el => {
+    el.style.display = filters.showMonthCompare ? '' : 'none';
+  });
   document.querySelectorAll('.col-target').forEach(el => {
     el.style.display = filters.showTarget ? '' : 'none';
   });
+}
+
+function exportCsv() {
+  if (!dashboardData) return;
+  const data = activeData(dashboardData);
+  const w = data.window || {};
+  const lines = [
+    ['Paid Social Analyst Brief export'],
+    ['Generated', dashboardData.generated_at || ''],
+    ['Period', w.label || ''],
+    ['Compare last', w.prior_label || ''],
+    ['Compare month', w.month_label || data.prior_month?.window?.label || ''],
+    ['Net revenue', filters.useNetRevenue ? 'yes' : 'no'],
+    [],
+    ['Metric', 'This', 'Last period', 'Vs last %'],
+  ];
+  const k = data.kpis || {};
+  const p = priorKpis(data);
+  const rows = [
+    ['Store orders', k.paid_orders, p.paid_orders],
+    ['Store revenue', storeRev(k), filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue],
+    ['Ad spend', k.total_ad_spend, p.total_ad_spend],
+    ['Blended MER', filters.useNetRevenue ? k.blended_mer_net : k.blended_mer, filters.useNetRevenue ? p.blended_mer_net : p.blended_mer],
+  ];
+  rows.forEach(r => {
+    const ch = pctChange(r[1], r[2]);
+    lines.push([r[0], r[1], r[2], ch.text]);
+  });
+  lines.push([]);
+  lines.push(['Channel', 'Orders', 'Last orders', 'Revenue', 'Last revenue', 'Spend', 'Last spend', 'ROAS', 'Last ROAS']);
+  (data.channels || []).forEach(c => {
+    lines.push([
+      c.name,
+      c.shopify_orders,
+      c.shopify_orders_last,
+      channelRev(c),
+      channelRevPrior(c, 'shopify_revenue_last'),
+      c.spend,
+      c.spend_last,
+      channelRoas(c),
+      channelRoas(c, 'last')
+    ]);
+  });
+  const csv = lines.map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `paid-social-brief-${w.start || 'export'}-${w.end || ''}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 function initFilters() {
@@ -871,27 +1125,68 @@ function initFilters() {
   if (saved) Object.assign(filters, JSON.parse(saved));
   document.getElementById('filter-view').value = filters.view;
   document.getElementById('filter-channel').value = filters.channel;
+  document.getElementById('filter-period').value = filters.periodMode === 'custom' ? 'custom' : String(filters.periodDays);
   document.getElementById('filter-compare').checked = filters.showCompare;
   document.getElementById('filter-target').checked = filters.showTarget;
+  document.getElementById('filter-month').checked = filters.showMonthCompare;
+  document.getElementById('filter-net').checked = filters.useNetRevenue;
+  document.getElementById('custom-range').style.display = filters.periodMode === 'custom' ? 'flex' : 'none';
+  if (filters.customStart) document.getElementById('custom-start').value = filters.customStart;
+  if (filters.customEnd) document.getElementById('custom-end').value = filters.customEnd;
+
+  const persist = () => sessionStorage.setItem('br-dashboard-filters', JSON.stringify(filters));
+
   ['filter-view', 'filter-channel'].forEach(id => {
     document.getElementById(id).addEventListener('change', e => {
       filters[id === 'filter-view' ? 'view' : 'channel'] = e.target.value;
-      sessionStorage.setItem('br-dashboard-filters', JSON.stringify(filters));
+      persist();
       applyFilters();
     });
   });
-  ['filter-compare', 'filter-target'].forEach(id => {
+  ['filter-compare', 'filter-target', 'filter-month', 'filter-net'].forEach(id => {
     document.getElementById(id).addEventListener('change', e => {
-      filters[id === 'filter-compare' ? 'showCompare' : 'showTarget'] = e.target.checked;
-      sessionStorage.setItem('br-dashboard-filters', JSON.stringify(filters));
-      applyFilters();
+      const map = {
+        'filter-compare': 'showCompare',
+        'filter-target': 'showTarget',
+        'filter-month': 'showMonthCompare',
+        'filter-net': 'useNetRevenue'
+      };
+      filters[map[id]] = e.target.checked;
+      persist();
+      if (dashboardData) render(dashboardData);
+      else applyFilters();
     });
   });
+  document.getElementById('filter-period').addEventListener('change', e => {
+    if (e.target.value === 'custom') {
+      filters.periodMode = 'custom';
+      document.getElementById('custom-range').style.display = 'flex';
+      if (!filters.customEnd) filters.customEnd = detroitYMD();
+      if (!filters.customStart) filters.customStart = addDays(filters.customEnd, -6);
+      document.getElementById('custom-start').value = filters.customStart;
+      document.getElementById('custom-end').value = filters.customEnd;
+    } else {
+      filters.periodMode = 'preset';
+      filters.periodDays = parseInt(e.target.value, 10);
+      document.getElementById('custom-range').style.display = 'none';
+    }
+    persist();
+    if (dashboardData) render(dashboardData);
+  });
+  document.getElementById('apply-custom').addEventListener('click', () => {
+    filters.customStart = document.getElementById('custom-start').value;
+    filters.customEnd = document.getElementById('custom-end').value;
+    filters.periodMode = 'custom';
+    persist();
+    if (dashboardData) render(dashboardData);
+  });
+  document.getElementById('export-csv').addEventListener('click', exportCsv);
 }
 
-function render(data) {
-  dashboardData = data;
-  setTimestamp(data);
+function render(raw) {
+  dashboardData = raw;
+  const data = activeData(raw);
+  setTimestamp(data, raw);
   const k = data.kpis || {};
   const q = qualitySummary(data.data_quality);
   document.getElementById('quality-badge').className = 'badge ' + q.cls;
