@@ -194,19 +194,111 @@ h2 {
   padding: 1rem 1.15rem;
 }
 .simple-lede li { margin: 0.45rem 0; }
+.hero-sales {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+.hero-sales .hero-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+  margin-bottom: 0.35rem;
+}
+.hero-sales .hero-val {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.hero-sales .hero-sub {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  margin-top: 0.4rem;
+}
+.shopify-total-block {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  color: #fff;
+  border-radius: 12px;
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 0.85rem;
+}
+.shopify-total-block h2 {
+  color: #fff;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+.shopify-total-block .section-hint {
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 0.85rem;
+}
+.shopify-total-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+.shopify-total-val {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.05;
+}
+.shopify-total-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.8;
+  margin-top: 0.2rem;
+}
+.shopify-total-side {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  text-align: right;
+}
+.shopify-total-side .col-prior { color: rgba(255,255,255,0.85); }
+@media (max-width: 560px) {
+  .shopify-total-grid { grid-template-columns: 1fr; }
+  .shopify-total-side { text-align: left; }
+}
+.ads-table-wrap { overflow-x: auto; margin-top: 0.5rem; }
+.ads-table-wrap + .ads-table-wrap { margin-top: 1rem; }
+.ads-table-wrap h3 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 0.45rem;
+}
 .headline-list {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
 }
 .headline-list li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--line);
-  font-size: 0.9rem;
-  line-height: 1.45;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  background: var(--card);
 }
-.headline-list li:last-child { border-bottom: none; }
+.headline-list li.bite-next {
+  border-style: dashed;
+  flex: 1 1 100%;
+  border-radius: 8px;
+  max-width: 100%;
+}
 .headline-list strong { font-weight: 700; }
+.headline-list .bite-call.good { color: var(--good); }
+.headline-list .bite-call.watch { color: var(--warn); }
+.headline-list .bite-call.pull_back { color: var(--bad); }
 .sales-dual {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1074,36 +1166,59 @@ function adAttributedOrders(data) {
   return (data.channels || []).reduce((s, c) => s + Number(c.shopify_orders || 0), 0);
 }
 
-function renderHeadlines(data) {
+function renderShopifyPeriod(data) {
   const k = data.kpis || {};
   const p = priorKpis(data);
+  const w = data.window || {};
+  const rev = storeRev(k);
+  const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
+  const revCh = pctChange(rev, revP);
+  const ordCh = pctChange(k.paid_orders, p.paid_orders);
+  return `
+    <section data-view="simple summary performance" class="shopify-total-block">
+      <h2>Shopify total · ${w.label || 'this period'}</h2>
+      <p class="section-hint">All paid orders in Shopify for these dates — direct, email, organic, and paid.</p>
+      <div class="shopify-total-grid">
+        <div>
+          <div class="shopify-total-val">${fmt(rev)}</div>
+          <div class="shopify-total-label">Total store sales</div>
+        </div>
+        <div class="shopify-total-side">
+          <div><strong>${k.paid_orders ?? '—'}</strong> orders · <span class="${ordCh.cls}">${trendPlain(k.paid_orders, p.paid_orders)}</span></div>
+          <div>AOV ${fmt(k.aov)}</div>
+          <div class="${revCh.cls}">${trendPlain(rev, revP)} vs ${w.prior_label || 'last period'}</div>
+        </div>
+      </div>
+    </section>`;
+}
+
+function renderHeadlines(data) {
   const ch = data.channels || [];
   const meta = ch.find(c => (c.name || '').includes('Meta'));
   const goog = ch.find(c => (c.name || '').includes('Google'));
   const pin = ch.find(c => (c.name || '').includes('Pinterest'));
-  const call = (c) => {
+  const bite = (label, c, extra) => {
     if (!c) return '';
-    if (c.status === 'good') return 'on track';
-    if (c.status === 'watch') return 'watch';
-    if (c.status === 'pull_back') return 'pull back';
-    return (c.status || '').replace('_', ' ');
+    const call = c.status || '';
+    const callText = call === 'good' ? 'on track' : call === 'watch' ? 'watch' : call === 'pull_back' ? 'pull back' : call.replace('_', ' ');
+    return `<li><strong>${label}</strong> · ${roas(channelRoas(c))} · <span class="bite-call ${call}">${callText}</span>${extra ? ` · ${extra}` : ''}</li>`;
   };
   const lines = [
-    `<strong>Store</strong> · ${fmt(k.paid_revenue)} · ${k.paid_orders} orders · ${trendPlain(k.paid_revenue, p.paid_revenue)}`,
-    meta ? `<strong>Meta</strong> · ${roas(channelRoas(meta))} ROAS · ${meta.shopify_orders} orders · ${call(meta)}` : '',
-    goog ? `<strong>Google</strong> · ${roas(channelRoas(goog))} ROAS · ${goog.shopify_orders} orders · ${call(goog)}` : '',
-    pin ? `<strong>Pinterest</strong> · ${pin.shopify_orders} orders · ${fmt(pin.spend)} spend · ${call(pin)}` : '',
+    bite('Meta', meta),
+    bite('Google', goog),
+    pin ? `<li><strong>Pinterest</strong> · ${pin.shopify_orders || 0} orders · <span class="bite-call ${pin.status || ''}">${pin.status === 'good' ? 'on track' : pin.status === 'watch' ? 'watch' : pin.status === 'pull_back' ? 'pull back' : (pin.status || '').replace('_', ' ')}</span></li>` : '',
   ].filter(Boolean);
   const todo = (data.strategy_todos || [])[0];
-  if (todo) lines.push(`<strong>Next</strong> · ${todo.action.replace(/ — .*/, '').slice(0, 80)}${todo.action.length > 80 ? '…' : ''}`);
-  return `<ul class="headline-list">${lines.map(l => `<li>${l}</li>`).join('')}</ul>`;
+  if (todo) {
+    const short = todo.action.replace(/ — .*/, '').slice(0, 48);
+    lines.push(`<li class="bite-next"><strong>Next</strong> · ${short}${todo.action.length > 48 ? '…' : ''}</li>`);
+  }
+  return `<ul class="headline-list">${lines.join('')}</ul>`;
 }
 
 function renderAtAGlance(data) {
   const k = data.kpis || {};
   const p = priorKpis(data);
-  const totalSales = Number(k.paid_revenue) || 0;
-  const totalSalesP = Number(p.paid_revenue) || 0;
   const adSales = adAttributedSales(data);
   const adSalesP = adAttributedSalesPrior(data);
   const adOrders = adAttributedOrders(data);
@@ -1112,7 +1227,6 @@ function renderAtAGlance(data) {
   const mer = adSales && k.total_ad_spend ? round2(adSales / k.total_ad_spend) : k.blended_mer;
   const merP = adSalesP && p.total_ad_spend ? round2(adSalesP / p.total_ad_spend) : p.blended_mer;
   const cards = [
-    ['Total sales', totalSales, totalSalesP, fmt, true],
     ['Sales from ads', adSales, adSalesP, fmt, true],
     ['After ad spend', afterAds, afterAdsP, fmt, true],
     ['Ad spend', k.total_ad_spend, p.total_ad_spend, fmt, false],
@@ -1120,7 +1234,7 @@ function renderAtAGlance(data) {
   ];
   return `
     <section data-view="simple summary performance">
-      <h2>The numbers</h2>
+      <h2>Ad economics</h2>
       <div class="glance-grid">
         ${cards.map(([name, cur, prev, fn, highlight]) => {
           const ch = pctChange(cur, prev);
@@ -1131,7 +1245,7 @@ function renderAtAGlance(data) {
           </div>`;
         }).join('')}
       </div>
-      <p class="profit-note">${k.paid_orders ?? '—'} store orders · ${adOrders} ad-tagged orders · After ad spend excludes returns, product cost, and overhead</p>
+      <p class="profit-note">${adOrders} ad-tagged orders of ${k.paid_orders ?? '—'} store orders · After ad spend excludes returns, product cost, and overhead</p>
     </section>`;
 }
 
@@ -1213,9 +1327,10 @@ function renderHealthStrip(data) {
 }
 
 function renderCampaignSnapshot(data) {
-  const camps = (data.campaign_status || []).slice(0, 8);
-  const ads = (data.meta_top_ads || []).slice(0, 3);
-  const paused = (data.creative?.fatiguing_or_paused || []).slice(0, 3);
+  const camps = data.campaign_status || [];
+  const ads = data.meta_top_ads || [];
+  const paused = data.creative?.fatiguing_or_paused || [];
+  const newTests = data.creative?.new_tests || [];
   const campRows = camps.map(c => {
     const slug = channelSlug(c.channel);
     return `<tr data-channel="${slug}">
@@ -1223,32 +1338,56 @@ function renderCampaignSnapshot(data) {
       <td><strong>${c.campaign}</strong></td>
       <td><span class="status-chip ${c.status}">${c.status}</span></td>
       <td>${fmt(c.spend_period)}</td>
-      <td style="font-size:0.78rem;color:var(--muted)">${c.next_milestone || c.key_metric || '—'}</td>
+      <td>${c.key_metric || '—'}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${c.next_milestone || '—'}</td>
     </tr>`;
   }).join('');
   const adRows = ads.map(a => `<tr data-channel="meta">
-    <td>Meta · ad</td>
+    <td>Meta</td>
+    <td>${a.campaign}</td>
     <td><strong>${a.ad}</strong></td>
-    <td>—</td>
     <td>${fmt(a.spend)}</td>
-    <td style="font-size:0.78rem">${a.purch} platform purch · ${roas(a.roas)}</td>
+    <td>${a.purch ?? '—'}</td>
+    <td><strong>${roas(a.roas)}</strong></td>
+    <td style="font-size:0.78rem;color:var(--muted)">Platform ROAS · verify Shopify UTM attach</td>
   </tr>`).join('');
   const pausedRows = paused.map(p => `<tr data-channel="meta">
-    <td>Meta · paused</td>
-    <td><strong>${p.name}</strong></td>
-    <td><span class="status-chip PAUSED">PAUSED</span></td>
+    <td>Meta</td>
     <td>—</td>
-    <td style="font-size:0.78rem">${p.action} · ${p.was}</td>
+    <td><strong>${p.name}</strong></td>
+    <td>—</td>
+    <td>—</td>
+    <td>—</td>
+    <td style="font-size:0.78rem">${p.action} · was: ${p.was}</td>
+  </tr>`).join('');
+  const testRows = newTests.map(t => `<tr data-channel="meta">
+    <td>Meta / Pin</td>
+    <td>Test</td>
+    <td><strong>${t.name}</strong></td>
+    <td>—</td>
+    <td>—</td>
+    <td>—</td>
+    <td style="font-size:0.78rem">${t.launched} · ${t.early}</td>
   </tr>`).join('');
   if (!campRows && !adRows) return '';
   return `
-    <section data-view="simple summary deep">
+    <section data-view="simple summary performance deep">
       <h2>Campaigns and ads</h2>
-      <p class="section-hint">Named items for quick agency decisions — updated on weekly refresh until live ad pull is wired.</p>
-      <table class="compact-table">
-        <thead><tr><th>Ch</th><th>Name</th><th>Status</th><th>Spend</th><th>Next / note</th></tr></thead>
-        <tbody>${campRows}${adRows}${pausedRows}</tbody>
-      </table>
+      <p class="section-hint">Named campaigns and ads with spend and platform ROAS. Shopify UTM ROAS is in By channel above.</p>
+      <div class="ads-table-wrap">
+        <h3>Campaigns</h3>
+        <table class="compact-table">
+          <thead><tr><th>Ch</th><th>Campaign</th><th>Status</th><th>Spend</th><th>Key metric</th><th>Next</th></tr></thead>
+          <tbody>${campRows || '<tr><td colspan="6">No campaigns</td></tr>'}</tbody>
+        </table>
+      </div>
+      <div class="ads-table-wrap">
+        <h3>Ads by name</h3>
+        <table class="compact-table">
+          <thead><tr><th>Ch</th><th>Campaign</th><th>Ad name</th><th>Spend</th><th>Platform purch</th><th>Platform ROAS</th><th>Note</th></tr></thead>
+          <tbody>${adRows}${pausedRows}${testRows || '<tr><td colspan="7">No ad-level data</td></tr>'}</tbody>
+        </table>
+      </div>
     </section>`;
 }
 
@@ -1685,6 +1824,7 @@ function render(raw) {
 
   document.getElementById('app').innerHTML = `
     ${renderHealthStrip(data)}
+    ${renderShopifyPeriod(data)}
     ${renderAtAGlance(data)}
 
     <section data-view="simple summary">
