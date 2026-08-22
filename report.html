@@ -397,6 +397,30 @@ h2 {
   border-top: 1px solid var(--line);
   line-height: 1.45;
 }
+.glance-stack { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.25rem; }
+.glance-row {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.95rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.15rem 0.75rem;
+  align-items: center;
+}
+.glance-title { font-weight: 700; font-size: 0.92rem; line-height: 1.25; }
+.glance-val { font-weight: 700; font-size: 0.92rem; text-align: right; white-space: nowrap; }
+.glance-sub {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+section h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.55rem;
+}
 .health-strip {
   display: flex;
   flex-wrap: wrap;
@@ -1436,12 +1460,14 @@ function renderSimpleChannels(data) {
 }
 
 function renderSimpleActions(data) {
-  const todos = (data.strategy_todos || []).slice(0, 5);
+  const todos = (data.strategy_todos || []).slice(0, 3);
   if (!todos.length) return '';
   return `
     <section data-view="simple actions">
-      <h2>To-do this week</h2>
-      <ul class="todo-wrap todo-list">${renderTodos(todos)}</ul>
+      <h2>To-do</h2>
+      <div class="glance-stack">
+        ${todos.map(t => glanceRow(shortText(t.action, 80), t.owner || '—', t.expected || '')).join('')}
+      </div>
     </section>`;
 }
 
@@ -1519,7 +1545,45 @@ function renderHealthStrip(data) {
     </div>`;
 }
 
-function renderCampaignSnapshot(data) {
+function glanceRow(title, value, sub, channel) {
+  return `<div class="glance-row"${channel ? ` data-channel="${channel}"` : ''}>
+    <div class="glance-title">${title}</div>
+    ${value ? `<div class="glance-val">${value}</div>` : ''}
+    ${sub ? `<div class="glance-sub">${sub}</div>` : ''}
+  </div>`;
+}
+
+function shortText(s, n = 72) {
+  const t = String(s || '');
+  return t.length > n ? t.slice(0, n) + '…' : t;
+}
+
+function renderCampaignGlance(data) {
+  const ads = data.meta_top_ads || [];
+  const camps = data.campaign_status || [];
+  if (!ads.length && !camps.length) return '';
+  const adCards = ads.map(a => glanceRow(
+    a.ad,
+    roas(a.roas),
+    fmt(a.spend) + ' · ' + (a.purch ?? '—') + ' purch · ' + a.campaign,
+    'meta'
+  )).join('');
+  const campCards = camps.map(c => glanceRow(
+    c.campaign,
+    c.status === 'ACTIVE' || c.status === 'RUNNING' ? fmt(c.spend_period) : c.status,
+    shortText(c.next_milestone || c.key_metric, 80),
+    channelSlug(c.channel)
+  )).join('');
+  return `
+    <section data-view="simple summary performance deep">
+      <h2>Ads</h2>
+      <div class="glance-stack">${adCards || glanceRow('No ad data', '', 'Run refresh with Blend wired')}</div>
+      <h2>Campaigns</h2>
+      <div class="glance-stack">${campCards}</div>
+    </section>`;
+}
+
+function renderCampaignTables(data) {
   const camps = data.campaign_status || [];
   const ads = data.meta_top_ads || [];
   const paused = data.creative?.fatiguing_or_paused || [];
@@ -1564,9 +1628,8 @@ function renderCampaignSnapshot(data) {
   </tr>`).join('');
   if (!campRows && !adRows) return '';
   return `
-    <section data-view="simple summary performance deep">
-      <h2>Campaigns and ads</h2>
-      <p class="section-hint">Named campaigns and ads with spend and platform ROAS. Shopify UTM ROAS is in By channel above.</p>
+    <section data-view="detailed deep">
+      <h2>Campaigns and ads · full table</h2>
       <div class="ads-table-wrap">
         <h3>Campaigns</h3>
         <table class="compact-table">
@@ -1654,9 +1717,11 @@ function renderDecisionsCompact(data) {
   return `
     <section data-view="simple actions">
       <h2>Decisions</h2>
-      ${lines.map(([tag, ch, text]) =>
-        `<div class="decision-row"><span class="decision-tag ${tag}">${tag}</span><span><strong>${ch}</strong> — ${text}</span></div>`
-      ).join('')}
+      <div class="glance-stack">
+        ${lines.slice(0, 4).map(([tag, ch, text]) =>
+          glanceRow(ch, tag, shortText(text, 70))
+        ).join('')}
+      </div>
     </section>`;
 }
 
@@ -2023,7 +2088,8 @@ function render(raw) {
     ${renderEasyIntro(data)}
 
     ${renderSimpleChannels(data)}
-    ${renderCampaignSnapshot(data)}
+    ${renderCampaignGlance(data)}
+    ${renderCampaignTables(data)}
     ${renderFlags(data)}
     ${renderBudgetStrip(data)}
     ${renderDailySpark(data)}
