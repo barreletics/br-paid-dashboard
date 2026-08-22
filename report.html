@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Paid Social Analyst Brief</title>
+<title>Paid Ads Weekly Read</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 <style>
@@ -175,14 +175,64 @@ details.key-details summary {
 }
 .kpi .val { font-size: 1.5rem; font-weight: 700; }
 .kpi .lbl { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.2rem; }
-section { margin-bottom: 1.75rem; }
+h1 { font-size: 1.5rem; font-weight: 700; }
 h2 {
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+  margin-bottom: 0.65rem;
+}
+.simple-lede {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem 1.15rem;
+}
+.simple-lede li { margin: 0.45rem 0; }
+.glance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.glance-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+}
+.glance-card .num { font-size: 1.75rem; font-weight: 700; line-height: 1.1; }
+.glance-card .name { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; }
+.glance-card .chg { font-size: 0.78rem; font-weight: 600; margin-top: 0.35rem; }
+.filter-advanced {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+}
+.filter-advanced summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 0.25rem 0;
+}
+.filter-advanced .adv-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  padding-top: 0.5rem;
+}
+section { margin-bottom: 1.75rem; }
+section h2.old-style {
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
-  margin-bottom: 0.75rem;
 }
 .grid-4 {
   display: grid;
@@ -438,9 +488,8 @@ footer {
 <body>
 <header>
   <div>
-    <h1>Paid Social Analyst Brief</h1>
+    <h1>Paid Ads Weekly Read</h1>
     <p class="sub" id="subtitle">Loading…</p>
-    <p class="sub" style="margin-top:0.15rem;font-size:0.78rem">Weekly read from your paid social analysts and strategists — Meta, Google, Pinterest</p>
   </div>
   <div id="quality-badge" class="badge">Checking data…</div>
 </header>
@@ -455,12 +504,22 @@ footer {
 </div>
 <div id="filter-bar" class="filter-bar" style="display:none">
   <div class="filter-group">
-    <span class="filter-label">Period</span>
+    <span class="filter-label">Dates</span>
     <select id="filter-period" aria-label="Report period">
-      <option value="7">Rolling 7 days</option>
-      <option value="14">Rolling 14 days</option>
-      <option value="30">Rolling 30 days</option>
-      <option value="custom">Custom range</option>
+      <option value="7">Last 7 days</option>
+      <option value="14">Last 14 days</option>
+      <option value="30">Last 30 days</option>
+      <option value="custom">Pick dates…</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Layout</span>
+    <select id="filter-view" aria-label="Layout">
+      <option value="simple">Easy read</option>
+      <option value="all">All details</option>
+      <option value="performance">Numbers only</option>
+      <option value="actions">Actions only</option>
+      <option value="deep">Campaigns only</option>
     </select>
   </div>
   <div id="custom-range" class="filter-group custom-range">
@@ -469,45 +528,29 @@ footer {
     <input type="date" id="custom-end" aria-label="End date">
     <button type="button" class="export-btn" id="apply-custom">Apply</button>
   </div>
-  <div class="filter-group">
-    <span class="filter-label">View</span>
-    <select id="filter-view" aria-label="Section view">
-      <option value="all">All sections</option>
-      <option value="summary">Summary and compare</option>
-      <option value="performance">Performance and pacing</option>
-      <option value="actions">Actions and priorities</option>
-      <option value="deep">Campaigns and deep dive</option>
-    </select>
-  </div>
-  <div class="filter-group">
-    <span class="filter-label">Channel</span>
-    <select id="filter-channel" aria-label="Channel filter">
-      <option value="all">All channels</option>
-      <option value="meta">Meta only</option>
-      <option value="google">Google only</option>
-      <option value="pinterest">Pinterest only</option>
-    </select>
-  </div>
-  <div class="filter-group">
-    <label><input type="checkbox" id="filter-month"> vs same period last month (~4 wks)</label>
-  </div>
-  <div class="filter-group">
-    <label><input type="checkbox" id="filter-net"> Net revenue (after returns)</label>
-  </div>
-  <div class="filter-group">
-    <label><input type="checkbox" id="filter-compare" checked> Compare vs last period</label>
-  </div>
-  <div class="filter-group">
-    <label><input type="checkbox" id="filter-target" checked> Show targets</label>
-  </div>
-  <div class="filter-group">
-    <button type="button" class="export-btn" id="export-csv">Export CSV</button>
-  </div>
+  <details class="filter-advanced">
+    <summary>More options</summary>
+    <div class="adv-inner">
+      <div class="filter-group">
+        <span class="filter-label">Channel</span>
+        <select id="filter-channel" aria-label="Channel filter">
+          <option value="all">All</option>
+          <option value="meta">Meta</option>
+          <option value="google">Google</option>
+          <option value="pinterest">Pinterest</option>
+        </select>
+      </div>
+      <div class="filter-group"><label><input type="checkbox" id="filter-compare" checked> vs last period</label></div>
+      <div class="filter-group"><label><input type="checkbox" id="filter-month"> vs ~4 weeks ago</label></div>
+      <div class="filter-group"><label><input type="checkbox" id="filter-net"> Net after returns</label></div>
+      <div class="filter-group"><label><input type="checkbox" id="filter-target"> Show targets</label></div>
+      <div class="filter-group"><button type="button" class="export-btn" id="export-csv">Export CSV</button></div>
+    </div>
+  </details>
 </div>
 <div id="app"></div>
 <footer>
-  Prepared for the paid social team · ROAS decisions use <strong>Shopify UTM revenue ÷ ad spend</strong> only.
-  Refresh pulls the latest saved data file · scheduled updates 2× daily when automation is live.
+  Shopify orders = truth for ROAS · Numbers refresh when data is pulled · use <strong>All details</strong> for the full analyst view.
 </footer>
 <script>
 const DATA_URL = 'data/latest.json';
@@ -801,9 +844,9 @@ function sectionHint(text) {
 
 const filters = {
   channel: 'all',
-  view: 'all',
+  view: 'simple',
   showCompare: true,
-  showTarget: true,
+  showTarget: false,
   showMonthCompare: false,
   useNetRevenue: false,
   periodDays: 7,
@@ -909,6 +952,83 @@ function priorKpis(data) {
   };
 }
 
+function trendPlain(cur, prev) {
+  const ch = pctChange(cur, prev);
+  if (ch.text === '—') return '—';
+  if (ch.cls === 'pct-up') return 'Up ' + ch.text + ' vs last period';
+  if (ch.cls === 'pct-down') return 'Down ' + ch.text.replace('-', '') + ' vs last period';
+  return 'About flat vs last period';
+}
+
+function renderAtAGlance(data) {
+  const k = data.kpis || {};
+  const p = priorKpis(data);
+  const rev = storeRev(k);
+  const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
+  const mer = filters.useNetRevenue ? (k.blended_mer_net ?? k.blended_mer) : k.blended_mer;
+  const merP = filters.useNetRevenue ? (p.blended_mer_net ?? p.blended_mer) : p.blended_mer;
+  const cards = [
+    ['Orders', k.paid_orders, p.paid_orders, null],
+    ['Revenue', rev, revP, fmt],
+    ['Ad spend', k.total_ad_spend, p.total_ad_spend, fmt],
+    ['Return on spend', mer, merP, roas],
+  ];
+  return `
+    <section data-view="simple summary performance">
+      <h2>The numbers</h2>
+      <div class="glance-grid">
+        ${cards.map(([name, cur, prev, fn]) => {
+          const ch = pctChange(cur, prev);
+          return `<div class="glance-card">
+            <div class="num">${fn ? fn(cur) : cur}</div>
+            <div class="name">${name}</div>
+            <div class="chg col-prior ${ch.cls}">${trendPlain(cur, prev)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </section>`;
+}
+
+function renderSimpleChannels(data) {
+  const rows = (data.channels || []).map(c => {
+    const slug = channelSlug(c.name);
+    const roasNow = channelRoas(c);
+    const roasCh = pctChange(roasNow, channelRoas(c, 'last'));
+    const status = (c.status || '').replace('_', ' ');
+    const statusLabel = status === 'good' ? 'On track' : status === 'watch' ? 'Watch' : status === 'pull back' ? 'Pull back' : status;
+    return `<tr data-channel="${slug}">
+      <td><strong>${c.name.replace('Google PMax', 'Google')}</strong></td>
+      <td>${fmt(c.spend)}</td>
+      <td>${c.shopify_orders}</td>
+      <td><strong>${roas(roasNow)}</strong></td>
+      <td class="col-prior ${roasCh.cls}">${trendPlain(roasNow, channelRoas(c, 'last'))}</td>
+      <td class="status ${c.status}">${statusLabel}</td>
+    </tr>`;
+  }).join('');
+  return `
+    <section data-view="simple summary performance">
+      <h2>By channel</h2>
+      <p class="section-hint">ROAS uses Shopify-attributed orders only (not what Meta or Pinterest claim).</p>
+      <table>
+        <thead><tr>
+          <th>Channel</th><th>Spend</th><th>Orders</th><th>ROAS</th>
+          <th class="col-prior">vs last</th><th>Call</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan="6">No data</td></tr>'}</tbody>
+      </table>
+    </section>`;
+}
+
+function renderSimpleActions(data) {
+  const todos = (data.strategy_todos || []).slice(0, 5);
+  if (!todos.length) return '';
+  return `
+    <section data-view="simple actions">
+      <h2>To-do this week</h2>
+      <ul class="todo-wrap todo-list">${renderTodos(todos)}</ul>
+    </section>`;
+}
+
 function wowMetric(label, cur, prev, fmtFn, monthVal) {
   const ch = pctChange(cur, prev);
   const mch = monthVal != null ? pctChange(cur, monthVal) : null;
@@ -938,9 +1058,9 @@ function renderWowCompare(data) {
   const merM = useNet ? (m.blended_mer_net ?? m.blended_mer) : m.blended_mer;
   const monthOn = filters.showMonthCompare;
   return `
-    <section data-view="summary performance">
+    <section data-view="detailed performance">
       <div class="compare-head">
-        <h2 style="margin:0">This period vs last period${monthOn ? ' vs ~4 weeks ago' : ''}</h2>
+        <h2 class="old-style" style="margin:0">This period vs last period${monthOn ? ' vs ~4 weeks ago' : ''}</h2>
         <div>
           <span class="period-tag">This · ${w.label || '—'}</span>
           <span class="period-tag prior col-prior">Last · ${w.prior_label || data.prior_period?.window?.label || '—'}</span>
@@ -993,8 +1113,8 @@ function renderChannelWow(data) {
   }).join('');
   const cols = monthOn ? 17 : 13;
   return `
-    <section data-view="summary performance">
-      <h2>Channel compare · this vs last${monthOn ? ' vs ~4 weeks ago' : ''}</h2>
+    <section data-view="detailed performance">
+      <h2 class="old-style">Channel compare · this vs last${monthOn ? ' vs ~4 weeks ago' : ''}</h2>
       ${sectionHint('Paid channel scorecard. Toggle net revenue, month compare, and column visibility with filters above.')}
       <table>
         <thead><tr>
@@ -1032,8 +1152,8 @@ function renderHistoryTrend(data) {
     return `<div class="bar-row"><span class="bar-label">${h.label.replace(', 2026', '')}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-val">${(h.mer || 0).toFixed(1)}</span></div>`;
   }).join('');
   return `
-    <section data-view="summary performance">
-      <h2>Historical trend</h2>
+    <section data-view="detailed performance">
+      <h2 class="old-style">Historical trend</h2>
       ${sectionHint('Rolling snapshots build over time — each refresh appends the current window. Use for direction, not exact audit.')}
       <div class="trend-grid">
         <div class="trend-panel"><h3>Store orders</h3>${ordBars}</div>
@@ -1048,7 +1168,10 @@ function applyFilters() {
   const view = filters.view;
   document.querySelectorAll('[data-view]').forEach(el => {
     const views = (el.dataset.view || '').split(/\s+/);
-    const viewOk = view === 'all' || views.includes(view);
+    let viewOk;
+    if (view === 'all') viewOk = true;
+    else if (view === 'simple') viewOk = views.includes('simple');
+    else viewOk = views.includes(view);
     const chAttr = el.dataset.channel;
     const chOk = !chAttr || ch === 'all' || chAttr === ch;
     el.style.display = (viewOk && chOk) ? '' : 'none';
@@ -1238,64 +1361,53 @@ function render(raw) {
   const f = data.ga4_funnel || {};
 
   document.getElementById('app').innerHTML = `
-    <div class="analyst-guide" data-view="summary">
-      <h2>Start here — how to read this brief</h2>
-      <p>This dashboard is written like a standing analyst and strategist memo for the team. Each section tells you what happened, why it matters, and what to consider doing next — without needing to dig through Ads Manager first.</p>
-      <div class="guide-paths">
-        <div><strong>5 minutes</strong> Executive summary → Strategy to-dos → Recommended actions</div>
-        <div><strong>15 minutes</strong> Add KPI vs target → Channel scorecard → Anomalies and pacing</div>
-        <div><strong>Deep dive</strong> Campaign status, creative tests, agency log, GA4 funnel</div>
-      </div>
-      <p class="guide-truth"><strong>Ground rule:</strong> Shopify UTM orders = truth for ROAS and CPA. Platform purchase counts (especially Meta) can overclaim — we show both so you can decide with confidence.</p>
-    </div>
+    <section data-view="simple summary">
+      <h2>What happened</h2>
+      <div class="simple-lede">${renderExec(data.executive_summary)}</div>
+    </section>
 
-    <details class="key-details" data-view="summary">
-      <summary>Section key and glossary (what everything means)</summary>
+    ${renderAtAGlance(data)}
+    ${renderSimpleChannels(data)}
+    ${renderSimpleActions(data)}
+
+    <details data-view="detailed summary" class="key-details">
+      <summary>Help — what the sections mean</summary>
       <div class="glossary-row">${renderGlossary(data.glossary)}</div>
       <div class="key-grid">${renderSectionKeys()}</div>
+      <p class="section-hint" style="margin-top:0.75rem">Shopify UTM orders = truth for ROAS. Platform purchase counts can overclaim (especially Meta).</p>
     </details>
-
-    <section data-view="summary actions">
-      <h2>Strategy and to-dos this week</h2>
-      ${sectionHint('Suggested changes and considerations — treat as your action list. Open = do it; Watch = monitor before acting.')}
-      <ul class="todo-wrap todo-list">${renderTodos(data.strategy_todos)}</ul>
-    </section>
-
-    <section data-view="summary">
-      <h2>Executive summary</h2>
-      ${sectionHint('Short narrative for leadership — wins, concerns, and forward note.')}
-      <div class="exec-box">${renderExec(data.executive_summary)}</div>
-    </section>
 
     ${renderWowCompare(data)}
     ${renderChannelWow(data)}
     ${renderHistoryTrend(data)}
 
-    <section data-view="performance">
-      <h2>KPI vs target · this period vs last</h2>
-      ${sectionHint('Each KPI shows this period, last period, weekly target, and week-over-week (WoW) change. Use filters to hide last period or targets.')}
+    <section data-view="detailed summary actions">
+      <h2 class="old-style">Strategy and to-dos (full list)</h2>
+      <ul class="todo-wrap todo-list">${renderTodos(data.strategy_todos)}</ul>
+    </section>
+
+    <section data-view="detailed performance">
+      <h2 class="old-style">KPI vs target</h2>
       <table>
         <thead><tr><th>KPI</th><th>This period</th><th class="col-prior">Last period</th><th class="col-target">Target</th><th class="col-prior">WoW</th><th>Status</th></tr></thead>
         <tbody>${renderKpiTarget(data.kpi_vs_target)}</tbody>
       </table>
     </section>
 
-    <section data-view="actions">
-      <h2>Recommended actions</h2>
-      ${sectionHint('Spend more = scale · Pull back = reduce or pause · Create = new builds · Watch = check again next week.')}
+    <section data-view="detailed actions">
+      <h2 class="old-style">Recommended actions</h2>
       <div class="grid-4">${renderActions(data.actions)}</div>
     </section>
 
-    <section data-view="actions">
-      <h2>Next week priorities</h2>
-      ${sectionHint('Top 3 ranked priorities with owner, due date, and expected outcome.')}
+    <section data-view="detailed actions">
+      <h2 class="old-style">Next week priorities</h2>
       <table>
         <thead><tr><th>#</th><th>Action</th><th>Owner</th><th>Due</th><th>Expected outcome</th></tr></thead>
         <tbody>${priRows || '<tr><td colspan="5">None set</td></tr>'}</tbody>
       </table>
     </section>
 
-    <div class="two-col" data-view="performance">
+    <div class="two-col" data-view="detailed performance">
       <section>
         <h2>Budget pacing · MTD</h2>
         ${sectionHint('MTD = Month To Date (spend from the 1st of this month through today). Used % = MTD ÷ monthly plan.')}
@@ -1314,7 +1426,7 @@ function render(raw) {
       </section>
     </div>
 
-    <section data-view="deep">
+    <section data-view="detailed deep">
       <h2>Anomalies · cause and response</h2>
       ${sectionHint('Flags when a metric moved more than ~15% vs the prior period — what happened and what to do.')}
       <table>
@@ -1323,7 +1435,7 @@ function render(raw) {
       </table>
     </section>
 
-    <section data-view="deep">
+    <section data-view="detailed deep">
       <h2>Campaign status</h2>
       <table>
         <thead><tr><th>Channel</th><th>Campaign</th><th>Status</th><th>Spend</th><th>Key metric</th><th>Next milestone</th></tr></thead>
@@ -1331,7 +1443,7 @@ function render(raw) {
       </table>
     </section>
 
-    <section data-view="deep" data-channel="meta">
+    <section data-view="detailed deep" data-channel="meta">
       <h2>Creative performance</h2>
       <div class="two-col">
         <div class="action-card spend">
@@ -1349,7 +1461,7 @@ function render(raw) {
       <ul>${(cr.new_tests || []).map(x => `<li><strong>${x.name}</strong> · ${x.launched} — ${x.early}</li>`).join('') || '<li>None</li>'}</ul>
     </section>
 
-    <section data-view="deep">
+    <section data-view="detailed deep">
       <h2>Agency activity log</h2>
       <table>
         <thead><tr><th>Date</th><th>Owner</th><th>Change</th></tr></thead>
@@ -1357,7 +1469,7 @@ function render(raw) {
       </table>
     </section>
 
-    <section data-view="deep">
+    <section data-view="detailed deep">
       <h2>Challenges and roadblocks</h2>
       <table>
         <thead><tr><th>Issue</th><th>Impact</th><th>Plan</th></tr></thead>
@@ -1365,7 +1477,7 @@ function render(raw) {
       </table>
     </section>
 
-    <div class="two-col" data-view="performance deep">
+    <div class="two-col" data-view="detailed deep">
       <section>
         <h2>Daily paid orders (Shopify)</h2>
         <div class="bar-chart">${renderDaily(data.daily_orders)}</div>
@@ -1379,7 +1491,7 @@ function render(raw) {
       </section>
     </div>
 
-    <section data-view="deep" data-channel="meta">
+    <section data-view="detailed deep" data-channel="meta">
       <h2>Meta top ads (platform)</h2>
       <table>
         <thead><tr><th>Campaign</th><th>Ad</th><th>Spend</th><th>Purch</th><th>ROAS</th></tr></thead>
@@ -1387,7 +1499,7 @@ function render(raw) {
       </table>
     </section>
 
-    <section data-view="deep" data-channel="meta">
+    <section data-view="detailed deep" data-channel="meta">
       <h2>GA4 Paid Social funnel (direction only)</h2>
       <table>
         <tbody>
@@ -1401,8 +1513,8 @@ function render(raw) {
       <p class="sub" style="margin-top:0.5rem">${f.note || ''}</p>
     </section>
 
-    <section data-view="summary">
-      <h2>Data confidence</h2>
+    <section data-view="detailed">
+      <h2 class="old-style">Data confidence</h2>
       <div class="quality">${renderQuality(data.data_quality)}</div>
     </section>
   `;
