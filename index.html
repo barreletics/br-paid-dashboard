@@ -221,19 +221,21 @@ h2 {
   margin-top: 0.4rem;
 }
 .shopify-total-block {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-  color: #fff;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
   border-radius: 12px;
   padding: 1.15rem 1.25rem;
   margin-bottom: 0.85rem;
 }
 .shopify-total-block h2 {
-  color: #fff;
+  color: var(--text);
   font-size: 0.95rem;
   margin-bottom: 0.25rem;
 }
 .shopify-total-block .section-hint {
-  color: rgba(255,255,255,0.75);
+  color: var(--muted);
   margin-bottom: 0.85rem;
 }
 .shopify-total-grid {
@@ -258,8 +260,9 @@ h2 {
   font-size: 0.88rem;
   line-height: 1.65;
   text-align: right;
+  color: var(--muted);
 }
-.shopify-total-side .col-prior { color: rgba(255,255,255,0.85); }
+.shopify-total-side strong { color: var(--text); }
 @media (max-width: 560px) {
   .shopify-total-grid { grid-template-columns: 1fr; }
   .shopify-total-side { text-align: left; }
