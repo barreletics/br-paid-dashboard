@@ -60,6 +60,17 @@ header {
 .timestamp-live { color: var(--muted); }
 .timestamp-live.fresh { color: var(--good); }
 .timestamp-live.stale { color: var(--warn); }
+.window-banner {
+  width: 100%;
+  background: var(--warn-bg);
+  border: 1px solid #fcd34d;
+  color: var(--warn);
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+}
+.window-banner strong { color: var(--text); }
 .refresh-btn {
   font-family: "DM Sans", system-ui, sans-serif;
   font-size: 0.75rem;
@@ -332,6 +343,7 @@ footer {
   <div id="quality-badge" class="badge">Checking data…</div>
 </header>
 <div id="error" class="error" style="display:none"></div>
+<div id="window-banner" class="window-banner" style="display:none"></div>
 <div id="timestamp-bar" class="timestamp-bar" style="display:none">
   <span>Data as of <strong id="data-as-of">—</strong> · Period <strong id="data-period">—</strong></span>
   <span style="display:flex;align-items:center;gap:0.65rem">
@@ -346,6 +358,55 @@ footer {
 </footer>
 <script>
 const DATA_URL = 'data/latest.json';
+const CONFIG_URL = 'config.json';
+let reportConfig = { report_window_days: 7, window_ends: 'today' };
+
+function detroitYMD(d = new Date()) {
+  return d.toLocaleDateString('en-CA', { timeZone: 'America/Detroit' });
+}
+
+function addDays(isoDate, n) {
+  const d = new Date(isoDate + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function formatWindowLabel(start, end) {
+  const s = new Date(start + 'T12:00:00');
+  const e = new Date(end + 'T12:00:00');
+  const sm = s.toLocaleString('en-US', { month: 'short', timeZone: 'America/Detroit' });
+  const em = e.toLocaleString('en-US', { month: 'short', timeZone: 'America/Detroit' });
+  const sy = s.getFullYear();
+  const ey = e.getFullYear();
+  if (sy === ey && sm === em) return `${sm} ${s.getDate()}–${e.getDate()}, ${ey}`;
+  if (sy === ey) return `${sm} ${s.getDate()} – ${em} ${e.getDate()}, ${ey}`;
+  return `${sm} ${s.getDate()}, ${sy} – ${em} ${e.getDate()}, ${ey}`;
+}
+
+function computeRollingWindow(cfg) {
+  const days = cfg.report_window_days || 7;
+  const through = cfg.window_ends || 'today';
+  let end = detroitYMD();
+  if (through === 'yesterday') end = addDays(end, -1);
+  const start = addDays(end, -(days - 1));
+  const priorEnd = addDays(start, -1);
+  const priorStart = addDays(priorEnd, -(days - 1));
+  return {
+    start,
+    end,
+    days,
+    through,
+    label: formatWindowLabel(start, end),
+    prior_start: priorStart,
+    prior_end: priorEnd,
+    prior_label: formatWindowLabel(priorStart, priorEnd),
+    mode: 'rolling'
+  };
+}
+
+function expectedWindow() {
+  return computeRollingWindow(reportConfig);
+}
 
 function refreshData() {
   const btn = document.getElementById('refresh-btn');
@@ -475,18 +536,38 @@ function setTimestamp(data) {
   const asOf = document.getElementById('data-as-of');
   const period = document.getElementById('data-period');
   const status = document.getElementById('refresh-status');
+  const banner = document.getElementById('window-banner');
+  const expected = expectedWindow();
   bar.style.display = 'flex';
   asOf.textContent = formatEdt(data.generated_at);
-  period.textContent = data.window?.label || '—';
-  const hrs = ageHours(data.generated_at);
-  if (hrs < 8) {
-    status.textContent = 'Fresh · auto-refresh every 30 min when hosted';
-    status.className = 'timestamp-live fresh';
-  } else if (hrs < 24) {
-    status.textContent = `${Math.round(hrs)}h old · next scheduled pull pending`;
-    status.className = 'timestamp-live';
+  period.textContent = expected.label + ' (rolling ' + expected.days + 'd)';
+  document.getElementById('subtitle').textContent =
+    expected.label + ' vs ' + expected.prior_label;
+
+  const dataEnd = data.window?.end;
+  const dataStart = data.window?.start;
+  const inSync = dataStart === expected.start && dataEnd === expected.end;
+  if (!inSync && data.window?.label) {
+    banner.style.display = 'block';
+    banner.innerHTML =
+      '<strong>Data refresh pending.</strong> Numbers below are for ' + (data.window.label || (dataStart + ' – ' + dataEnd)) +
+      '. Current rolling window is <strong>' + expected.label + '</strong> — scheduled pull will catch up.';
   } else {
-    status.textContent = `${Math.round(hrs)}h old · stale — run weekly pull`;
+    banner.style.display = 'none';
+  }
+
+  const hrs = ageHours(data.generated_at);
+  if (inSync && hrs < 8) {
+    status.textContent = 'Fresh · window rolls daily · auto-refresh 30 min';
+    status.className = 'timestamp-live fresh';
+  } else if (inSync && hrs < 24) {
+    status.textContent = Math.round(hrs) + 'h old · rolling window ' + expected.label;
+    status.className = 'timestamp-live';
+  } else if (!inSync) {
+    status.textContent = 'Window moved — run data refresh for ' + expected.label;
+    status.className = 'timestamp-live stale';
+  } else {
+    status.textContent = Math.round(hrs) + 'h old · stale — run refresh';
     status.className = 'timestamp-live stale';
   }
 }
@@ -538,8 +619,6 @@ function render(data) {
   const q = qualitySummary(data.data_quality);
   document.getElementById('quality-badge').className = 'badge ' + q.cls;
   document.getElementById('quality-badge').textContent = q.text;
-  document.getElementById('subtitle').textContent =
-    `${data.window.label} vs ${data.window.prior_label || 'prior period'}`;
 
   const channelRows = (data.channels || []).map(c => {
     const roasCh = pctChange(c.shopify_roas, c.shopify_roas_last);
@@ -788,14 +867,27 @@ function render(data) {
   `;
 }
 
-fetch(DATA_URL + '?t=' + Date.now())
-  .then(r => { if (!r.ok) throw new Error('Could not load ' + DATA_URL); return r.json(); })
-  .then(render)
-  .catch(err => {
-    document.getElementById('error').style.display = 'block';
-    document.getElementById('error').textContent =
-      err.message + ' — Open report.html or run: python3 -m http.server 8765 in dashboard folder';
-  });
+function boot() {
+  const expected = expectedWindow();
+  document.getElementById('subtitle').textContent =
+    expected.label + ' vs ' + expected.prior_label;
+  document.getElementById('timestamp-bar').style.display = 'flex';
+  document.getElementById('data-period').textContent = expected.label + ' (rolling ' + expected.days + 'd)';
+
+  fetch(DATA_URL + '?t=' + Date.now())
+    .then(r => { if (!r.ok) throw new Error('Could not load ' + DATA_URL); return r.json(); })
+    .then(render)
+    .catch(err => {
+      document.getElementById('error').style.display = 'block';
+      document.getElementById('error').textContent =
+        err.message + ' — Open report.html or run: python3 -m http.server 8765 in dashboard folder';
+    });
+}
+
+fetch(CONFIG_URL + '?t=' + Date.now())
+  .then(r => r.ok ? r.json() : null)
+  .then(cfg => { if (cfg) reportConfig = { ...reportConfig, ...cfg }; boot(); })
+  .catch(() => boot());
 
 // Live feed: refetch JSON every 30 minutes when served over http(s)
 setInterval(() => {
