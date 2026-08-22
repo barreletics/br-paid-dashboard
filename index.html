@@ -350,45 +350,67 @@ h2 {
 .glance-card .name { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; }
 .glance-card .chg { font-size: 0.78rem; font-weight: 600; margin-top: 0.35rem; }
 .easy-intro { margin-bottom: 1.5rem; }
-.week-hero {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 1.25rem 1.35rem;
+.stat-period {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.65rem;
+}
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 0.6rem;
   margin-bottom: 0.75rem;
 }
-.week-hero.down { border-left: 4px solid #9ca3af; }
-.week-hero.up { border-left: 4px solid var(--good); }
-.week-hero-top {
+.stat-card {
+  background: #111;
+  color: #fff;
+  border-radius: 12px;
+  padding: 1rem 0.85rem;
+  text-align: center;
+}
+.stat-card.hero {
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.65rem 1rem;
-  margin-bottom: 0.35rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  text-align: left;
+  padding: 1.2rem 1.35rem;
 }
-.week-pct { font-size: 1.75rem; font-weight: 700; line-height: 1; }
-.week-amt { font-size: 1.75rem; font-weight: 700; line-height: 1; }
-.week-ord { font-size: 1rem; color: var(--muted); font-weight: 600; }
-.week-meta { font-size: 0.88rem; color: var(--muted); }
-.week-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
-  font-size: 0.9rem;
-  color: var(--text);
-  margin-bottom: 0.85rem;
-  padding: 0 0.15rem;
+.stat-card.hero .stat-pct { font-size: 3rem; }
+.stat-card.hero .stat-val { font-size: 1.65rem; }
+.stat-card.hero .stat-lbl { font-size: 0.78rem; }
+.stat-pct {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
-.week-stats span { white-space: nowrap; }
-.week-lines {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: 0.92rem;
-  line-height: 1.65;
+.stat-card.up .stat-pct { color: #4ade80; }
+.stat-card.down .stat-pct { color: #f87171; }
+.stat-card.flat .stat-pct { color: #d1d5db; }
+.stat-val {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 0.35rem;
+  line-height: 1.15;
 }
-.week-lines li { padding: 0.2rem 0; }
-.week-lines strong { font-weight: 700; }
+.stat-lbl {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(255,255,255,0.55);
+  margin-top: 0.25rem;
+}
+.stat-leak {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.45;
+  padding: 0.65rem 0.15rem 0;
+}
+.stat-leak strong { color: var(--text); font-weight: 600; }
 .week-leak {
   font-size: 0.88rem;
   color: var(--muted);
@@ -399,21 +421,22 @@ h2 {
 }
 .glance-stack { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.25rem; }
 .glance-row {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0.7rem 0.95rem;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.15rem 0.75rem;
   align-items: center;
 }
-.glance-title { font-weight: 700; font-size: 0.92rem; line-height: 1.25; }
-.glance-val { font-weight: 700; font-size: 0.92rem; text-align: right; white-space: nowrap; }
+.glance-title { font-weight: 700; font-size: 0.92rem; line-height: 1.25; color: #fff; }
+.glance-val { font-weight: 700; font-size: 0.95rem; text-align: right; white-space: nowrap; color: #4ade80; }
 .glance-sub {
   grid-column: 1 / -1;
-  font-size: 0.8rem;
-  color: var(--muted);
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.55);
   line-height: 1.35;
 }
 section h2 {
@@ -1297,16 +1320,37 @@ function leakSummary(data) {
   return parts.slice(0, 2).join(' · ');
 }
 
-function platformLine(c) {
+function statCard(label, cur, prev, fmtFn, opts = {}) {
+  const arr = trendArrow(cur, prev);
+  const val = fmtFn ? fmtFn(cur) : cur;
+  const hero = opts.hero ? ' hero' : '';
+  const ch = opts.channel ? ` data-channel="${opts.channel}"` : '';
+  if (opts.hero) {
+    return `<div class="stat-card ${arr.cls}${hero}"${ch}>
+      <div class="stat-pct">${arr.pct === '—' ? '→' : arr.arrow + ' ' + arr.pct}</div>
+      <div>
+        <div class="stat-val">${val}</div>
+        <div class="stat-lbl">${label}</div>
+      </div>
+    </div>`;
+  }
+  return `<div class="stat-card ${arr.cls}${hero}"${ch}>
+    <div class="stat-pct">${arr.pct === '—' ? '→' : arr.arrow + ' ' + arr.pct}</div>
+    <div class="stat-val">${val}</div>
+    <div class="stat-lbl">${label}</div>
+  </div>`;
+}
+
+function platformStatCard(c) {
   const label = channelLabel(c.name);
   const roasNow = channelRoas(c);
-  const call = c.status === 'good' ? 'on track' : c.status === 'watch' ? 'watch' : c.status === 'pull_back' ? 'pull back' : '';
   const ordCh = pctChange(c.shopify_orders, c.shopify_orders_last);
   const arr = trendArrow(c.shopify_orders, c.shopify_orders_last);
-  const tail = Number(c.shopify_orders) === 0 && c.spend
-    ? fmt(c.spend) + ' · 0 orders'
-    : arr.arrow + ' ' + ordCh.text + ' orders';
-  return `<li data-channel="${channelSlug(c.name)}"><strong>${label}</strong> ${roas(roasNow)} · ${call} · ${tail}</li>`;
+  return `<div class="stat-card ${arr.cls}" data-channel="${channelSlug(c.name)}">
+    <div class="stat-pct">${arr.pct === '—' ? '→' : arr.arrow + ' ' + arr.pct}</div>
+    <div class="stat-val">${roas(roasNow)}</div>
+    <div class="stat-lbl">${label} · ${c.shopify_orders} orders</div>
+  </div>`;
 }
 
 function renderEasyIntro(data) {
@@ -1315,30 +1359,23 @@ function renderEasyIntro(data) {
   const w = data.window || {};
   const rev = storeRev(k);
   const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
-  const revTrend = trendArrow(rev, revP);
   const adSales = adAttributedSales(data);
+  const adSalesP = adAttributedSalesPrior(data);
   const mer = adSales && k.total_ad_spend ? round2(adSales / k.total_ad_spend) : k.blended_mer;
-  const heroCls = revTrend.cls === 'flat' ? trendArrow(k.paid_orders, p.paid_orders).cls : revTrend.cls;
-  const heroPct = revTrend.pct !== '—' ? revTrend.arrow + ' ' + revTrend.pct : '→';
+  const merP = adSalesP && p.total_ad_spend ? round2(adSalesP / p.total_ad_spend) : p.blended_mer;
   const leak = leakSummary(data);
-  const lines = (data.channels || []).map(platformLine).join('');
+  const platforms = (data.channels || []).map(platformStatCard).join('');
   return `
     <section class="easy-intro" data-view="simple summary performance">
-      <div class="week-hero ${heroCls}">
-        <div class="week-hero-top">
-          <span class="week-pct">${heroPct}</span>
-          <span class="week-amt">${fmt(rev)}</span>
-          <span class="week-ord">${k.paid_orders ?? '—'} orders</span>
-        </div>
-        <div class="week-meta">${w.label || 'This period'} · was ${fmt(revP)} last week</div>
+      <p class="stat-period">${w.label || 'This period'} · vs ${w.prior_label || 'last period'}</p>
+      <div class="stat-grid">
+        ${statCard('Total store sales', rev, revP, fmt, { hero: true })}
+        ${statCard('Orders', k.paid_orders, p.paid_orders, v => v)}
+        ${statCard('Ad spend', k.total_ad_spend, p.total_ad_spend, fmt)}
+        ${statCard('Ad ROAS', mer, merP, roas)}
       </div>
-      <div class="week-stats">
-        <span>Ad spend ${fmt(k.total_ad_spend)}</span>
-        <span>Ad ROAS ${roas(mer)}</span>
-        <span>From ads ${fmt(adSales)}</span>
-      </div>
-      <ul class="week-lines">${lines}</ul>
-      ${leak ? `<p class="week-leak"><strong>Leakage:</strong> ${leak}</p>` : ''}
+      <div class="stat-grid">${platforms}</div>
+      ${leak ? `<p class="stat-leak"><strong>Leakage:</strong> ${leak}</p>` : ''}
     </section>`;
 }
 
