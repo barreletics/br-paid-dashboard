@@ -329,7 +329,102 @@ def regenerate_executive_summary(snap: dict, payload: dict) -> None:
         f"Google PMax · Shopify ROAS {goog.get('shopify_roas', 0)}× on {fmt_money(goog.get('shopify_revenue', 0))} — best paid channel.",
         f"Meta · {meta.get('shopify_orders', 0)} Shopify UTM orders · ROAS {meta.get('shopify_roas', 0)}× (platform claims {meta.get('platform_purchases', '—')} purch).",
         f"Pinterest · {pin.get('shopify_orders', 0)} Shopify orders · {fmt_money(pin.get('spend', 0))} spend.",
-        "Hold Meta budget until Shopify UTM ROAS ≥1.5× for 7 days · keep Google running · verify Pinterest tag.",
+        "Hold Meta budget until Shopify UTM ROAS ≥1.5× for 7 days · keep Google running.",
+    ]
+
+
+def regenerate_strategy_todos(snap: dict, payload: dict, cfg: dict) -> None:
+    """Replace stale manual todos on every refresh — numbers drive the list."""
+    ch = snap["channels"]
+    meta = ch[0] if ch else {}
+    goog = ch[1] if len(ch) > 1 else {}
+    pin = ch[2] if len(ch) > 2 else {}
+    director = cfg.get("director", "Andrew")
+    agency = cfg.get("agency_owner", "Zaki")
+    todos: list[dict] = []
+    n = 1
+
+    if float(meta.get("shopify_roas") or 0) < 1.5:
+        todos.append(
+            {
+                "id": n,
+                "status": "watch",
+                "action": "Hold Meta budget — no raises until Shopify UTM ROAS ≥1.5× for 7 days",
+                "owner": agency,
+                "due": "Ongoing",
+            }
+        )
+        n += 1
+
+    if float(goog.get("shopify_roas") or 0) >= 3:
+        todos.append(
+            {
+                "id": n,
+                "status": "open",
+                "action": f"Keep Google PMax running — {goog.get('shopify_roas', 0)}× Shopify ROAS",
+                "owner": agency,
+                "due": "Ongoing",
+            }
+        )
+        n += 1
+
+    pin_orders = int(pin.get("shopify_orders") or 0)
+    pin_spend = float(pin.get("spend") or 0)
+    if pin_orders == 0 and pin_spend >= 150:
+        todos.append(
+            {
+                "id": n,
+                "status": "watch",
+                "action": f"Pinterest — {fmt_money(pin_spend)} spend, 0 Shopify orders; keep Checkout off",
+                "owner": agency,
+                "due": "Ongoing",
+            }
+        )
+    elif pin_orders > 0:
+        todos.append(
+            {
+                "id": n,
+                "status": "open",
+                "action": f"Pinterest — {pin_orders} Shopify orders; read Creative Test and scale or cut",
+                "owner": agency,
+                "due": "This week",
+            }
+        )
+    else:
+        todos.append(
+            {
+                "id": n,
+                "status": "watch",
+                "action": "Pinterest — low volume; watch spend vs Shopify orders",
+                "owner": agency,
+                "due": "Weekly",
+            }
+        )
+    n += 1
+
+    plat = int(meta.get("platform_purchases") or 0)
+    shop = int(meta.get("shopify_orders") or 0)
+    if plat > shop + 2:
+        todos.append(
+            {
+                "id": n,
+                "status": "watch",
+                "action": f"Meta attribution gap — platform {plat} purch vs {shop} Shopify UTM orders",
+                "owner": director,
+                "due": "Weekly",
+            }
+        )
+
+    payload["strategy_todos"] = todos
+    payload["next_week_priorities"] = [
+        {
+            "priority": i + 1,
+            "action": t["action"],
+            "owner": t["owner"],
+            "due": t["due"],
+            "expected": "",
+        }
+        for i, t in enumerate(todos[:3])
     ]
 
 
@@ -505,6 +600,7 @@ def main() -> None:
     default_snap = windows[str(default_days)]
     apply_snapshot(payload, default_snap)
     regenerate_executive_summary(default_snap, payload)
+    regenerate_strategy_todos(default_snap, payload, cfg)
 
     w = default_snap["window"]
     cur_start = date.fromisoformat(w["start"])

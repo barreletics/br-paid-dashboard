@@ -17,8 +17,8 @@ import urllib.request
 from datetime import date
 
 
-def _env(name: str) -> str:
-    return os.environ.get(name, "").strip()
+def _env(name: str, default: str = "") -> str:
+    return os.environ.get(name, default).strip()
 
 
 def google_spend(start: date, end: date) -> dict:
