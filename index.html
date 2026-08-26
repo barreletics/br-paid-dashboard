@@ -140,6 +140,61 @@ header {
 .todo-item.watch .todo-box { border-color: var(--warn); }
 .todo-meta { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
 .todo-wrap { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-bottom: 1.5rem; }
+.todo-simple-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
+.todo-simple-item {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+}
+.todo-num {
+  flex-shrink: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.05rem;
+}
+.todo-simple-body { flex: 1; min-width: 0; }
+.todo-simple-action {
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.todo-simple-detail {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+  line-height: 1.35;
+}
+.todo-simple-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+}
+.todo-tag {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.4rem;
+  border-radius: 4px;
+  margin-right: 0.35rem;
+  vertical-align: 0.05em;
+}
+.todo-tag.do { background: var(--good-bg); color: var(--good); }
+.todo-tag.hold { background: var(--warn-bg); color: var(--warn); }
+.todo-tag.watch { background: #eff6ff; color: #1d4ed8; }
 details.key-details { margin-bottom: 1.25rem; }
 details.key-details summary {
   cursor: pointer;
@@ -361,6 +416,23 @@ h2 {
   gap: 0.6rem;
   margin-bottom: 0.75rem;
 }
+.platform-row {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.35rem 0.75rem;
+  align-items: center;
+}
+.platform-name { font-weight: 700; font-size: 0.88rem; }
+.platform-mid { font-size: 0.82rem; color: var(--muted); text-align: right; }
+.platform-pct { font-weight: 700; font-size: 0.95rem; text-align: right; white-space: nowrap; }
+.platform-row.up .platform-pct { color: var(--good); }
+.platform-row.down .platform-pct { color: var(--bad); }
+.platform-row.flat .platform-pct { color: var(--muted); }
+.platform-stack { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 0.75rem; }
 .stat-card {
   background: #111;
   color: #fff;
@@ -423,6 +495,109 @@ h2 {
 }
 .exception-list li { padding: 0.15rem 0; }
 .exception-list li::before { content: "· "; color: var(--muted); font-weight: 700; }
+.highlights-head {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text);
+  margin: 0.75rem 0 0.2rem;
+}
+.highlights-hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+.mini-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.65rem;
+  text-align: center;
+}
+.mini-card .mini-roas { font-size: 1.2rem; font-weight: 700; line-height: 1.1; }
+.mini-card .mini-name { font-size: 0.78rem; font-weight: 600; margin-top: 0.3rem; line-height: 1.25; }
+.mini-card .mini-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+.info-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+}
+.info-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.7rem;
+  text-align: left;
+  line-height: 1.35;
+}
+.info-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+.info-card-ch {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.info-card-metric {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 0.25rem;
+}
+.info-card-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 0.2rem;
+}
+.info-card-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.info-card-note {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--line);
+}
+.info-card.test { border-style: dashed; }
+.info-card.paused { background: #fafafa; }
+.info-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0.85rem 0 0.45rem;
+}
+.detail-stack { margin-top: 1rem; }
+.detail-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+}
+.detail-panel summary {
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  list-style: none;
+}
+.detail-panel summary::-webkit-details-marker { display: none; }
+.detail-panel-body { padding: 0.65rem 1rem 1rem; border-top: 1px solid var(--line); }
+.detail-panel-body .panel-hide-title > h2,
+.detail-panel-body .panel-hide-title > h2.old-style { display: none; }
+.detail-panel-body section { margin-top: 0; }
 .easy-read-label {
   font-size: 0.68rem;
   font-weight: 600;
@@ -451,9 +626,9 @@ h2 {
 }
 .glance-stack { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.25rem; }
 .glance-row {
-  background: #111;
-  color: #fff;
-  border: none;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 0.85rem 1rem;
   display: grid;
@@ -461,12 +636,12 @@ h2 {
   gap: 0.15rem 0.75rem;
   align-items: center;
 }
-.glance-title { font-weight: 700; font-size: 0.92rem; line-height: 1.25; color: #fff; }
-.glance-val { font-weight: 700; font-size: 0.95rem; text-align: right; white-space: nowrap; color: #4ade80; }
+.glance-title { font-weight: 700; font-size: 0.92rem; line-height: 1.25; color: var(--text); }
+.glance-val { font-weight: 700; font-size: 0.95rem; text-align: right; white-space: nowrap; color: var(--text); }
 .glance-sub {
   grid-column: 1 / -1;
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.55);
+  color: var(--muted);
   line-height: 1.35;
 }
 section h2 {
@@ -846,7 +1021,7 @@ footer {
   <span>Data as of <strong id="data-as-of">—</strong> · Period <strong id="data-period">—</strong></span>
   <span style="display:flex;align-items:center;gap:0.65rem">
     <span id="refresh-status" class="timestamp-live">—</span>
-    <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()">Refresh</button>
+    <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()">Reload data</button>
   </span>
 </div>
 <div id="filter-bar" class="filter-bar" style="display:none">
@@ -862,8 +1037,8 @@ footer {
   <div class="filter-group">
     <span class="filter-label">Layout</span>
     <select id="filter-view" aria-label="Layout">
+      <option value="all" selected>All details</option>
       <option value="simple">Easy read</option>
-      <option value="all">All details</option>
       <option value="performance">Numbers only</option>
       <option value="actions">Actions only</option>
       <option value="deep">Campaigns only</option>
@@ -997,7 +1172,7 @@ function refreshData() {
     })
     .finally(() => {
       btn.disabled = false;
-      btn.textContent = 'Refresh';
+      btn.textContent = 'Reload data';
     });
 }
 
@@ -1174,15 +1349,62 @@ function renderSectionKeys() {
   ).join('');
 }
 
+function todoHeadline(action) {
+  const t = String(action || '');
+  const parts = t.split(/\s*[—–]\s+/);
+  const head = parts[0] || t;
+  return head.length > 72 ? head.slice(0, 72) + '…' : head;
+}
+
+function todoDetail(action) {
+  const t = String(action || '');
+  const parts = t.split(/\s*[—–]\s+/);
+  return parts.length > 1 ? parts.slice(1).join(' — ') : '';
+}
+
+function todoTag(t) {
+  if (t.status === 'watch') return 'watch';
+  const a = (t.action || '').toLowerCase();
+  if (/hold|keep|paused|no raise|stay off|don't|do not/.test(a)) return 'hold';
+  return 'do';
+}
+
+function todoTagLabel(tag) {
+  return tag === 'watch' ? 'Watch' : tag === 'hold' ? 'Hold' : 'Do';
+}
+
+function renderTodoItem(t, i) {
+  const tag = todoTag(t);
+  const detail = todoDetail(t.action);
+  const meta = [t.owner, t.due && t.due !== 'Ongoing' ? t.due : ''].filter(Boolean).join(' · ');
+  return `<div class="todo-simple-item">
+    <span class="todo-num">${i + 1}</span>
+    <div class="todo-simple-body">
+      <div class="todo-simple-action"><span class="todo-tag ${tag}">${todoTagLabel(tag)}</span>${todoHeadline(t.action)}</div>
+      ${detail ? `<div class="todo-simple-detail">${detail}</div>` : ''}
+      ${meta ? `<div class="todo-simple-meta">${meta}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderTodoList(todos, limit) {
+  const list = (todos || []).slice(0, limit || todos?.length || 0);
+  if (!list.length) return '';
+  return `<div class="todo-simple-list">${list.map(renderTodoItem).join('')}</div>`;
+}
+
 function renderTodos(todos) {
-  return (todos || []).map(t => `
-    <li class="todo-item ${t.status === 'watch' ? 'watch' : ''}">
-      <span class="todo-box" title="${t.status === 'watch' ? 'Watch item' : 'To do'}"></span>
-      <div>
-        <div>${t.action}</div>
-        <div class="todo-meta">${t.owner ? 'Owner: ' + t.owner : ''}${t.due ? ' · Due: ' + t.due : ''}${t.status === 'watch' ? ' · Watch (no action yet)' : ''}</div>
-      </div>
-    </li>`).join('');
+  return renderTodoList(todos);
+}
+
+function renderWeekTodos(data) {
+  const todos = data.strategy_todos || [];
+  if (!todos.length) return '';
+  return `
+    <section data-view="detailed actions">
+      ${renderTodoList(todos, 5)}
+      ${todos.length > 5 ? `<p class="todo-simple-meta">+ ${todos.length - 5} more in Full to-do list below</p>` : ''}
+    </section>`;
 }
 
 function sectionHint(text) {
@@ -1191,7 +1413,7 @@ function sectionHint(text) {
 
 const filters = {
   channel: 'all',
-  view: 'simple',
+  view: 'all',
   showCompare: true,
   showTarget: false,
   showMonthCompare: false,
@@ -1374,12 +1596,11 @@ function statCard(label, cur, prev, fmtFn, opts = {}) {
 function platformStatCard(c) {
   const label = channelLabel(c.name);
   const roasNow = channelRoas(c);
-  const ordCh = pctChange(c.shopify_orders, c.shopify_orders_last);
   const arr = trendArrow(c.shopify_orders, c.shopify_orders_last);
-  return `<div class="stat-card ${arr.cls}" data-channel="${channelSlug(c.name)}">
-    <div class="stat-pct">${arr.pct === '—' ? '→' : arr.arrow + ' ' + arr.pct}</div>
-    <div class="stat-val">${roas(roasNow)}</div>
-    <div class="stat-lbl">${label} · ${c.shopify_orders} orders</div>
+  return `<div class="platform-row ${arr.cls}" data-channel="${channelSlug(c.name)}">
+    <div class="platform-name">${label}</div>
+    <div class="platform-mid">${c.shopify_orders} orders · ${roas(roasNow)} ROAS</div>
+    <div class="platform-pct">${arr.pct === '—' ? '→' : arr.arrow + ' ' + arr.pct}</div>
   </div>`;
 }
 
@@ -1398,16 +1619,24 @@ function exceptionLines(data) {
     if (scale) lines.push('Scale ' + scale.channel + ' — ' + shortText(scale.reason, 55));
   }
   const todo = (data.strategy_todos || [])[0];
-  if (todo && lines.length < 3) lines.push('Next: ' + shortText(todo.action, 65));
+  if (todo && lines.length < 3) lines.push('Next: ' + todoHeadline(todo.action));
   return lines.slice(0, 3);
 }
 
 function adStatCard(a) {
-  return `<div class="stat-card flat ad-card" data-channel="meta">
-    <div class="stat-pct">${roas(a.roas)}</div>
-    <div class="stat-val">${shortText(a.ad, 24)}</div>
-    <div class="stat-lbl">${fmt(a.spend)} · ${a.purch ?? '—'} purch</div>
+  return `<div class="mini-card" data-channel="meta">
+    <div class="mini-roas">${roas(a.roas)}</div>
+    <div class="mini-name">${shortText(a.ad, 24)}</div>
+    <div class="mini-sub">${fmt(a.spend)} · ${a.purch ?? '—'} purch</div>
   </div>`;
+}
+
+function detailPanel(title, body, open) {
+  if (!body || !String(body).trim()) return '';
+  return `<details class="detail-panel"${open ? ' open' : ''}>
+    <summary>${title}</summary>
+    <div class="detail-panel-body panel-hide-title">${body}</div>
+  </details>`;
 }
 
 function renderEasyRead(data) {
@@ -1423,8 +1652,11 @@ function renderEasyRead(data) {
   const platforms = (data.channels || []).map(platformStatCard).join('');
   const topAds = (data.meta_top_ads || []).slice(0, 3).map(adStatCard).join('');
   const exceptions = exceptionLines(data);
+  const highlightItems = exceptions.length
+    ? exceptions.map(l => `<li>${l}</li>`).join('')
+    : '<li>No major flags this week — scan platform rows and expand sections below for detail.</li>';
   return `
-    <section class="easy-intro easy-read" data-view="simple summary performance actions deep">
+    <section class="easy-intro easy-read" data-view="all simple summary performance actions deep">
       <p class="stat-period">${w.label || 'This period'} · vs ${w.prior_label || 'last period'}</p>
       <div class="stat-grid">
         ${statCard('Total sales', rev, revP, fmt)}
@@ -1432,10 +1664,11 @@ function renderEasyRead(data) {
         ${statCard('Ad spend', k.total_ad_spend, p.total_ad_spend, fmt)}
         ${statCard('Ad ROAS', mer, merP, roas)}
       </div>
-      <div class="stat-grid">${platforms}</div>
-      ${exceptions.length ? `<ul class="exception-list">${exceptions.map(l => `<li>${l}</li>`).join('')}</ul>` : ''}
-      ${topAds ? `<p class="easy-read-label">Top ads (platform)</p><div class="stat-grid">${topAds}</div>` : ''}
-      <p class="easy-read-foot">All details ↓ for campaigns, budget, history, and full tables</p>
+      <div class="platform-stack">${platforms}</div>
+      <p class="highlights-head">Highlights</p>
+      <p class="highlights-hint">What changed, what to watch, and what to do next.</p>
+      <ul class="exception-list">${highlightItems}</ul>
+      ${topAds ? `<p class="easy-read-label">Top ads (platform ROAS)</p><div class="stat-grid">${topAds}</div>` : ''}
     </section>`;
 }
 
@@ -1561,15 +1794,7 @@ function renderSimpleChannels(data) {
 }
 
 function renderSimpleActions(data) {
-  const todos = (data.strategy_todos || []).slice(0, 3);
-  if (!todos.length) return '';
-  return `
-    <section data-view="detailed actions">
-      <h2>To-do</h2>
-      <div class="glance-stack">
-        ${todos.map(t => glanceRow(shortText(t.action, 80), t.owner || '—', t.expected || '')).join('')}
-      </div>
-    </section>`;
+  return renderWeekTodos(data);
 }
 
 function storeSlowdown(data) {
@@ -1646,6 +1871,43 @@ function renderHealthStrip(data) {
     </div>`;
 }
 
+function campaignInfoCard(c) {
+  const slug = channelSlug(c.channel);
+  const metric = c.status === 'ACTIVE' || c.status === 'RUNNING' ? fmt(c.spend_period) : c.status;
+  return `<div class="info-card" data-channel="${slug}">
+    <div class="info-card-head">
+      <span class="info-card-ch">${c.channel}</span>
+      <span class="status-chip ${c.status}">${c.status}</span>
+    </div>
+    <div class="info-card-metric">${metric}</div>
+    <div class="info-card-title">${shortText(c.campaign, 42)}</div>
+    <div class="info-card-sub">${c.key_metric || '—'}</div>
+    ${c.next_milestone ? `<div class="info-card-note">${shortText(c.next_milestone, 55)}</div>` : ''}
+  </div>`;
+}
+
+function adInfoCard(a) {
+  return `<div class="info-card" data-channel="meta">
+    <div class="info-card-head"><span class="info-card-ch">Meta</span></div>
+    <div class="info-card-metric">${roas(a.roas)}</div>
+    <div class="info-card-title">${shortText(a.ad, 38)}</div>
+    <div class="info-card-sub">${fmt(a.spend)} · ${a.purch ?? '—'} purch</div>
+    <div class="info-card-note">${shortText(a.campaign, 40)}</div>
+  </div>`;
+}
+
+function adExtraCard(item, kind) {
+  const cls = kind === 'test' ? 'info-card test' : 'info-card paused';
+  const metric = kind === 'test' ? 'New test' : 'Paused';
+  const sub = kind === 'test' ? `${item.launched} · ${item.early}` : `${item.action} · was: ${item.was}`;
+  return `<div class="${cls}" data-channel="meta">
+    <div class="info-card-head"><span class="info-card-ch">Meta</span></div>
+    <div class="info-card-metric">${metric}</div>
+    <div class="info-card-title">${shortText(item.name, 38)}</div>
+    <div class="info-card-sub">${sub}</div>
+  </div>`;
+}
+
 function glanceRow(title, value, sub, channel) {
   return `<div class="glance-row"${channel ? ` data-channel="${channel}"` : ''}>
     <div class="glance-title">${title}</div>
@@ -1660,27 +1922,7 @@ function shortText(s, n = 72) {
 }
 
 function renderCampaignGlance(data) {
-  const ads = data.meta_top_ads || [];
-  const camps = data.campaign_status || [];
-  if (!ads.length && !camps.length) return '';
-  const adCards = ads.map(a => glanceRow(
-    a.ad,
-    roas(a.roas),
-    fmt(a.spend) + ' · ' + (a.purch ?? '—') + ' purch · ' + a.campaign,
-    'meta'
-  )).join('');
-  const campCards = camps.map(c => glanceRow(
-    c.campaign,
-    c.status === 'ACTIVE' || c.status === 'RUNNING' ? fmt(c.spend_period) : c.status,
-    shortText(c.next_milestone || c.key_metric, 80),
-    channelSlug(c.channel)
-  )).join('');
-  return `
-    <section data-view="detailed summary performance deep">
-      <h2>Ads and campaigns · cards</h2>
-      <div class="glance-stack">${adCards}</div>
-      <div class="glance-stack">${campCards}</div>
-    </section>`;
+  return renderCampaignTables(data);
 }
 
 function renderCampaignTables(data) {
@@ -1688,62 +1930,20 @@ function renderCampaignTables(data) {
   const ads = data.meta_top_ads || [];
   const paused = data.creative?.fatiguing_or_paused || [];
   const newTests = data.creative?.new_tests || [];
-  const campRows = camps.map(c => {
-    const slug = channelSlug(c.channel);
-    return `<tr data-channel="${slug}">
-      <td>${c.channel}</td>
-      <td><strong>${c.campaign}</strong></td>
-      <td><span class="status-chip ${c.status}">${c.status}</span></td>
-      <td>${fmt(c.spend_period)}</td>
-      <td>${c.key_metric || '—'}</td>
-      <td style="font-size:0.78rem;color:var(--muted)">${c.next_milestone || '—'}</td>
-    </tr>`;
-  }).join('');
-  const adRows = ads.map(a => `<tr data-channel="meta">
-    <td>Meta</td>
-    <td>${a.campaign}</td>
-    <td><strong>${a.ad}</strong></td>
-    <td>${fmt(a.spend)}</td>
-    <td>${a.purch ?? '—'}</td>
-    <td><strong>${roas(a.roas)}</strong></td>
-    <td style="font-size:0.78rem;color:var(--muted)">Platform ROAS · verify Shopify UTM attach</td>
-  </tr>`).join('');
-  const pausedRows = paused.map(p => `<tr data-channel="meta">
-    <td>Meta</td>
-    <td>—</td>
-    <td><strong>${p.name}</strong></td>
-    <td>—</td>
-    <td>—</td>
-    <td>—</td>
-    <td style="font-size:0.78rem">${p.action} · was: ${p.was}</td>
-  </tr>`).join('');
-  const testRows = newTests.map(t => `<tr data-channel="meta">
-    <td>Meta / Pin</td>
-    <td>Test</td>
-    <td><strong>${t.name}</strong></td>
-    <td>—</td>
-    <td>—</td>
-    <td>—</td>
-    <td style="font-size:0.78rem">${t.launched} · ${t.early}</td>
-  </tr>`).join('');
-  if (!campRows && !adRows) return '';
+  if (!camps.length && !ads.length && !paused.length && !newTests.length) return '';
+  const campCards = camps.map(campaignInfoCard).join('');
+  const adCards = ads.map(adInfoCard).join('');
+  const pausedCards = paused.map(p => adExtraCard(p, 'paused')).join('');
+  const testCards = newTests.map(t => adExtraCard(t, 'test')).join('');
   return `
     <section data-view="detailed deep">
-      <h2>Campaigns and ads · full table</h2>
-      <div class="ads-table-wrap">
-        <h3>Campaigns</h3>
-        <table class="compact-table">
-          <thead><tr><th>Ch</th><th>Campaign</th><th>Status</th><th>Spend</th><th>Key metric</th><th>Next</th></tr></thead>
-          <tbody>${campRows || '<tr><td colspan="6">No campaigns</td></tr>'}</tbody>
-        </table>
-      </div>
-      <div class="ads-table-wrap">
-        <h3>Ads by name</h3>
-        <table class="compact-table">
-          <thead><tr><th>Ch</th><th>Campaign</th><th>Ad name</th><th>Spend</th><th>Platform purch</th><th>Platform ROAS</th><th>Note</th></tr></thead>
-          <tbody>${adRows || pausedRows || testRows ? adRows + pausedRows + testRows : '<tr><td colspan="7">No ad-level data yet</td></tr>'}</tbody>
-        </table>
-      </div>
+      ${campCards ? `
+        <p class="info-section-label">Campaigns</p>
+        <div class="info-card-grid">${campCards}</div>` : ''}
+      ${adCards || pausedCards || testCards ? `
+        <p class="info-section-label">Ads</p>
+        <div class="info-card-grid">${adCards}${pausedCards}${testCards}</div>
+        <p class="info-card-sub" style="margin:0">Platform ROAS and purch counts — verify Shopify UTM attach for truth.</p>` : ''}
     </section>`;
 }
 
@@ -1801,28 +2001,7 @@ function renderBudgetStrip(data) {
 }
 
 function renderDecisionsCompact(data) {
-  const act = data.actions || {};
-  const lines = [];
-  (act.spend_more || []).forEach(a => {
-    if (a.channel === '—') return;
-    lines.push(['scale', a.channel, a.reason]);
-  });
-  (act.pull_back || []).forEach(a => {
-    if (a.channel === '—') return;
-    lines.push(['cut', a.channel, a.reason]);
-  });
-  (act.create || []).slice(0, 2).forEach(a => lines.push(['build', a.channel, a.item]));
-  (act.watch || []).slice(0, 2).forEach(a => lines.push(['watch', a.channel, a.item]));
-  if (!lines.length) return '';
-  return `
-    <section data-view="detailed actions">
-      <h2>Decisions</h2>
-      <div class="glance-stack">
-        ${lines.slice(0, 4).map(([tag, ch, text]) =>
-          glanceRow(ch, tag, shortText(text, 70))
-        ).join('')}
-      </div>
-    </section>`;
+  return '';
 }
 
 function renderDailySpark(data) {
@@ -2186,16 +2365,96 @@ function render(raw) {
   document.getElementById('app').innerHTML = `
     ${renderEasyRead(data)}
 
-    ${renderHealthStrip(data)}
-    ${renderSimpleChannels(data)}
-    ${renderCampaignGlance(data)}
-    ${renderCampaignTables(data)}
-    ${renderFlags(data)}
-    ${renderBudgetStrip(data)}
-    ${renderDailySpark(data)}
-    ${renderDecisionsCompact(data)}
-    ${renderAgencyLog(data)}
-    ${renderSimpleActions(data)}
+    <div class="detail-stack" data-view="detailed summary performance actions deep">
+      ${detailPanel('Campaigns and ads', renderCampaignTables(data), false)}
+      ${detailPanel('By channel', renderSimpleChannels(data), false)}
+      ${detailPanel('This week', renderWeekTodos(data), true)}
+      ${detailPanel('Compare to last period', renderWowCompare(data) + renderChannelWow(data), false)}
+      ${detailPanel('Flags', renderFlags(data), false)}
+      ${detailPanel('Budget and daily orders', renderBudgetStrip(data) + renderDailySpark(data), false)}
+      ${detailPanel('Agency changes', renderAgencyLog(data), false)}
+      ${detailPanel('Weekly history', renderHistoryTrend(data), false)}
+      ${detailPanel('KPI vs target and strategy', `
+        <section data-view="detailed performance">
+          <h2 class="old-style">KPI vs target</h2>
+          <table>
+            <thead><tr><th>KPI</th><th>This period</th><th class="col-prior">Last period</th><th class="col-target">Target</th><th class="col-prior">WoW</th><th>Status</th></tr></thead>
+            <tbody>${renderKpiTarget(data.kpi_vs_target)}</tbody>
+          </table>
+        </section>
+        <section data-view="detailed summary actions">
+          <h2 class="old-style">Full to-do list</h2>
+          ${renderTodoList(data.strategy_todos)}
+        </section>
+        <section data-view="detailed actions">
+          <h2 class="old-style">Recommended actions</h2>
+          <div class="grid-4">${renderActions(data.actions)}</div>
+        </section>
+        <section data-view="detailed actions">
+          <h2 class="old-style">Next week priorities</h2>
+          <table>
+            <thead><tr><th>#</th><th>Action</th><th>Owner</th><th>Due</th><th>Expected outcome</th></tr></thead>
+            <tbody>${priRows || '<tr><td colspan="5">None set</td></tr>'}</tbody>
+          </table>
+        </section>`, false)}
+      ${detailPanel('Analyst appendix', `
+        ${renderHealthStrip(data)}
+        <div class="two-col" data-view="detailed performance">
+          <section>
+            <h2>Budget pacing · MTD</h2>
+            <p class="sub">MTD ~${fmt(bp.month_to_date_spend)} of ${fmt(bp.monthly_plan)} plan · projected ${fmt(bp.projected_month_spend)}</p>
+            <table>
+              <thead><tr><th>Channel</th><th>MTD</th><th>Plan</th><th>Used</th><th>Status</th></tr></thead>
+              <tbody>${bpRows}</tbody>
+            </table>
+          </section>
+          <section>
+            <h2>Weekly trend</h2>
+            <table>
+              <thead><tr><th>Period</th><th>Orders</th><th>Revenue</th><th>Spend</th><th>MER</th></tr></thead>
+              <tbody>${histRows}</tbody>
+            </table>
+          </section>
+        </div>
+        <section data-view="detailed deep">
+          <h2>Anomalies · cause and response</h2>
+          <table>
+            <thead><tr><th>Metric</th><th>Move</th><th>Cause</th><th>Response</th></tr></thead>
+            <tbody>${anomalyRows}</tbody>
+          </table>
+        </section>
+        <section data-view="detailed deep">
+          <h2>Campaign status</h2>
+          <table>
+            <thead><tr><th>Channel</th><th>Campaign</th><th>Status</th><th>Spend</th><th>Key metric</th><th>Next milestone</th></tr></thead>
+            <tbody>${campRows}</tbody>
+          </table>
+        </section>
+        <section data-view="detailed deep" data-channel="meta">
+          <h2>Creative performance</h2>
+          <div class="two-col">
+            <div class="action-card spend">
+              <h3>Top performer</h3>
+              <p><strong>${cr.top_performer?.name || '—'}</strong><br>${cr.top_performer?.metric || ''}</p>
+            </div>
+            <div class="action-card create">
+              <h3>Top Meta ad (platform)</h3>
+              <p><strong>${cr.top_meta_ad?.name || '—'}</strong><br>${cr.top_meta_ad ? fmt(cr.top_meta_ad.spend) + ' · ' + cr.top_meta_ad.purch + ' purch · ' + roas(cr.top_meta_ad.roas) : ''}</p>
+            </div>
+          </div>
+        </section>
+        <section data-view="detailed deep" data-channel="meta">
+          <h2>Meta top ads (platform)</h2>
+          <table>
+            <thead><tr><th>Campaign</th><th>Ad</th><th>Spend</th><th>Purch</th><th>ROAS</th></tr></thead>
+            <tbody>${adRows}</tbody>
+          </table>
+        </section>
+        <section data-view="detailed">
+          <h2 class="old-style">Data confidence</h2>
+          <div class="quality">${renderQuality(data.data_quality)}</div>
+        </section>`, false)}
+    </div>
 
     <details data-view="detailed summary" class="key-details">
       <summary>Help — what the sections mean</summary>
@@ -2203,147 +2462,6 @@ function render(raw) {
       <div class="key-grid">${renderSectionKeys()}</div>
       <p class="section-hint" style="margin-top:0.75rem">Shopify UTM orders = truth for ROAS. Platform purchase counts can overclaim (especially Meta).</p>
     </details>
-
-    ${renderWowCompare(data)}
-    ${renderChannelWow(data)}
-    ${renderHistoryTrend(data)}
-
-    <section data-view="detailed summary actions">
-      <h2 class="old-style">Strategy and to-dos (full list)</h2>
-      <ul class="todo-wrap todo-list">${renderTodos(data.strategy_todos)}</ul>
-    </section>
-
-    <section data-view="detailed performance">
-      <h2 class="old-style">KPI vs target</h2>
-      <table>
-        <thead><tr><th>KPI</th><th>This period</th><th class="col-prior">Last period</th><th class="col-target">Target</th><th class="col-prior">WoW</th><th>Status</th></tr></thead>
-        <tbody>${renderKpiTarget(data.kpi_vs_target)}</tbody>
-      </table>
-    </section>
-
-    <section data-view="detailed actions">
-      <h2 class="old-style">Recommended actions</h2>
-      <div class="grid-4">${renderActions(data.actions)}</div>
-    </section>
-
-    <section data-view="detailed actions">
-      <h2 class="old-style">Next week priorities</h2>
-      <table>
-        <thead><tr><th>#</th><th>Action</th><th>Owner</th><th>Due</th><th>Expected outcome</th></tr></thead>
-        <tbody>${priRows || '<tr><td colspan="5">None set</td></tr>'}</tbody>
-      </table>
-    </section>
-
-    <div class="two-col" data-view="detailed performance">
-      <section>
-        <h2>Budget pacing · MTD</h2>
-        ${sectionHint('MTD = Month To Date (spend from the 1st of this month through today). Used % = MTD ÷ monthly plan.')}
-        <p class="sub">MTD ~${fmt(bp.month_to_date_spend)} of ${fmt(bp.monthly_plan)} plan · projected ${fmt(bp.projected_month_spend)}</p>
-        <table>
-          <thead><tr><th>Channel</th><th>MTD</th><th>Plan</th><th>Used</th><th>Status</th></tr></thead>
-          <tbody>${bpRows}</tbody>
-        </table>
-      </section>
-      <section>
-        <h2>Weekly trend</h2>
-        <table>
-          <thead><tr><th>Period</th><th>Orders</th><th>Revenue</th><th>Spend</th><th>MER</th></tr></thead>
-          <tbody>${histRows}</tbody>
-        </table>
-      </section>
-    </div>
-
-    <section data-view="detailed deep">
-      <h2>Anomalies · cause and response</h2>
-      ${sectionHint('Flags when a metric moved more than ~15% vs the prior period — what happened and what to do.')}
-      <table>
-        <thead><tr><th>Metric</th><th>Move</th><th>Cause</th><th>Response</th></tr></thead>
-        <tbody>${anomalyRows}</tbody>
-      </table>
-    </section>
-
-    <section data-view="detailed deep">
-      <h2>Campaign status</h2>
-      <table>
-        <thead><tr><th>Channel</th><th>Campaign</th><th>Status</th><th>Spend</th><th>Key metric</th><th>Next milestone</th></tr></thead>
-        <tbody>${campRows}</tbody>
-      </table>
-    </section>
-
-    <section data-view="detailed deep" data-channel="meta">
-      <h2>Creative performance</h2>
-      <div class="two-col">
-        <div class="action-card spend">
-          <h3>Top performer</h3>
-          <p><strong>${cr.top_performer?.name || '—'}</strong><br>${cr.top_performer?.metric || ''}</p>
-        </div>
-        <div class="action-card create">
-          <h3>Top Meta ad (platform)</h3>
-          <p><strong>${cr.top_meta_ad?.name || '—'}</strong><br>${cr.top_meta_ad ? fmt(cr.top_meta_ad.spend) + ' · ' + cr.top_meta_ad.purch + ' purch · ' + roas(cr.top_meta_ad.roas) : ''}</p>
-        </div>
-      </div>
-      <h3 style="margin-top:1rem;font-size:0.85rem">Paused / fatiguing</h3>
-      <ul>${(cr.fatiguing_or_paused || []).map(x => `<li><strong>${x.name}</strong> — ${x.action} (${x.was})</li>`).join('') || '<li>None flagged</li>'}</ul>
-      <h3 style="margin-top:0.75rem;font-size:0.85rem">New tests</h3>
-      <ul>${(cr.new_tests || []).map(x => `<li><strong>${x.name}</strong> · ${x.launched} — ${x.early}</li>`).join('') || '<li>None</li>'}</ul>
-    </section>
-
-    <section data-view="detailed deep">
-      <h2>Agency activity log</h2>
-      <table>
-        <thead><tr><th>Date</th><th>Owner</th><th>Change</th></tr></thead>
-        <tbody>${actRows}</tbody>
-      </table>
-    </section>
-
-    <section data-view="detailed deep">
-      <h2>Challenges and roadblocks</h2>
-      <table>
-        <thead><tr><th>Issue</th><th>Impact</th><th>Plan</th></tr></thead>
-        <tbody>${challRows}</tbody>
-      </table>
-    </section>
-
-    <div class="two-col" data-view="detailed deep">
-      <section>
-        <h2>Daily paid orders (Shopify)</h2>
-        <div class="bar-chart">${renderDaily(data.daily_orders)}</div>
-      </section>
-      <section>
-        <h2>Organic and email (GA4 · reference)</h2>
-        <table>
-          <thead><tr><th>Channel</th><th>Sessions</th><th>Purch</th><th>Rev</th></tr></thead>
-          <tbody>${organic}</tbody>
-        </table>
-      </section>
-    </div>
-
-    <section data-view="detailed deep" data-channel="meta">
-      <h2>Meta top ads (platform)</h2>
-      <table>
-        <thead><tr><th>Campaign</th><th>Ad</th><th>Spend</th><th>Purch</th><th>ROAS</th></tr></thead>
-        <tbody>${adRows}</tbody>
-      </table>
-    </section>
-
-    <section data-view="detailed deep" data-channel="meta">
-      <h2>GA4 Paid Social funnel (direction only)</h2>
-      <table>
-        <tbody>
-          <tr><td>Sessions</td><td>${f.paid_social_sessions ?? '—'}</td></tr>
-          <tr><td>Add to carts</td><td>${f.add_to_carts ?? '—'}</td></tr>
-          <tr><td>Checkouts</td><td>${f.checkouts ?? '—'}</td></tr>
-          <tr><td>GA4 purchases</td><td>${f.purchases ?? '—'}</td></tr>
-          <tr><td>ATC → checkout</td><td>${f.atc_to_checkout_rate != null ? f.atc_to_checkout_rate + '%' : '—'}</td></tr>
-        </tbody>
-      </table>
-      <p class="sub" style="margin-top:0.5rem">${f.note || ''}</p>
-    </section>
-
-    <section data-view="detailed">
-      <h2 class="old-style">Data confidence</h2>
-      <div class="quality">${renderQuality(data.data_quality)}</div>
-    </section>
   `;
   if (!window._filtersInit) {
     initFilters();
