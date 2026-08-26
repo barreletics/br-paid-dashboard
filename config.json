@@ -17,6 +17,14 @@
   },
   "weekly_order_target": 63,
   "weekly_revenue_target": 7000,
+  "refresh_schedule": {
+    "timezone": "America/Detroit",
+    "timezone_label": "Eastern (Detroit)",
+    "runs_per_day": 2,
+    "times_local": ["8:00 AM", "8:00 PM"],
+    "times_dst_note": "During Eastern Standard Time (roughly Nov–Mar), runs are about 7:00 AM and 7:00 PM instead.",
+    "sources_live": ["Shopify orders and revenue", "Meta ad spend", "Google ad spend (via GA4)", "Pinterest ad spend"]
+  },
   "report_recipients": [
     { "name": "Andrew", "email": "", "sections": "all" },
     { "name": "Stefanie", "email": "stefanie@barreletics.com", "sections": "executive,kpi,budget" },

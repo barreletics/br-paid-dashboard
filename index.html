@@ -58,6 +58,19 @@ header {
 }
 .timestamp-bar strong { font-weight: 700; }
 .timestamp-live { color: var(--muted); }
+.auto-refresh-info {
+  width: 100%;
+  background: #ecfdf5;
+  border: 1px solid #86efac;
+  color: #14532d;
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+.auto-refresh-info strong { color: #052e16; font-weight: 700; }
+.auto-refresh-info .muted { color: #166534; font-size: 0.78rem; margin-top: 0.25rem; }
 .timestamp-live.fresh { color: var(--good); }
 .timestamp-live.stale { color: var(--warn); }
 .window-banner {
@@ -1027,6 +1040,13 @@ footer {
   <div id="quality-badge" class="badge">Checking data…</div>
 </header>
 <p id="quality-note" class="quality-note" hidden></p>
+<div id="auto-refresh-info" class="auto-refresh-info" style="display:none">
+  <strong>Live data.</strong> Auto-refreshes <strong>twice daily</strong> at
+  <strong>8:00 AM</strong> and <strong>8:00 PM Eastern (Detroit)</strong> —
+  Shopify orders, Meta, Google, and Pinterest spend on the <strong>same date window</strong>.
+  Last pull: <strong id="auto-refresh-last">—</strong>.
+  <div class="muted" id="auto-refresh-note">Reload data only re-reads this page; the scheduled job pulls fresh numbers from the platforms.</div>
+</div>
 <div id="error" class="error" style="display:none"></div>
 <div id="window-banner" class="window-banner" style="display:none"></div>
 <div id="timestamp-bar" class="timestamp-bar" style="display:none">
@@ -1084,7 +1104,7 @@ footer {
 </div>
 <div id="app"></div>
 <footer>
-  Shopify orders = truth for ROAS · Numbers refresh when data is pulled · use <strong>All details</strong> for the full analyst view.
+  Auto-updated twice daily (8 AM and 8 PM Eastern, Detroit) · Shopify orders = truth for ROAS · Campaign notes in All details may lag until refreshed manually.
 </footer>
 <script>
 const DATA_URL = 'data/latest.json';
@@ -1310,6 +1330,24 @@ function ageHours(iso) {
   return (Date.now() - new Date(iso).getTime()) / 3600000;
 }
 
+function refreshScheduleText(cfg) {
+  const s = cfg?.refresh_schedule || {};
+  const label = s.timezone_label || 'Eastern (Detroit)';
+  const times = (s.times_local || ['8:00 AM', '8:00 PM']).join(' and ');
+  let text = times + ' ' + label;
+  if (s.times_dst_note) text += '. ' + s.times_dst_note;
+  return text;
+}
+
+function setAutoRefreshBanner(data, raw) {
+  const el = document.getElementById('auto-refresh-info');
+  const last = document.getElementById('auto-refresh-last');
+  if (!el) return;
+  el.style.display = 'block';
+  const iso = raw?.generated_at || data.generated_at;
+  last.textContent = iso ? formatEdt(iso) + ' ET' : '—';
+}
+
 function setTimestamp(data, raw) {
   const bar = document.getElementById('timestamp-bar');
   const asOf = document.getElementById('data-as-of');
@@ -1341,8 +1379,8 @@ function setTimestamp(data, raw) {
   }
 
   const hrs = ageHours(data.generated_at);
-  if (inSync && hrs < 8) {
-    status.textContent = 'Fresh · window rolls daily · auto-refresh 30 min';
+  if (inSync && hrs < 14) {
+    status.textContent = 'Fresh · next auto-pull ~8 AM or ~8 PM Eastern';
     status.className = 'timestamp-live fresh';
   } else if (inSync && hrs < 24) {
     status.textContent = Math.round(hrs) + 'h old · rolling window ' + expected.label;
@@ -2361,6 +2399,7 @@ function render(raw) {
   dashboardData = raw;
   const data = activeData(raw);
   setTimestamp(data, raw);
+  setAutoRefreshBanner(data, raw);
   const k = data.kpis || {};
   const q = qualitySummary(data.data_quality);
   const badge = document.getElementById('quality-badge');
@@ -2548,7 +2587,19 @@ function boot() {
 
 fetch(CONFIG_URL + '?t=' + Date.now())
   .then(r => r.ok ? r.json() : null)
-  .then(cfg => { if (cfg) reportConfig = { ...reportConfig, ...cfg }; boot(); })
+  .then(cfg => {
+    if (cfg) {
+      reportConfig = { ...reportConfig, ...cfg };
+      const note = document.getElementById('auto-refresh-note');
+      if (note && cfg.refresh_schedule) {
+        const times = (cfg.refresh_schedule.times_local || ['8:00 AM', '8:00 PM']).join(' and ');
+        note.textContent =
+          'Scheduled pull at ' + times + ' ' + (cfg.refresh_schedule.timezone_label || 'Eastern (Detroit)') +
+          '. Reload data only re-reads this page; it does not run a new platform pull.';
+      }
+    }
+    boot();
+  })
   .catch(() => boot());
 
 // Live feed: refetch JSON every 30 minutes when served over http(s)
