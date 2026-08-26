@@ -215,6 +215,17 @@ details.key-details summary {
 }
 .badge.ok { border-color: #86efac; color: var(--good); background: var(--good-bg); }
 .badge.partial { border-color: #fcd34d; color: var(--warn); background: var(--warn-bg); }
+.quality-note {
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: var(--warn-bg);
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  margin: -0.35rem 0 0.85rem;
+  line-height: 1.4;
+}
+.quality-note strong { color: var(--text); font-weight: 600; }
 .kpi-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1015,6 +1026,7 @@ footer {
   </div>
   <div id="quality-badge" class="badge">Checking data…</div>
 </header>
+<p id="quality-note" class="quality-note" hidden></p>
 <div id="error" class="error" style="display:none"></div>
 <div id="window-banner" class="window-banner" style="display:none"></div>
 <div id="timestamp-bar" class="timestamp-bar" style="display:none">
@@ -1199,17 +1211,19 @@ function qualitySummary(dq) {
     };
   }
   if (partials.length) {
-    const short = partials.map(([k, v]) => {
+    const detail = partials.map(([k, v]) => {
       const name = k.replace(/^blend_/, '').replace(/_/g, ' ');
-      return name + (v.note ? ' (' + v.note.split(';')[0].split('—')[0].trim() + ')' : '');
-    }).join('; ');
+      const label = name.charAt(0).toUpperCase() + name.slice(1);
+      return label + ': ' + (v.note || 'incomplete');
+    }).join(' · ');
     return {
       cls: 'partial',
-      text: 'Partial — ' + short + ' · Shopify totals ok',
-      title: partials.map(([k, v]) => k + ': ' + (v.note || 'incomplete')).join('\n') + '\nStore orders and revenue from Shopify are complete.'
+      text: 'Partial data',
+      note: detail + ' Shopify store totals are complete.',
+      title: detail
     };
   }
-  return { cls: 'ok', text: 'All sources ok', title: 'Shopify, Meta, Google, and GA4 feeds look complete.' };
+  return { cls: 'ok', text: 'All sources ok', note: '', title: 'Shopify, Meta, Google, and GA4 feeds look complete.' };
 }
 
 function renderActions(actions) {
@@ -2353,6 +2367,14 @@ function render(raw) {
   badge.className = 'badge ' + q.cls;
   badge.textContent = q.text;
   badge.title = q.title || q.text;
+  const noteEl = document.getElementById('quality-note');
+  if (q.note) {
+    noteEl.innerHTML = '<strong>Partial data means:</strong> ' + q.note;
+    noteEl.hidden = false;
+  } else {
+    noteEl.hidden = true;
+    noteEl.textContent = '';
+  }
 
   const anomalyRows = (data.anomalies || []).map(a => `<tr>
     <td>${a.metric}</td><td><strong>${a.change}</strong> ${a.vs || ''}</td>
