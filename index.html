@@ -1187,10 +1187,29 @@ function roas(n) {
 }
 
 function qualitySummary(dq) {
-  const vals = Object.values(dq || {});
-  if (vals.some(v => v.status === 'error')) return { cls: 'partial', text: 'Data gaps' };
-  if (vals.some(v => v.status === 'partial')) return { cls: 'partial', text: 'Partial data' };
-  return { cls: 'ok', text: 'All sources ok' };
+  const entries = Object.entries(dq || {});
+  const errors = entries.filter(([, v]) => v.status === 'error');
+  const partials = entries.filter(([, v]) => v.status === 'partial');
+  if (errors.length) {
+    const names = errors.map(([k]) => k.replace(/^blend_/, '').replace(/_/g, ' ')).join(', ');
+    return {
+      cls: 'partial',
+      text: 'Data gaps — ' + names,
+      title: errors.map(([k, v]) => k + ': ' + (v.note || v.status)).join('\n')
+    };
+  }
+  if (partials.length) {
+    const short = partials.map(([k, v]) => {
+      const name = k.replace(/^blend_/, '').replace(/_/g, ' ');
+      return name + (v.note ? ' (' + v.note.split(';')[0].split('—')[0].trim() + ')' : '');
+    }).join('; ');
+    return {
+      cls: 'partial',
+      text: 'Partial — ' + short + ' · Shopify totals ok',
+      title: partials.map(([k, v]) => k + ': ' + (v.note || 'incomplete')).join('\n') + '\nStore orders and revenue from Shopify are complete.'
+    };
+  }
+  return { cls: 'ok', text: 'All sources ok', title: 'Shopify, Meta, Google, and GA4 feeds look complete.' };
 }
 
 function renderActions(actions) {
@@ -1203,7 +1222,9 @@ function renderActions(actions) {
   return blocks.map(([key, title, cls]) => {
     const items = (actions[key] || []).map(a => {
       const text = a.reason || a.item || '';
-      const meta = [a.owner, a.due].filter(Boolean).join(' · ');
+      const meta = /^zaki$/i.test(a.owner || '')
+        ? `Directs: ${reportConfig.director || 'Andrew'} · For ${reportConfig.agency_owner || 'Zaki'}${a.due ? ' · ' + a.due : ''}`
+        : [a.owner, a.due].filter(Boolean).join(' · ');
       return `<li><span class="tag">${a.channel || ''}</span> ${text}${meta ? ` <span class="sub">(${meta})</span>` : ''}</li>`;
     }).join('') || '<li>None this week</li>';
     return `<div class="action-card ${cls}"><h3>${title}</h3><ul>${items}</ul></div>`;
@@ -1373,10 +1394,21 @@ function todoTagLabel(tag) {
   return tag === 'watch' ? 'Watch' : tag === 'hold' ? 'Hold' : 'Do';
 }
 
+function todoAssigneeMeta(t) {
+  const owner = (t.owner || '').trim();
+  const due = t.due && t.due !== 'Ongoing' ? t.due : '';
+  const director = reportConfig.director || 'Andrew';
+  const agency = reportConfig.agency_owner || 'Zaki';
+  if (/^zaki$/i.test(owner)) {
+    return ['Directs: ' + director, 'For ' + agency, due].filter(Boolean).join(' · ');
+  }
+  return [owner || director, due].filter(Boolean).join(' · ');
+}
+
 function renderTodoItem(t, i) {
   const tag = todoTag(t);
   const detail = todoDetail(t.action);
-  const meta = [t.owner, t.due && t.due !== 'Ongoing' ? t.due : ''].filter(Boolean).join(' · ');
+  const meta = todoAssigneeMeta(t);
   return `<div class="todo-simple-item">
     <span class="todo-num">${i + 1}</span>
     <div class="todo-simple-body">
@@ -1400,8 +1432,11 @@ function renderTodos(todos) {
 function renderWeekTodos(data) {
   const todos = data.strategy_todos || [];
   if (!todos.length) return '';
+  const director = reportConfig.director || 'Andrew';
+  const agency = reportConfig.agency_owner || 'Zaki';
   return `
     <section data-view="detailed actions">
+      <p class="highlights-hint">${director} directs · ${agency} executes agency tasks</p>
       ${renderTodoList(todos, 5)}
       ${todos.length > 5 ? `<p class="todo-simple-meta">+ ${todos.length - 5} more in Full to-do list below</p>` : ''}
     </section>`;
@@ -2314,8 +2349,10 @@ function render(raw) {
   setTimestamp(data, raw);
   const k = data.kpis || {};
   const q = qualitySummary(data.data_quality);
-  document.getElementById('quality-badge').className = 'badge ' + q.cls;
-  document.getElementById('quality-badge').textContent = q.text;
+  const badge = document.getElementById('quality-badge');
+  badge.className = 'badge ' + q.cls;
+  badge.textContent = q.text;
+  badge.title = q.title || q.text;
 
   const anomalyRows = (data.anomalies || []).map(a => `<tr>
     <td>${a.metric}</td><td><strong>${a.change}</strong> ${a.vs || ''}</td>
