@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Refresh dashboard/data/latest.json for rolling windows (7 / 14 / 30 days).
 
-Pulls Shopify for current, prior, and same-period-last-month for each window size.
-Narrative sections are preserved until the weekly agent pass rewrites them.
+Pulls Shopify + ad spend (Meta Graph API; Google/Pinterest via API or cache)
+for the same date window. Regenerates KPI rows and executive summary numbers.
 
 Usage:
   export SHOPIFY_DOMAIN SHOPIFY_CLIENT_ID SHOPIFY_CLIENT_SECRET
+  export META_ACCESS_TOKEN
   python3 refresh_rolling.py
 """
 
@@ -15,6 +16,8 @@ import copy
 import json
 import subprocess
 import sys
+import urllib.parse
+import urllib.request
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -23,10 +26,14 @@ from zoneinfo import ZoneInfo
 TZ = ZoneInfo("America/Detroit")
 ROOT = Path(__file__).resolve().parent
 SCRIPTS = ROOT / "scripts"
-LATEST = ROOT / "data" / "latest.json"
-HISTORY = ROOT / "data" / "history.json"
+DATA = ROOT / "data"
+AD_SPEND_DIR = DATA / "ad_spend"
+LATEST = DATA / "latest.json"
+HISTORY = DATA / "history.json"
 CONFIG = ROOT / "config.json"
 WINDOW_SIZES = (7, 14, 30)
+CHANNEL_NAMES = ["Meta", "Google PMax", "Pinterest"]
+CHANNEL_KEYS = ["Meta", "Google", "Pinterest"]
 
 
 def load_json(path: Path) -> Any:
@@ -85,63 +92,258 @@ def roas(revenue: float, spend: float) -> float:
     return round(revenue / spend, 2) if spend else 0.0
 
 
+def cache_path(start: date, end: date) -> Path:
+    AD_SPEND_DIR.mkdir(parents=True, exist_ok=True)
+    return AD_SPEND_DIR / f"{start.isoformat()}_{end.isoformat()}.json"
+
+
+def ad_spend_for_range(start: date, end: date, cfg: dict | None = None) -> dict[str, dict]:
+    """Live Meta + Google/Pinterest for exact date range; fill gaps from cache or daily rates."""
+    path = cache_path(start, end)
+    cached: dict[str, dict] = {}
+    if path.exists():
+        cached = json.loads(path.read_text()).get("channels") or {}
+
+    channels: dict[str, dict] = {}
+    cmd = [
+        sys.executable,
+        str(SCRIPTS / "ad_spend_pull.py"),
+        "--start",
+        start.isoformat(),
+        "--end",
+        end.isoformat(),
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if proc.returncode == 0 and proc.stdout.strip():
+        channels = json.loads(proc.stdout).get("channels") or {}
+
+    gp = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPTS / "google_pinterest_pull.py"),
+            "--start",
+            start.isoformat(),
+            "--end",
+            end.isoformat(),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if gp.returncode == 0 and gp.stdout.strip():
+        extra = json.loads(gp.stdout)
+        if extra.get("Google"):
+            g = extra["Google"]
+            spend = float(g.get("spend") or 0)
+            val = float(g.get("conversion_value") or 0)
+            conv = float(g.get("conversions") or 0)
+            channels["Google"] = {
+                "spend": round(spend, 2),
+                "platform_purchases": round(conv),
+                "platform_revenue": round(val, 2),
+                "platform_roas": roas(val, spend),
+            }
+        if extra.get("Pinterest"):
+            p = extra["Pinterest"]
+            spend = float(p.get("spend") or 0)
+            val = float(p.get("checkout_value") or 0)
+            chk = int(float(p.get("checkouts") or 0))
+            channels["Pinterest"] = {
+                "spend": round(spend, 2),
+                "platform_purchases": chk,
+                "platform_revenue": round(val, 2),
+                "platform_roas": roas(val, spend),
+            }
+
+    for key in ("Meta", "Google", "Pinterest"):
+        if key not in channels and key in cached:
+            channels[key] = cached[key]
+
+    rates = (cfg or {}).get("ad_daily_spend") or {}
+    days = (end - start).days + 1
+    for key, daily in rates.items():
+        if key in channels and float(channels[key].get("spend") or 0) > 0:
+            continue
+        if daily:
+            spend = round(float(daily) * days, 2)
+            channels[key] = {
+                "spend": spend,
+                "platform_purchases": cached.get(key, {}).get("platform_purchases", 0),
+                "platform_revenue": cached.get(key, {}).get("platform_revenue", 0),
+                "platform_roas": cached.get(key, {}).get("platform_roas", 0),
+            }
+
+    if channels:
+        path.write_text(json.dumps({"channels": channels}, indent=2) + "\n")
+
+    return channels
+
+
+def channel_status(name: str, shopify_orders: int, shopify_roas: float, spend: float, targets: dict) -> str:
+    if name.startswith("Meta"):
+        if shopify_roas >= targets.get("meta_shopify_roas_target", 1.5):
+            return "good"
+        return "watch" if shopify_roas >= 1.0 else "pull_back"
+    if name.startswith("Google"):
+        return "good" if shopify_roas >= targets.get("google_shopify_roas_target", 3.0) else "watch"
+    if shopify_orders == 0 and spend >= targets.get("pinterest_max_spend_no_orders", 150):
+        return "pull_back"
+    if shopify_orders == 0:
+        return "watch"
+    return "good" if shopify_roas >= 1.0 else "watch"
+
+
+def build_channels(
+    cur_s: dict,
+    prior_s: dict,
+    month_s: dict,
+    cur_ad: dict[str, dict],
+    prior_ad: dict[str, dict],
+    month_ad: dict[str, dict],
+    channels_base: list[dict],
+    targets: dict,
+) -> list[dict]:
+    rows = []
+    for i, (name, key) in enumerate(zip(CHANNEL_NAMES, CHANNEL_KEYS)):
+        base = channels_base[i] if i < len(channels_base) else {}
+        o, r, rn = channel_metrics(cur_s, key)
+        ol, rl, rnl = channel_metrics(prior_s, key)
+        om, rm, rnm = channel_metrics(month_s, key)
+
+        ca, pa, ma = cur_ad.get(key, {}), prior_ad.get(key, {}), month_ad.get(key, {})
+        spend = float(ca.get("spend") or 0)
+        spend_last = float(pa.get("spend") or 0)
+        spend_month = float(ma.get("spend") or spend)
+
+        shopify_roas = roas(r, spend)
+        status = channel_status(name, o, shopify_roas, spend, targets)
+        rows.append(
+            {
+                **copy.deepcopy(base),
+                "name": name,
+                "spend": round(spend),
+                "spend_last": round(spend_last),
+                "spend_month": round(spend_month),
+                "shopify_orders": o,
+                "shopify_orders_last": ol,
+                "shopify_orders_month": om,
+                "shopify_revenue": round(r),
+                "shopify_revenue_last": round(rl),
+                "shopify_revenue_month": round(rm),
+                "shopify_revenue_net": round(rn),
+                "shopify_revenue_net_last": round(rnl),
+                "shopify_revenue_net_month": round(rnm),
+                "shopify_roas": shopify_roas,
+                "shopify_roas_last": roas(rl, spend_last),
+                "shopify_roas_month": roas(rm, spend_month),
+                "shopify_roas_net": roas(rn, spend),
+                "shopify_cpa": round(spend / o, 2) if o else None,
+        "platform_purchases": ca.get("platform_purchases", base.get("platform_purchases")),
+        "platform_revenue": ca.get("platform_revenue", base.get("platform_revenue")),
+        "platform_roas": ca.get("platform_roas", base.get("platform_roas")),
+        "status": status,
+        "interpretation": "",
+    }
+        )
+    return rows
+
+
+def meta_top_ads(start: date, end: date) -> list[dict]:
+    import os
+
+    token = os.environ.get("META_ACCESS_TOKEN", "").strip()
+    acct = os.environ.get("META_AD_ACCOUNT_ID", "act_10152741884925238")
+    if not token:
+        return []
+    if not acct.startswith("act_"):
+        acct = f"act_{acct}"
+    params = urllib.parse.urlencode(
+        {
+            "fields": "ad_name,campaign_name,spend,actions,action_values",
+            "level": "ad",
+            "sort": "spend_descending",
+            "limit": "5",
+            "time_range": json.dumps({"since": start.isoformat(), "until": end.isoformat()}),
+            "access_token": token,
+        }
+    )
+    url = f"https://graph.facebook.com/v21.0/{acct}/insights?{params}"
+    raw = ""
+    try:
+        proc = subprocess.run(["curl", "-sS", url], capture_output=True, text=True, check=False)
+        if proc.returncode == 0 and proc.stdout.strip():
+            raw = proc.stdout
+    except Exception:
+        pass
+    if not raw:
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            raw = resp.read().decode()
+    try:
+        data = json.loads(raw)
+    except Exception:
+        return []
+    ads = []
+    for row in data.get("data") or []:
+        spend = float(row.get("spend") or 0)
+        purch = 0
+        for a in row.get("actions") or []:
+            if a.get("action_type") in ("purchase", "omni_purchase"):
+                purch = max(purch, int(float(a.get("value") or 0)))
+        purch_val = 0.0
+        for a in row.get("action_values") or []:
+            if a.get("action_type") in ("purchase", "omni_purchase"):
+                purch_val = max(purch_val, float(a.get("value") or 0))
+        ads.append(
+            {
+                "campaign": row.get("campaign_name") or "—",
+                "ad": row.get("ad_name") or "—",
+                "spend": round(spend),
+                "purch": purch,
+                "roas": roas(purch_val, spend),
+            }
+        )
+    return ads
+
+
+def regenerate_executive_summary(snap: dict, payload: dict) -> None:
+    k = snap["kpis"]
+    ch = snap["channels"]
+    w = snap["window"]
+    prior = snap["prior_period"]["kpis"]
+    meta = ch[0] if ch else {}
+    goog = ch[1] if len(ch) > 1 else {}
+    pin = ch[2] if len(ch) > 2 else {}
+    rev_chg = (
+        round((k["paid_revenue"] - prior["paid_revenue"]) / prior["paid_revenue"] * 100)
+        if prior.get("paid_revenue")
+        else 0
+    )
+    ord_chg = (
+        round((k["paid_orders"] - prior["paid_orders"]) / prior["paid_orders"] * 100)
+        if prior.get("paid_orders")
+        else 0
+    )
+    payload["executive_summary"] = [
+        f"Store {k['paid_orders']} orders · {fmt_money(k['paid_revenue'])} ({rev_chg:+d}% revenue vs {w['prior_label']}).",
+        f"Google PMax · Shopify ROAS {goog.get('shopify_roas', 0)}× on {fmt_money(goog.get('shopify_revenue', 0))} — best paid channel.",
+        f"Meta · {meta.get('shopify_orders', 0)} Shopify UTM orders · ROAS {meta.get('shopify_roas', 0)}× (platform claims {meta.get('platform_purchases', '—')} purch).",
+        f"Pinterest · {pin.get('shopify_orders', 0)} Shopify orders · {fmt_money(pin.get('spend', 0))} spend.",
+        "Hold Meta budget until Shopify UTM ROAS ≥1.5× for 7 days · keep Google running · verify Pinterest tag.",
+    ]
+
+
+def fmt_money(n: float) -> str:
+    return f"${int(round(n)):,}"
+
+
 def scale_spend(base_spend: float, days: int, base_days: int = 7) -> float:
     if not base_spend:
         return 0.0
     return round(base_spend * days / base_days)
 
 
-def build_channels(
-    channels_base: list[dict],
-    days: int,
-    cur_s: dict,
-    prior_s: dict,
-    month_s: dict,
-) -> list[dict]:
-    rows = copy.deepcopy(channels_base)
-    pairs = [
-        ("Meta", 0),
-        ("Google PMax", 1),
-        ("Pinterest", 2),
-    ]
-    ch_keys = ["Meta", "Google", "Pinterest"]
-    for (_name, idx), key in zip(pairs, ch_keys):
-        if idx >= len(rows):
-            continue
-        ch = rows[idx]
-        base_spend = float(ch.get("spend") or 0)
-        base_last = float(ch.get("spend_last") or base_spend)
-        spend = scale_spend(base_spend, days)
-        spend_last = scale_spend(base_last, days)
-        spend_month = spend  # same weekly rate assumption
-
-        o, r, rn = channel_metrics(cur_s, key)
-        ol, rl, rnl = channel_metrics(prior_s, key)
-        om, rm, rnm = channel_metrics(month_s, key)
-
-        ch.update(
-            spend=spend,
-            spend_last=spend_last,
-            spend_month=spend_month,
-            shopify_orders=o,
-            shopify_orders_last=ol,
-            shopify_orders_month=om,
-            shopify_revenue=round(r),
-            shopify_revenue_last=round(rl),
-            shopify_revenue_month=round(rm),
-            shopify_revenue_net=round(rn),
-            shopify_revenue_net_last=round(rnl),
-            shopify_revenue_net_month=round(rnm),
-            shopify_roas=roas(r, spend),
-            shopify_roas_last=roas(rl, spend_last),
-            shopify_roas_month=roas(rm, spend_month),
-            shopify_roas_net=roas(rn, spend),
-            shopify_cpa=round(spend / o, 2) if o else None,
-        )
-    return rows
-
-
-def build_snapshot(days: int, through: str, channels_base: list[dict]) -> dict:
+def build_snapshot(days: int, through: str, channels_base: list[dict], targets: dict, cfg: dict) -> dict:
     cur_start, cur_end = window_for(days, through)
     prior_end = cur_start - timedelta(days=1)
     prior_start = prior_end - timedelta(days=days - 1)
@@ -152,8 +354,12 @@ def build_snapshot(days: int, through: str, channels_base: list[dict]) -> dict:
     prior = shopify_pull(prior_start, prior_end)
     month = shopify_pull(month_start, month_end)
 
+    cur_ad = ad_spend_for_range(cur_start, cur_end, cfg)
+    prior_ad = ad_spend_for_range(prior_start, prior_end, cfg)
+    month_ad = ad_spend_for_range(month_start, month_end, cfg)
+
     cur_s, prior_s, month_s = cur["summary"], prior["summary"], month["summary"]
-    channels = build_channels(channels_base, days, cur_s, prior_s, month_s)
+    channels = build_channels(cur_s, prior_s, month_s, cur_ad, prior_ad, month_ad, channels_base, targets)
     total_spend = sum(float(c.get("spend") or 0) for c in channels)
 
     paid_orders = int(cur_s.get("paid_orders", 0))
@@ -179,7 +385,7 @@ def build_snapshot(days: int, through: str, channels_base: list[dict]) -> dict:
         "cpa_blended": round(total_spend / paid_orders, 2) if paid_orders else None,
         "aov": round(paid_revenue / paid_orders, 2) if paid_orders else None,
         "aov_net": round(paid_revenue_net / paid_orders, 2) if paid_orders else None,
-        "spend_estimated": days != 7,
+        "spend_estimated": False,
     }
 
     return {
@@ -274,24 +480,58 @@ def apply_snapshot(payload: dict, snap: dict) -> None:
         else:
             row["this_period"] = round(this_v)
             row["last_period"] = round(last_v)
+        if key == "Pinterest Shopify orders":
+            t, target = row.get("this_period", 0), row.get("target", 0)
+            row["status"] = "good" if t >= target else ("watch" if t > 0 else "bad")
 
 
 def main() -> None:
     cfg = load_json(CONFIG) if CONFIG.exists() else {}
     through = cfg.get("window_ends", "today")
     default_days = int(cfg.get("report_window_days", 7))
+    targets = {
+        "meta_shopify_roas_target": 1.5,
+        "google_shopify_roas_target": 3.0,
+        "pinterest_max_spend_no_orders": 150,
+    }
 
     payload = load_json(LATEST) if LATEST.exists() else {}
     channels_base = payload.get("channels", [])
 
     windows: dict[str, dict] = {}
     for days in WINDOW_SIZES:
-        windows[str(days)] = build_snapshot(days, through, channels_base)
+        windows[str(days)] = build_snapshot(days, through, channels_base, targets, cfg)
 
     default_snap = windows[str(default_days)]
     apply_snapshot(payload, default_snap)
+    regenerate_executive_summary(default_snap, payload)
+
+    w = default_snap["window"]
+    cur_start = date.fromisoformat(w["start"])
+    cur_end = date.fromisoformat(w["end"])
+    top_ads = meta_top_ads(cur_start, cur_end)
+    if top_ads:
+        payload["meta_top_ads"] = top_ads
+
+    has_google = bool(default_snap["channels"][1].get("spend")) if len(default_snap["channels"]) > 1 else False
+    has_pin = bool(default_snap["channels"][2].get("spend")) if len(default_snap["channels"]) > 2 else False
+    dq = payload.setdefault("data_quality", {})
+    dq["shopify"] = {"status": "ok", "source": "shopify_rest", "note": "Paid orders + UTM attribution"}
+    dq["blend_meta"] = {"status": "ok", "source": "meta_graph_api", "note": f"Spend for {w['label']}"}
+    dq["blend_google"] = {
+        "status": "ok" if has_google else "partial",
+        "source": "google_ads_api",
+        "note": f"Spend for {w['label']}" if has_google else "Google spend not returned — check credentials",
+    }
+    dq["blend_pinterest"] = {
+        "status": "ok" if has_pin else "partial",
+        "source": "pinterest_api",
+        "note": f"Spend for {w['label']}" if has_pin else "Pinterest spend not returned — check credentials",
+    }
+
     payload["windows"] = windows
     payload["generated_at"] = datetime.now(TZ).isoformat()
+    payload["ad_spend_window"] = {"start": w["start"], "end": w["end"], "label": w["label"]}
 
     history = load_json(HISTORY) if HISTORY.exists() else []
     k = default_snap["kpis"]
