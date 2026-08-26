@@ -155,6 +155,33 @@ def ad_spend_for_range(start: date, end: date, cfg: dict | None = None) -> dict[
                 "platform_roas": roas(val, spend),
             }
 
+    if "Google" not in channels:
+        ga = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "google_spend_ga4.py"),
+                "--start",
+                start.isoformat(),
+                "--end",
+                end.isoformat(),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if ga.returncode == 0 and ga.stdout.strip():
+            g = json.loads(ga.stdout)
+            spend = float(g.get("spend") or 0)
+            val = float(g.get("conversion_value") or 0)
+            conv = float(g.get("conversions") or 0)
+            if spend:
+                channels["Google"] = {
+                    "spend": round(spend, 2),
+                    "platform_purchases": round(conv),
+                    "platform_revenue": round(val, 2),
+                    "platform_roas": roas(val, spend),
+                }
+
     for key in ("Meta", "Google", "Pinterest"):
         if key not in channels and key in cached:
             channels[key] = cached[key]
@@ -616,8 +643,8 @@ def main() -> None:
     dq["blend_meta"] = {"status": "ok", "source": "meta_graph_api", "note": f"Spend for {w['label']}"}
     dq["blend_google"] = {
         "status": "ok" if has_google else "partial",
-        "source": "google_ads_api",
-        "note": f"Spend for {w['label']}" if has_google else "Google spend not returned — check credentials",
+        "source": "ga4_ad_cost",
+        "note": f"Live Google spend for {w['label']}" if has_google else "Google spend not returned — check GA secret",
     }
     dq["blend_pinterest"] = {
         "status": "ok" if has_pin else "partial",

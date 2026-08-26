@@ -120,12 +120,18 @@ def main() -> None:
     start = date.fromisoformat(args.start)
     end = date.fromisoformat(args.end)
     out = {}
-    g = google_spend(start, end)
-    if g:
-        out["Google"] = g
-    pin = pinterest_spend(start, end)
-    if pin:
-        out["Pinterest"] = pin
+    try:
+        g = google_spend(start, end)
+        if g:
+            out["Google"] = g
+    except Exception:
+        pass
+    try:
+        pin = pinterest_spend(start, end)
+        if pin:
+            out["Pinterest"] = pin
+    except Exception:
+        pass
     print(json.dumps(out, indent=2))
 
 
