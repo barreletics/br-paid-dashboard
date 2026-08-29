@@ -1767,23 +1767,29 @@ function renderShopifyPeriod(data) {
   const k = data.kpis || {};
   const p = priorKpis(data);
   const w = data.window || {};
+  const wh = data.wholesale || {};
+  const whP = (data.prior_period || {}).wholesale || {};
   const rev = storeRev(k);
   const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
   const revCh = pctChange(rev, revP);
   const ordCh = pctChange(k.paid_orders, p.paid_orders);
+  const whBlock = (wh.orders || k.wholesale_orders)
+    ? `<div class="shopify-wholesale-line muted">Wholesale (separate): <strong>${wh.orders ?? k.wholesale_orders}</strong> orders · ${fmt(wh.revenue ?? k.wholesale_revenue)}${whP.orders ? ` · ${trendPlain(wh.orders ?? k.wholesale_orders, whP.orders)} vs last period` : ''}</div>`
+    : '';
   return `
     <section data-view="simple summary performance" class="shopify-total-block">
-      <h2>Shopify total · ${w.label || 'this period'}</h2>
-      <p class="section-hint">All paid orders in Shopify for these dates — direct, email, organic, and paid.</p>
+      <h2>Shopify DTC · ${w.label || 'this period'}</h2>
+      <p class="section-hint">DTC paid orders only — excludes cancelled, test, promo, exchanges. Wholesale shown separately. Not in ad ROAS.</p>
       <div class="shopify-total-grid">
         <div>
           <div class="shopify-total-val">${fmt(rev)}</div>
-          <div class="shopify-total-label">Total store sales</div>
+          <div class="shopify-total-label">DTC store sales</div>
         </div>
         <div class="shopify-total-side">
-          <div><strong>${k.paid_orders ?? '—'}</strong> orders · <span class="${ordCh.cls}">${trendPlain(k.paid_orders, p.paid_orders)}</span></div>
+          <div><strong>${k.paid_orders ?? '—'}</strong> DTC orders · <span class="${ordCh.cls}">${trendPlain(k.paid_orders, p.paid_orders)}</span></div>
           <div>AOV ${fmt(k.aov)}</div>
           <div class="${revCh.cls}">${trendPlain(rev, revP)} vs ${w.prior_label || 'last period'}</div>
+          ${whBlock}
         </div>
       </div>
     </section>`;

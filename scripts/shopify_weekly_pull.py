@@ -4,6 +4,9 @@
 Uses Admin REST + client credentials (same app as Cursor MCP).
 Requires env: SHOPIFY_DOMAIN, SHOPIFY_CLIENT_ID, SHOPIFY_CLIENT_SECRET
 
+DTC totals exclude: cancelled/refunded, test, promo/samples, ReturnZap exchanges,
+wholesale (reported separately). See accounting/FLOW.md.
+
 Usage:
   python3 shopify_weekly_pull.py --days 7
   python3 shopify_weekly_pull.py --start 2026-08-13 --end 2026-08-22
@@ -25,6 +28,33 @@ from zoneinfo import ZoneInfo
 TZ = ZoneInfo("America/Detroit")
 API_VERSION = "2024-10"
 
+EXCLUDE_TAGS = frozenset(
+    {
+        "TEST ORDER",
+        "TEST",
+        "od-converted",
+        "Samples",
+        "Promo Item",
+        "ReturnZap Exchanged",
+    }
+)
+
+WHOLESALE_TAGS = frozenset(
+    {
+        "WHOLESALE ORDER",
+        "Wholesale Studio",
+        "Wholesale instructor",
+        "Xero Invoiced",
+    }
+)
+
+COUNTABLE_FINANCIAL = frozenset({"paid", "partially_paid", "partially_refunded"})
+
+ORDER_FIELDS = (
+    "id,name,created_at,total_price,current_total_price,total_refunded,tags,"
+    "landing_site,referring_site,financial_status,cancelled_at,source_name"
+)
+
 
 def _env(name: str) -> str:
     v = os.environ.get(name, "").strip()
@@ -32,6 +62,67 @@ def _env(name: str) -> str:
         print(f"Missing env {name}", file=sys.stderr)
         sys.exit(1)
     return v
+
+
+def parse_tags(tags_str: str) -> set[str]:
+    return {t.strip() for t in (tags_str or "").split(",") if t.strip()}
+
+
+def is_wholesale(tags: set[str]) -> bool:
+    if tags & WHOLESALE_TAGS:
+        return True
+    return any("wholesale" in t.lower() for t in tags)
+
+
+def order_net(o: dict[str, Any]) -> float:
+    cur = o.get("current_total_price")
+    if cur is not None and str(cur) != "":
+        return float(cur)
+    return float(o.get("total_price") or 0)
+
+
+def classify_order(o: dict[str, Any]) -> str:
+    """Return segment: dtc | wholesale | excluded."""
+    tags = parse_tags(o.get("tags") or "")
+
+    if is_wholesale(tags):
+        return "wholesale"
+
+    if tags & EXCLUDE_TAGS:
+        return "excluded"
+
+    if o.get("cancelled_at"):
+        return "excluded"
+
+    fs = (o.get("financial_status") or "").lower()
+    if fs in ("refunded", "voided"):
+        return "excluded"
+
+    if order_net(o) <= 0:
+        return "excluded"
+
+    if fs not in COUNTABLE_FINANCIAL:
+        return "excluded"
+
+    return "dtc"
+
+
+def exclude_bucket(o: dict[str, Any]) -> str:
+    tags = parse_tags(o.get("tags") or "")
+    if tags & {"TEST ORDER", "TEST", "od-converted"}:
+        return "test"
+    if tags & {"Samples", "Promo Item"}:
+        return "promo"
+    if "ReturnZap Exchanged" in tags:
+        return "exchange"
+    if o.get("cancelled_at") or (o.get("financial_status") or "").lower() in (
+        "refunded",
+        "voided",
+    ):
+        return "cancelled"
+    if order_net(o) <= 0:
+        return "zero"
+    return "other"
 
 
 def get_token(domain: str, client_id: str, client_secret: str) -> str:
@@ -64,7 +155,6 @@ def get_token(domain: str, client_id: str, client_secret: str) -> str:
         token = data.get("access_token")
         if token:
             return token
-    # fallback urllib
     body = json.dumps(
         {
             "client_id": client_id,
@@ -91,10 +181,6 @@ def fetch_orders_curl(
 ) -> list[dict[str, Any]]:
     import subprocess
 
-    fields = (
-        "id,name,created_at,total_price,current_total_price,tags,landing_site,referring_site,"
-        "financial_status,source_name"
-    )
     params = urllib.parse.urlencode(
         {
             "status": "any",
@@ -102,7 +188,7 @@ def fetch_orders_curl(
             "order": "created_at desc",
             "created_at_min": created_at_min,
             "created_at_max": created_at_max,
-            "fields": fields,
+            "fields": ORDER_FIELDS,
         }
     )
     url = f"https://{domain}/admin/api/{API_VERSION}/orders.json?{params}"
@@ -124,10 +210,6 @@ def fetch_orders(
         return fetch_orders_curl(domain, token, created_at_min, created_at_max)
     except Exception:
         pass
-    fields = (
-        "id,name,created_at,total_price,current_total_price,tags,landing_site,referring_site,"
-        "financial_status,source_name"
-    )
     params = urllib.parse.urlencode(
         {
             "status": "any",
@@ -135,7 +217,7 @@ def fetch_orders(
             "order": "created_at desc",
             "created_at_min": created_at_min,
             "created_at_max": created_at_max,
-            "fields": fields,
+            "fields": ORDER_FIELDS,
         }
     )
     url = f"https://{domain}/admin/api/{API_VERSION}/orders.json?{params}"
@@ -176,47 +258,35 @@ def channel(o: dict[str, Any]) -> str:
     return "Other"
 
 
-def order_net(o: dict[str, Any]) -> float:
-    cur = o.get("current_total_price")
-    if cur is not None and str(cur) != "":
-        return float(cur)
-    return float(o.get("total_price") or 0)
-
-
-def summarize(orders: list[dict[str, Any]]) -> dict[str, Any]:
-    paid = [
-        o
-        for o in orders
-        if order_net(o) > 0
-        and o.get("financial_status") == "paid"
-        and "TEST ORDER" not in (o.get("tags") or "")
-    ]
-    by_ch: dict[str, list[float]] = defaultdict(list)
-    by_ch_net: dict[str, list[float]] = defaultdict(list)
-    daily = Counter()
-    daily_rev: dict[str, float] = defaultdict(float)
-    daily_rev_net: dict[str, float] = defaultdict(float)
-    meta_camps = Counter()
+def _rollup_segment(orders: list[dict[str, Any]], track_daily: bool) -> dict[str, Any]:
     gross_total = 0.0
     net_total = 0.0
-    for o in paid:
-        c = channel(o)
-        gross = float(o["total_price"])
+    by_ch: dict[str, list[float]] = defaultdict(list)
+    by_ch_net: dict[str, list[float]] = defaultdict(list)
+    daily: Counter[str] = Counter()
+    daily_rev: dict[str, float] = defaultdict(float)
+    daily_rev_net: dict[str, float] = defaultdict(float)
+    meta_camps: Counter[str] = Counter()
+
+    for o in orders:
+        gross = float(o.get("total_price") or 0)
         net = order_net(o)
         gross_total += gross
         net_total += net
-        by_ch[c].append(gross)
-        by_ch_net[c].append(net)
-        day = o["created_at"][:10]
-        daily[day] += 1
-        daily_rev[day] += gross
-        daily_rev_net[day] += net
-        land = o.get("landing_site") or ""
-        qs = urllib.parse.parse_qs(urllib.parse.urlparse(land).query)
-        camp = (qs.get("utm_campaign") or [""])[0]
-        med = (qs.get("utm_medium") or [""])[0]
-        if med == "paid_social" and camp:
-            meta_camps[camp] += 1
+        if track_daily:
+            c = channel(o)
+            by_ch[c].append(gross)
+            by_ch_net[c].append(net)
+            day = o["created_at"][:10]
+            daily[day] += 1
+            daily_rev[day] += gross
+            daily_rev_net[day] += net
+            land = o.get("landing_site") or ""
+            qs = urllib.parse.parse_qs(urllib.parse.urlparse(land).query)
+            camp = (qs.get("utm_campaign") or [""])[0]
+            med = (qs.get("utm_medium") or [""])[0]
+            if med == "paid_social" and camp:
+                meta_camps[camp] += 1
 
     channels = {
         k: {
@@ -226,16 +296,78 @@ def summarize(orders: list[dict[str, Any]]) -> dict[str, Any]:
         }
         for k, v in sorted(by_ch.items(), key=lambda x: -sum(x[1]))
     }
+
+    out: dict[str, Any] = {
+        "orders": len(orders),
+        "revenue": round(gross_total, 2),
+        "revenue_net": round(net_total, 2),
+    }
+    if track_daily:
+        out["channels"] = channels
+        out["daily_orders"] = dict(sorted(daily.items()))
+        out["daily_revenue"] = {k: round(v, 2) for k, v in sorted(daily_rev.items())}
+        out["daily_revenue_net"] = {
+            k: round(v, 2) for k, v in sorted(daily_rev_net.items())
+        }
+        out["meta_utm_campaigns"] = meta_camps.most_common(10)
+    return out
+
+
+def summarize(orders: list[dict[str, Any]]) -> dict[str, Any]:
+    dtc: list[dict[str, Any]] = []
+    wholesale: list[dict[str, Any]] = []
+    excluded: list[dict[str, Any]] = []
+    excluded_buckets: Counter[str] = Counter()
+
+    for o in orders:
+        segment = classify_order(o)
+        if segment == "dtc":
+            dtc.append(o)
+        elif segment == "wholesale":
+            wholesale.append(o)
+        else:
+            excluded.append(o)
+            excluded_buckets[exclude_bucket(o)] += 1
+
+    dtc_roll = _rollup_segment(dtc, track_daily=True)
+    wholesale_roll = _rollup_segment(wholesale, track_daily=False)
+
+    excluded_summary = {
+        "orders": len(excluded),
+        "by_reason": dict(sorted(excluded_buckets.items())),
+        "samples": [
+            {
+                "name": o.get("name"),
+                "created_at": (o.get("created_at") or "")[:10],
+                "total_price": float(o.get("total_price") or 0),
+                "financial_status": o.get("financial_status"),
+                "cancelled_at": bool(o.get("cancelled_at")),
+                "reason": exclude_bucket(o),
+            }
+            for o in sorted(
+                excluded,
+                key=lambda x: float(x.get("total_price") or 0),
+                reverse=True,
+            )[:8]
+        ],
+    }
+
+    gross_total = dtc_roll["revenue"]
+    net_total = dtc_roll["revenue_net"]
+
     return {
-        "paid_orders": len(paid),
-        "paid_revenue": round(gross_total, 2),
-        "paid_revenue_net": round(net_total, 2),
+        "paid_orders": dtc_roll["orders"],
+        "paid_revenue": gross_total,
+        "paid_revenue_net": net_total,
         "returns_adjusted": round(gross_total - net_total, 2),
-        "channels": channels,
-        "daily_orders": dict(sorted(daily.items())),
-        "daily_revenue": {k: round(v, 2) for k, v in sorted(daily_rev.items())},
-        "daily_revenue_net": {k: round(v, 2) for k, v in sorted(daily_rev_net.items())},
-        "meta_utm_campaigns": meta_camps.most_common(10),
+        "channels": dtc_roll.get("channels", {}),
+        "daily_orders": dtc_roll.get("daily_orders", {}),
+        "daily_revenue": dtc_roll.get("daily_revenue", {}),
+        "daily_revenue_net": dtc_roll.get("daily_revenue_net", {}),
+        "meta_utm_campaigns": dtc_roll.get("meta_utm_campaigns", []),
+        "wholesale": wholesale_roll,
+        "excluded": excluded_summary,
+        "segment_note": "paid_orders and paid_revenue are DTC only; wholesale separate; excludes cancelled, test, promo, exchanges",
         "source": "shopify_rest",
         "truth": True,
     }

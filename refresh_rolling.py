@@ -351,8 +351,13 @@ def regenerate_executive_summary(snap: dict, payload: dict) -> None:
         if prior.get("paid_orders")
         else 0
     )
+    wh_line = ""
+    if k.get("wholesale_orders"):
+        wh_line = (
+            f" Wholesale {k['wholesale_orders']} orders · {fmt_money(k.get('wholesale_revenue', 0))} — not in DTC totals."
+        )
     payload["executive_summary"] = [
-        f"Store {k['paid_orders']} orders · {fmt_money(k['paid_revenue'])} ({rev_chg:+d}% revenue vs {w['prior_label']}).",
+        f"DTC store {k['paid_orders']} orders · {fmt_money(k['paid_revenue'])} ({rev_chg:+d}% vs {w['prior_label']}).{wh_line}",
         f"Google PMax · Shopify ROAS {goog.get('shopify_roas', 0)}× on {fmt_money(goog.get('shopify_revenue', 0))} — best paid channel.",
         f"Meta · {meta.get('shopify_orders', 0)} Shopify UTM orders · ROAS {meta.get('shopify_roas', 0)}× (platform claims {meta.get('platform_purchases', '—')} purch).",
         f"Pinterest · {pin.get('shopify_orders', 0)} Shopify orders · {fmt_money(pin.get('spend', 0))} spend.",
@@ -496,11 +501,18 @@ def build_snapshot(days: int, through: str, channels_base: list[dict], targets: 
     prior_spend = sum(float(c.get("spend_last") or 0) for c in channels) or total_spend
     month_spend = total_spend
 
+    cur_wh = cur_s.get("wholesale") or {}
+    prior_wh = prior_s.get("wholesale") or {}
+    month_wh = month_s.get("wholesale") or {}
+
     kpis = {
         "paid_orders": paid_orders,
         "paid_revenue": round(paid_revenue, 2),
         "paid_revenue_net": round(paid_revenue_net, 2),
         "returns_adjusted": round(paid_revenue - paid_revenue_net, 2),
+        "wholesale_orders": int(cur_wh.get("orders", 0)),
+        "wholesale_revenue": round(float(cur_wh.get("revenue", 0)), 2),
+        "wholesale_revenue_net": round(float(cur_wh.get("revenue_net", 0)), 2),
         "total_ad_spend": round(total_spend),
         "blended_mer": round(paid_revenue / total_spend, 2) if total_spend else 0,
         "blended_mer_net": round(paid_revenue_net / total_spend, 2) if total_spend else 0,
@@ -530,6 +542,8 @@ def build_snapshot(days: int, through: str, channels_base: list[dict], targets: 
         "daily_orders": cur_s.get("daily_orders", {}),
         "daily_revenue": cur_s.get("daily_revenue", {}),
         "daily_revenue_net": cur_s.get("daily_revenue_net", {}),
+        "wholesale": cur_wh,
+        "excluded": cur_s.get("excluded") or {},
         "prior_period": {
             "window": {
                 "start": prior_start.isoformat(),
@@ -541,10 +555,13 @@ def build_snapshot(days: int, through: str, channels_base: list[dict], targets: 
                 "paid_orders": prior_orders,
                 "paid_revenue": round(prior_revenue, 2),
                 "paid_revenue_net": round(prior_revenue_net, 2),
+                "wholesale_orders": int(prior_wh.get("orders", 0)),
+                "wholesale_revenue": round(float(prior_wh.get("revenue", 0)), 2),
                 "total_ad_spend": round(prior_spend),
                 "blended_mer": round(prior_revenue / prior_spend, 2) if prior_spend else 0,
                 "blended_mer_net": round(prior_revenue_net / prior_spend, 2) if prior_spend else 0,
             },
+            "wholesale": prior_wh,
         },
         "prior_month": {
             "window": {
@@ -557,10 +574,13 @@ def build_snapshot(days: int, through: str, channels_base: list[dict], targets: 
                 "paid_orders": month_orders,
                 "paid_revenue": round(month_revenue, 2),
                 "paid_revenue_net": round(month_revenue_net, 2),
+                "wholesale_orders": int(month_wh.get("orders", 0)),
+                "wholesale_revenue": round(float(month_wh.get("revenue", 0)), 2),
                 "total_ad_spend": round(month_spend),
                 "blended_mer": round(month_revenue / month_spend, 2) if month_spend else 0,
                 "blended_mer_net": round(month_revenue_net / month_spend, 2) if month_spend else 0,
             },
+            "wholesale": month_wh,
         },
     }
 
@@ -574,6 +594,8 @@ def apply_snapshot(payload: dict, snap: dict) -> None:
     payload["daily_revenue_net"] = snap.get("daily_revenue_net", {})
     payload["prior_period"] = snap["prior_period"]
     payload["prior_month"] = snap["prior_month"]
+    payload["wholesale"] = snap.get("wholesale") or {}
+    payload["excluded"] = snap.get("excluded") or {}
 
     kpi_rows = payload.get("kpi_vs_target", [])
     k = snap["kpis"]
@@ -639,7 +661,11 @@ def main() -> None:
     has_google = bool(default_snap["channels"][1].get("spend")) if len(default_snap["channels"]) > 1 else False
     has_pin = bool(default_snap["channels"][2].get("spend")) if len(default_snap["channels"]) > 2 else False
     dq = payload.setdefault("data_quality", {})
-    dq["shopify"] = {"status": "ok", "source": "shopify_rest", "note": "Paid orders + UTM attribution"}
+    dq["shopify"] = {
+        "status": "ok",
+        "source": "shopify_rest",
+        "note": "DTC paid orders + UTM; wholesale separate; excludes cancelled, test, promo, exchanges",
+    }
     dq["blend_meta"] = {"status": "ok", "source": "meta_graph_api", "note": f"Spend for {w['label']}"}
     dq["blend_google"] = {
         "status": "ok" if has_google else "partial",
