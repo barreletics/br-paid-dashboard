@@ -2074,6 +2074,29 @@ function renderAgencyLog(data) {
     </section>`;
 }
 
+function renderIntlPlan(data) {
+  const p = data.intl_plan;
+  if (!p) return '';
+  const tiers = (p.tier1_countries || []).map(c =>
+    glanceRow(c.country, `${c.orders} orders`, `${c.pct}% of intl`, 'intl')
+  ).join('');
+  const clusters = (p.campaign_clusters || []).map(c =>
+    glanceRow(c.name, `$${c.budget_day}/day`, `${c.geo} · ${c.creative}`, 'intl')
+  ).join('');
+  return `
+    <section data-view="detailed summary actions">
+      <h2>International trial plan</h2>
+      <p class="sub">${p.anchor || ''} · ${p.pareto_note || ''}</p>
+      <p class="info-card-sub">${p.budget_rule || ''}</p>
+      <p class="info-card-sub">${p.cannibalization || ''}</p>
+      <p class="info-section-label">Tier 1 countries (~80% of intl)</p>
+      <div class="glance-list">${tiers}</div>
+      <p class="info-section-label">Phase 1 · ${p.trial_platform || 'Meta'} (${p.phase2_platform || ''})</p>
+      <div class="glance-list">${clusters}</div>
+      <p class="info-card-sub">Success: ${p.success_gate || ''} · Kill: ${p.kill_rule || ''} · Skip: ${p.skip_platform || ''}</p>
+    </section>`;
+}
+
 function renderBudgetStrip(data) {
   const bp = data.budget_pacing || {};
   if (!bp.month_to_date_spend) return '';
@@ -2477,6 +2500,7 @@ function render(raw) {
       ${detailPanel('Flags', renderFlags(data), false)}
       ${detailPanel('Budget and daily orders', renderBudgetStrip(data) + renderDailySpark(data), false)}
       ${detailPanel('Agency changes', renderAgencyLog(data), false)}
+      ${detailPanel('International trial', renderIntlPlan(data), false)}
       ${detailPanel('Weekly history', renderHistoryTrend(data), false)}
       ${detailPanel('KPI vs target and strategy', `
         <section data-view="detailed performance">
