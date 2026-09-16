@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-16T07:29:36.164272-04:00",
+  "generated_at": "2026-09-16T07:58:51.872455-04:00",
   "window": {
     "start": "2026-09-10",
     "end": "2026-09-16",
@@ -15,11 +15,11 @@
     "month_label": "Aug 7\u201313, 2026"
   },
   "executive_summary": [
-    "Intl live Sep 4: 13 intl orders (+7 vs prior) \u00b7 US 112 (\u22127). Total store flat at 125.",
-    "Intl Meta ~$568 \u00b7 6 Shopify UTM intl purch \u00b7 AU/CA/UAE winning \u00b7 Italy 0 purch \u2014 pause IT.",
     "DTC store 61 orders \u00b7 $6,497 (+4% vs Sep 3\u20139, 2026).",
     "Google PMax \u00b7 Shopify ROAS 3.47\u00d7 on $1,449 \u2014 best paid channel.",
-    "Meta \u00b7 26 Shopify UTM orders \u00b7 ROAS 1.47\u00d7 (platform claims 0 purch)."
+    "Meta \u00b7 26 Shopify UTM orders \u00b7 ROAS 1.47\u00d7 (platform claims 0 purch).",
+    "Pinterest \u00b7 1 Shopify orders \u00b7 $241 spend.",
+    "Hold Meta budget until Shopify UTM ROAS \u22651.5\u00d7 for 7 days \u00b7 keep Google running."
   ],
   "kpi_vs_target": [
     {
@@ -41,7 +41,7 @@
     {
       "kpi": "Blended MER",
       "this_period": 2.59,
-      "last_period": 2.5,
+      "last_period": 2.38,
       "target": 3.0,
       "unit": "\u00d7",
       "status": "good"
@@ -49,7 +49,7 @@
     {
       "kpi": "Meta Shopify ROAS",
       "this_period": 1.47,
-      "last_period": 1.4,
+      "last_period": 1.31,
       "target": 1.5,
       "unit": "\u00d7",
       "status": "watch"
@@ -156,13 +156,13 @@
     {
       "name": "Meta",
       "spend": 1850,
-      "spend_last": 1850,
+      "spend_last": 1977,
       "shopify_orders": 26,
       "shopify_orders_last": 26,
       "shopify_revenue": 2720,
       "shopify_revenue_last": 2588,
       "shopify_roas": 1.47,
-      "shopify_roas_last": 1.4,
+      "shopify_roas_last": 1.31,
       "shopify_cpa": 71.16,
       "platform_purchases": 0,
       "platform_revenue": 0,
@@ -587,23 +587,148 @@
   },
   "history_weekly": [
     {
-      "label": "Aug 16\u201322, 2026",
-      "start": "2026-08-16",
-      "end": "2026-08-22",
+      "label": "Aug 30 \u2013 Sep 5, 2026",
+      "start": "2026-08-30",
+      "end": "2026-09-05",
       "days": 7,
-      "orders": 54,
-      "revenue": 5729,
-      "revenue_net": 5729,
-      "ad_spend": 3292,
-      "mer": 1.74,
+      "orders": 59,
+      "revenue": 6344,
+      "revenue_net": 6158,
+      "ad_spend": 2392,
+      "mer": 2.65,
       "channels": {
         "Meta": {
-          "orders": 17,
-          "revenue": 1548
+          "orders": 25,
+          "revenue": 2405
+        },
+        "Google": {
+          "orders": 20,
+          "revenue": 2006
+        },
+        "Pinterest": {
+          "orders": 1,
+          "revenue": 169
+        }
+      }
+    },
+    {
+      "label": "Aug 31 \u2013 Sep 6, 2026",
+      "start": "2026-08-31",
+      "end": "2026-09-06",
+      "days": 7,
+      "orders": 63,
+      "revenue": 6643,
+      "revenue_net": 6561,
+      "ad_spend": 2433,
+      "mer": 2.73,
+      "channels": {
+        "Meta": {
+          "orders": 26,
+          "revenue": 2461
+        },
+        "Google": {
+          "orders": 23,
+          "revenue": 2249
+        },
+        "Pinterest": {
+          "orders": 1,
+          "revenue": 169
+        }
+      }
+    },
+    {
+      "label": "Sep 1\u20137, 2026",
+      "start": "2026-09-01",
+      "end": "2026-09-07",
+      "days": 7,
+      "orders": 63,
+      "revenue": 6574,
+      "revenue_net": 6493,
+      "ad_spend": 2488,
+      "mer": 2.64,
+      "channels": {
+        "Meta": {
+          "orders": 26,
+          "revenue": 2499
+        },
+        "Google": {
+          "orders": 22,
+          "revenue": 2155
+        },
+        "Pinterest": {
+          "orders": 1,
+          "revenue": 169
+        }
+      }
+    },
+    {
+      "label": "Sep 2\u20138, 2026",
+      "start": "2026-09-02",
+      "end": "2026-09-08",
+      "days": 7,
+      "orders": 66,
+      "revenue": 6892,
+      "revenue_net": 6811,
+      "ad_spend": 2631,
+      "mer": 2.62,
+      "channels": {
+        "Meta": {
+          "orders": 28,
+          "revenue": 2741
+        },
+        "Google": {
+          "orders": 22,
+          "revenue": 2155
+        },
+        "Pinterest": {
+          "orders": 1,
+          "revenue": 169
+        }
+      }
+    },
+    {
+      "label": "Sep 3\u20139, 2026",
+      "start": "2026-09-03",
+      "end": "2026-09-09",
+      "days": 7,
+      "orders": 61,
+      "revenue": 6595,
+      "revenue_net": 6595,
+      "ad_spend": 2636,
+      "mer": 2.5,
+      "channels": {
+        "Meta": {
+          "orders": 25,
+          "revenue": 2504
+        },
+        "Google": {
+          "orders": 20,
+          "revenue": 1946
+        },
+        "Pinterest": {
+          "orders": 1,
+          "revenue": 169
+        }
+      }
+    },
+    {
+      "label": "Sep 4\u201310, 2026",
+      "start": "2026-09-04",
+      "end": "2026-09-10",
+      "days": 7,
+      "orders": 59,
+      "revenue": 6273,
+      "revenue_net": 6273,
+      "ad_spend": 2668,
+      "mer": 2.35,
+      "channels": {
+        "Meta": {
+          "orders": 25,
+          "revenue": 2620
         },
         "Google": {
           "orders": 16,
-          "revenue": 1782
+          "revenue": 1415
         },
         "Pinterest": {
           "orders": 0,
@@ -612,252 +737,127 @@
       }
     },
     {
-      "label": "Aug 20\u201326, 2026",
-      "start": "2026-08-20",
-      "end": "2026-08-26",
+      "label": "Sep 5\u201311, 2026",
+      "start": "2026-09-05",
+      "end": "2026-09-11",
       "days": 7,
-      "orders": 62,
-      "revenue": 6278,
-      "revenue_net": 6278,
-      "ad_spend": 2539,
-      "mer": 2.47,
-      "channels": {
-        "Meta": {
-          "orders": 26,
-          "revenue": 2370
-        },
-        "Google": {
-          "orders": 20,
-          "revenue": 1942
-        },
-        "Pinterest": {
-          "orders": 2,
-          "revenue": 301
-        }
-      }
-    },
-    {
-      "label": "Aug 21\u201327, 2026",
-      "start": "2026-08-21",
-      "end": "2026-08-27",
-      "days": 7,
-      "orders": 64,
-      "revenue": 6584,
-      "revenue_net": 6584,
-      "ad_spend": 2558,
-      "mer": 2.57,
+      "orders": 57,
+      "revenue": 5987,
+      "revenue_net": 5977,
+      "ad_spend": 2701,
+      "mer": 2.22,
       "channels": {
         "Meta": {
           "orders": 23,
-          "revenue": 2113
+          "revenue": 2584
         },
         "Google": {
-          "orders": 22,
-          "revenue": 2119
+          "orders": 16,
+          "revenue": 1488
         },
         "Pinterest": {
-          "orders": 2,
-          "revenue": 301
+          "orders": 0,
+          "revenue": 0
         }
       }
     },
     {
-      "label": "Aug 22\u201328, 2026",
-      "start": "2026-08-22",
-      "end": "2026-08-28",
+      "label": "Sep 6\u201312, 2026",
+      "start": "2026-09-06",
+      "end": "2026-09-12",
       "days": 7,
-      "orders": 61,
-      "revenue": 7565,
-      "revenue_net": 7565,
-      "ad_spend": 2463,
-      "mer": 3.07,
+      "orders": 57,
+      "revenue": 5977,
+      "revenue_net": 5967,
+      "ad_spend": 2743,
+      "mer": 2.18,
       "channels": {
         "Meta": {
-          "orders": 20,
-          "revenue": 1869
-        },
-        "Google": {
-          "orders": 22,
-          "revenue": 2075
-        },
-        "Pinterest": {
-          "orders": 2,
-          "revenue": 301
-        }
-      }
-    },
-    {
-      "label": "Aug 23\u201329, 2026",
-      "start": "2026-08-23",
-      "end": "2026-08-29",
-      "days": 7,
-      "orders": 59,
-      "revenue": 7321,
-      "revenue_net": 7321,
-      "ad_spend": 2501,
-      "mer": 2.93,
-      "channels": {
-        "Meta": {
-          "orders": 17,
-          "revenue": 1611
-        },
-        "Google": {
           "orders": 23,
-          "revenue": 2151
+          "revenue": 2510
         },
-        "Pinterest": {
-          "orders": 2,
-          "revenue": 246
-        }
-      }
-    },
-    {
-      "label": "Aug 24\u201330, 2026",
-      "start": "2026-08-24",
-      "end": "2026-08-30",
-      "days": 7,
-      "orders": 54,
-      "revenue": 7109,
-      "revenue_net": 7035,
-      "ad_spend": 2378,
-      "mer": 2.99,
-      "channels": {
-        "Meta": {
+        "Google": {
           "orders": 17,
-          "revenue": 1751
-        },
-        "Google": {
-          "orders": 19,
-          "revenue": 1876
+          "revenue": 1568
         },
         "Pinterest": {
-          "orders": 2,
-          "revenue": 246
+          "orders": 0,
+          "revenue": 0
         }
       }
     },
     {
-      "label": "Aug 25\u201331, 2026",
-      "start": "2026-08-25",
-      "end": "2026-08-31",
+      "label": "Sep 7\u201313, 2026",
+      "start": "2026-09-07",
+      "end": "2026-09-13",
       "days": 7,
-      "orders": 54,
-      "revenue": 7021,
-      "revenue_net": 6947,
-      "ad_spend": 2355,
-      "mer": 2.98,
+      "orders": 52,
+      "revenue": 5482,
+      "revenue_net": 5472,
+      "ad_spend": 2598,
+      "mer": 2.11,
       "channels": {
         "Meta": {
           "orders": 19,
-          "revenue": 1919
+          "revenue": 2054
         },
         "Google": {
-          "orders": 19,
-          "revenue": 1743
+          "orders": 13,
+          "revenue": 1168
         },
         "Pinterest": {
-          "orders": 1,
-          "revenue": 88
+          "orders": 0,
+          "revenue": 0
         }
       }
     },
     {
-      "label": "Aug 26 \u2013 Sep 1, 2026",
-      "start": "2026-08-26",
-      "end": "2026-09-01",
+      "label": "Sep 8\u201314, 2026",
+      "start": "2026-09-08",
+      "end": "2026-09-14",
       "days": 7,
-      "orders": 48,
-      "revenue": 6332,
-      "revenue_net": 6227,
-      "ad_spend": 2299,
-      "mer": 2.75,
+      "orders": 60,
+      "revenue": 6346,
+      "revenue_net": 6336,
+      "ad_spend": 2509,
+      "mer": 2.53,
       "channels": {
         "Meta": {
-          "orders": 16,
-          "revenue": 1595
-        },
-        "Google": {
-          "orders": 16,
-          "revenue": 1491
-        },
-        "Pinterest": {
-          "orders": 1,
-          "revenue": 88
-        }
-      }
-    },
-    {
-      "label": "Aug 27 \u2013 Sep 2, 2026",
-      "start": "2026-08-27",
-      "end": "2026-09-02",
-      "days": 7,
-      "orders": 48,
-      "revenue": 6436,
-      "revenue_net": 6250,
-      "ad_spend": 2322,
-      "mer": 2.77,
-      "channels": {
-        "Meta": {
-          "orders": 18,
-          "revenue": 1774
+          "orders": 25,
+          "revenue": 2604
         },
         "Google": {
           "orders": 15,
-          "revenue": 1380
+          "revenue": 1465
         },
         "Pinterest": {
           "orders": 1,
-          "revenue": 88
+          "revenue": 121
         }
       }
     },
     {
-      "label": "Aug 28 \u2013 Sep 3, 2026",
-      "start": "2026-08-28",
-      "end": "2026-09-03",
+      "label": "Sep 9\u201315, 2026",
+      "start": "2026-09-09",
+      "end": "2026-09-15",
       "days": 7,
-      "orders": 53,
-      "revenue": 7131,
-      "revenue_net": 6945,
-      "ad_spend": 2314,
-      "mer": 3.08,
+      "orders": 61,
+      "revenue": 6406,
+      "revenue_net": 6396,
+      "ad_spend": 2509,
+      "mer": 2.55,
       "channels": {
         "Meta": {
-          "orders": 20,
-          "revenue": 1942
+          "orders": 27,
+          "revenue": 2698
         },
         "Google": {
-          "orders": 19,
-          "revenue": 1914
+          "orders": 14,
+          "revenue": 1449
         },
         "Pinterest": {
-          "orders": 2,
-          "revenue": 257
-        }
-      }
-    },
-    {
-      "label": "Aug 29 \u2013 Sep 4, 2026",
-      "start": "2026-08-29",
-      "end": "2026-09-04",
-      "days": 7,
-      "orders": 51,
-      "revenue": 5530,
-      "revenue_net": 5344,
-      "ad_spend": 2231,
-      "mer": 2.48,
-      "channels": {
-        "Meta": {
-          "orders": 21,
-          "revenue": 2026
-        },
-        "Google": {
-          "orders": 17,
-          "revenue": 1746
-        },
-        "Pinterest": {
-          "orders": 2,
-          "revenue": 257
+          "orders": 1,
+          "revenue": 121
         }
       }
     },
@@ -906,9 +906,9 @@
       "paid_revenue_net": 6265.74,
       "wholesale_orders": 2,
       "wholesale_revenue": 413.0,
-      "total_ad_spend": 2509,
-      "blended_mer": 2.5,
-      "blended_mer_net": 2.5
+      "total_ad_spend": 2636,
+      "blended_mer": 2.38,
+      "blended_mer_net": 2.38
     },
     "wholesale": {
       "orders": 2,
@@ -993,13 +993,13 @@
         {
           "name": "Meta",
           "spend": 1850,
-          "spend_last": 1850,
+          "spend_last": 1977,
           "shopify_orders": 26,
           "shopify_orders_last": 26,
           "shopify_revenue": 2720,
           "shopify_revenue_last": 2588,
           "shopify_roas": 1.47,
-          "shopify_roas_last": 1.4,
+          "shopify_roas_last": 1.31,
           "shopify_cpa": 71.16,
           "platform_purchases": 0,
           "platform_revenue": 0,
@@ -1183,9 +1183,9 @@
           "paid_revenue_net": 6265.74,
           "wholesale_orders": 2,
           "wholesale_revenue": 413.0,
-          "total_ad_spend": 2509,
-          "blended_mer": 2.5,
-          "blended_mer_net": 2.5
+          "total_ad_spend": 2636,
+          "blended_mer": 2.38,
+          "blended_mer_net": 2.38
         },
         "wholesale": {
           "orders": 2,
@@ -1975,6 +1975,95 @@
       "Pause Italy intl ad set ($139 \u00b7 0 purch).",
       "Keep AU + CA + UAE \u2014 above kill threshold with purchases.",
       "Intl budget stays additive (~$44/day). No US budget cuts."
+    ]
+  },
+  "action_rollup": {
+    "title": "Action rollup",
+    "period": "Sep 10\u201316, 2026",
+    "headline": "Total store flat (125 orders). US \u22127 orders \u00b7 Intl +7. Intl Meta ~$568 \u2192 9 platform / 6 Shopify UTM purch.",
+    "snapshots": [
+      {
+        "label": "This week \u00b7 Sep 10\u201316, 2026",
+        "value": "61 orders \u00b7 $6,497",
+        "sub": "+0% orders \u00b7 +4% revenue vs Sep 3\u20139, 2026"
+      },
+      {
+        "label": "Meta US",
+        "value": "1.47\u00d7 Shopify ROAS \u00b7 26 orders",
+        "sub": "$1,850 spend \u00b7 Prospecting $100/day"
+      },
+      {
+        "label": "Google PMax",
+        "value": "3.47\u00d7 ROAS \u00b7 14 orders",
+        "sub": "$418 spend \u00b7 best paid channel"
+      },
+      {
+        "label": "Pinterest",
+        "value": "1 Shopify orders",
+        "sub": "$241 \u00b7 Shopping only \u00b7 Creative Test off"
+      },
+      {
+        "label": "US since intl launch (Sep 4)",
+        "value": "112 orders (-7)",
+        "sub": "$9,738 \u00b7 Meta UTM 18"
+      },
+      {
+        "label": "Intl since Sep 4",
+        "value": "13 orders (+7)",
+        "sub": "Meta $568 \u00b7 9 platform purch"
+      }
+    ],
+    "items": [
+      {
+        "lane": "US Meta",
+        "action": "Shopify ROAS 1.47\u00d7 \u2014 below 1.5\u00d7 gate. Hold blanket raises; Meta recommends Prospecting $100\u2192$172 \u2014 fund from Creative Test trims only.",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Google",
+        "action": "Keep PMax running \u2014 3.47\u00d7 Shopify ROAS on $418",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "US Meta",
+        "action": "Creative Test: keep Closed Sole + Welcome to the movement; cut ads with 0 purchases",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "US Meta",
+        "action": "Retargeting stays PAUSED \u2014 do not restore July setup",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Pinterest",
+        "action": "Shopping Ads only (~$10/day) \u2014 Creative Test stays paused",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Intl",
+        "action": "Do NOT cut US Prospecting \u2014 Meta recommends $100\u2192$172; shift from Creative Test dead ads, not intl.",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Intl",
+        "action": "Pause Italy intl ad set ($139 \u00b7 0 purch).",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Intl",
+        "action": "Keep AU + CA + UAE \u2014 above kill threshold with purchases.",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Intl",
+        "action": "Intl budget stays additive (~$44/day). No US budget cuts.",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Google",
+        "action": "Google orders down 6 WoW \u2014 monitor delivery; no tROAS experiments",
+        "owner": "Zaki"
+      }
     ]
   }
 }

@@ -575,6 +575,19 @@ h2 {
   color: #b45309;
   font-weight: 700;
 }
+.action-banner-actions li .action-lane {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #92400e;
+  background: rgba(245, 158, 11, 0.25);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  margin-right: 0.35rem;
+}
+.action-banner-snap .muted { color: #78716c; font-size: 0.82rem; }
 .highlights-head {
   font-size: 0.72rem;
   font-weight: 700;
@@ -1782,28 +1795,27 @@ function detailPanel(title, body, open) {
   </details>`;
 }
 
-function renderIntlActionBanner(data) {
-  const p = data.intl_performance;
-  if (!p) return '';
-  const s = p.shopify || {};
-  const m = p.meta || {};
-  const usDelta = (s.us_orders || 0) - (s.us_orders_prior || 0);
-  const intlDelta = (s.intl_orders || 0) - (s.intl_orders_prior || 0);
-  const actions = (p.efficiency_actions || []).slice(0, 4).map(a => `<li>${a}</li>`).join('');
+function renderActionBanner(data) {
+  const roll = data.action_rollup;
+  if (!roll || !(roll.items || []).length) return '';
+  const snaps = (roll.snapshots || []).map(s => `
+    <div class="action-banner-snap">
+      <strong>${s.label || ''}</strong><br>
+      ${s.value || ''}<br>
+      <span class="muted">${s.sub || ''}</span>
+    </div>`).join('');
+  const actions = (roll.items || []).map(it => `
+    <li><span class="action-lane">${it.lane || 'Action'}</span>${it.action || ''}${it.owner ? ` <span class="muted">· ${it.owner}</span>` : ''}</li>`).join('');
   return `
     <div class="action-banner easy-read" data-view="all simple summary performance actions deep">
       <div class="action-banner-head">
-        <span class="action-banner-badge">Action · Intl launch</span>
-        <span class="action-banner-title">US vs International since Sep 4</span>
+        <span class="action-banner-badge">Action rollup</span>
+        <span class="action-banner-title">${roll.title || 'What to do now'} · ${roll.period || ''}</span>
       </div>
-      <p class="info-card-sub" style="margin:0 0 0.65rem">${p.headline || ''}</p>
-      <div class="action-banner-grid">
-        <div><strong>US orders</strong> ${s.us_orders || 0} <span class="muted">(${usDelta >= 0 ? '+' : ''}${usDelta} vs pre-intl)</span></div>
-        <div><strong>Intl orders</strong> ${s.intl_orders || 0} <span class="muted">(${intlDelta >= 0 ? '+' : ''}${intlDelta} vs pre-intl)</span></div>
-        <div><strong>Intl Meta spend</strong> ${fmt(m.spend)} · ${m.platform_purch || 0} platform purch</div>
-        <div><strong>Winners</strong> AU · CA · UAE &nbsp;|&nbsp; <strong>Pause</strong> Italy (0 purch)</div>
-      </div>
-      ${actions ? `<ul class="action-banner-actions">${actions}</ul>` : ''}
+      <p class="info-card-sub" style="margin:0 0 0.65rem">${roll.headline || ''}</p>
+      <div class="action-banner-grid">${snaps}</div>
+      <p class="highlights-head" style="margin-top:0.75rem">Do this</p>
+      <ul class="action-banner-actions">${actions}</ul>
     </div>`;
 }
 
@@ -1824,7 +1836,7 @@ function renderEasyRead(data) {
     ? exceptions.map(l => `<li>${l}</li>`).join('')
     : '<li>No major flags this week — scan platform rows and expand sections below for detail.</li>';
   return `
-    ${renderIntlActionBanner(data)}
+    ${renderActionBanner(data)}
     <section class="easy-intro easy-read" data-view="all simple summary performance actions deep">
       <p class="stat-period">${w.label || 'This period'} · vs ${w.prior_label || 'last period'}</p>
       <div class="stat-grid">

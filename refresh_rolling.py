@@ -460,6 +460,157 @@ def regenerate_strategy_todos(snap: dict, payload: dict, cfg: dict) -> None:
     ]
 
 
+def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
+    """Top-of-dashboard rollup: domestic + intl snapshots and actionable items."""
+    k = snap["kpis"]
+    ch = snap["channels"]
+    w = snap["window"]
+    prior = snap["prior_period"]["kpis"]
+    meta = ch[0] if ch else {}
+    goog = ch[1] if len(ch) > 1 else {}
+    pin = ch[2] if len(ch) > 2 else {}
+    agency = cfg.get("agency_owner", "Zaki")
+    director = cfg.get("director", "Andrew")
+
+    rev_chg = (
+        round((k["paid_revenue"] - prior["paid_revenue"]) / prior["paid_revenue"] * 100)
+        if prior.get("paid_revenue")
+        else 0
+    )
+    ord_chg = (
+        round((k["paid_orders"] - prior["paid_orders"]) / prior["paid_orders"] * 100)
+        if prior.get("paid_orders")
+        else 0
+    )
+
+    snapshots = [
+        {
+            "label": f"This week · {w.get('label', '')}",
+            "value": f"{k['paid_orders']} orders · {fmt_money(k['paid_revenue'])}",
+            "sub": f"{ord_chg:+d}% orders · {rev_chg:+d}% revenue vs {w.get('prior_label', 'prior')}",
+        },
+        {
+            "label": "Meta US",
+            "value": f"{meta.get('shopify_roas', 0)}× Shopify ROAS · {meta.get('shopify_orders', 0)} orders",
+            "sub": f"{fmt_money(meta.get('spend', 0))} spend · Prospecting $100/day",
+        },
+        {
+            "label": "Google PMax",
+            "value": f"{goog.get('shopify_roas', 0)}× ROAS · {goog.get('shopify_orders', 0)} orders",
+            "sub": f"{fmt_money(goog.get('spend', 0))} spend · best paid channel",
+        },
+        {
+            "label": "Pinterest",
+            "value": f"{pin.get('shopify_orders', 0)} Shopify orders",
+            "sub": f"{fmt_money(pin.get('spend', 0))} · Shopping only · Creative Test off",
+        },
+    ]
+
+    intl = payload.get("intl_performance") or {}
+    if intl.get("shopify"):
+        s = intl["shopify"]
+        us_delta = int(s.get("us_orders") or 0) - int(s.get("us_orders_prior") or 0)
+        intl_delta = int(s.get("intl_orders") or 0) - int(s.get("intl_orders_prior") or 0)
+        m = intl.get("meta") or {}
+        snapshots.extend(
+            [
+                {
+                    "label": "US since intl launch (Sep 4)",
+                    "value": f"{s.get('us_orders', 0)} orders ({us_delta:+d})",
+                    "sub": f"{fmt_money(s.get('us_revenue', 0))} · Meta UTM {s.get('meta_utm_us', 0)}",
+                },
+                {
+                    "label": "Intl since Sep 4",
+                    "value": f"{s.get('intl_orders', 0)} orders ({intl_delta:+d})",
+                    "sub": f"Meta {fmt_money(m.get('spend', 0))} · {m.get('platform_purch', 0)} platform purch",
+                },
+            ]
+        )
+
+    items: list[dict] = []
+    meta_roas = float(meta.get("shopify_roas") or 0)
+    if meta_roas < 1.5:
+        items.append(
+            {
+                "lane": "US Meta",
+                "action": (
+                    f"Shopify ROAS {meta_roas}× — below 1.5× gate. Hold blanket raises; "
+                    "Meta recommends Prospecting $100→$172 — fund from Creative Test trims only."
+                ),
+                "owner": agency,
+            }
+        )
+    else:
+        items.append(
+            {
+                "lane": "US Meta",
+                "action": f"Shopify ROAS {meta_roas}× — gate passed; Zaki may propose budget moves.",
+                "owner": agency,
+            }
+        )
+
+    items.append(
+        {
+            "lane": "Google",
+            "action": f"Keep PMax running — {goog.get('shopify_roas', 0)}× Shopify ROAS on {fmt_money(goog.get('spend', 0))}",
+            "owner": agency,
+        }
+    )
+    items.append(
+        {
+            "lane": "US Meta",
+            "action": "Creative Test: keep Closed Sole + Welcome to the movement; cut ads with 0 purchases",
+            "owner": agency,
+        }
+    )
+    items.append(
+        {
+            "lane": "US Meta",
+            "action": "Retargeting stays PAUSED — do not restore July setup",
+            "owner": agency,
+        }
+    )
+    items.append(
+        {
+            "lane": "Pinterest",
+            "action": "Shopping Ads only (~$10/day) — Creative Test stays paused",
+            "owner": agency,
+        }
+    )
+
+    for a in intl.get("efficiency_actions") or []:
+        items.append({"lane": "Intl", "action": a, "owner": agency})
+
+    plat = int(meta.get("platform_purchases") or 0)
+    shop = int(meta.get("shopify_orders") or 0)
+    if plat > shop + 2:
+        items.append(
+            {
+                "lane": "Attribution",
+                "action": f"Meta platform {plat} purch vs {shop} Shopify UTM — judge on Shopify only",
+                "owner": director,
+            }
+        )
+
+    goog_ord_delta = int(goog.get("shopify_orders") or 0) - int(goog.get("shopify_orders_last") or 0)
+    if goog_ord_delta <= -3:
+        items.append(
+            {
+                "lane": "Google",
+                "action": f"Google orders down {abs(goog_ord_delta)} WoW — monitor delivery; no tROAS experiments",
+                "owner": agency,
+            }
+        )
+
+    payload["action_rollup"] = {
+        "title": "Action rollup",
+        "period": w.get("label", ""),
+        "headline": intl.get("headline") or f"DTC {k['paid_orders']} orders · {fmt_money(k['paid_revenue'])} this week",
+        "snapshots": snapshots,
+        "items": items,
+    }
+
+
 def fmt_money(n: float) -> str:
     return f"${int(round(n)):,}"
 
@@ -650,6 +801,7 @@ def main() -> None:
     apply_snapshot(payload, default_snap)
     regenerate_executive_summary(default_snap, payload)
     regenerate_strategy_todos(default_snap, payload, cfg)
+    regenerate_action_rollup(default_snap, payload, cfg)
 
     w = default_snap["window"]
     cur_start = date.fromisoformat(w["start"])
