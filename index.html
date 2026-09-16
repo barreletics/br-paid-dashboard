@@ -548,6 +548,36 @@ h2 {
   font-weight: 700;
   color: var(--text);
 }
+.action-banner-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.action-banner-kpi-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  align-items: baseline;
+}
+.action-banner-kpi-row.primary {
+  font-weight: 700;
+  font-size: 1rem;
+}
+.action-banner-kpi-row.secondary {
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.action-banner-kpi-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #92400e;
+  min-width: 5.5rem;
+}
 .action-banner-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1813,16 +1843,37 @@ function renderActionBanner(data) {
   const roll = data.action_rollup;
   if (!roll || !(roll.items || []).length) return '';
   const tl = roll.top_line || {};
-  const revD = tl.revenue_delta_pct;
-  const spendD = tl.spend_delta_pct;
-  const revDeltaCls = revD > 0 ? 'delta-up' : revD < 0 ? 'delta-down' : '';
-  const spendDeltaCls = spendD > 0 ? 'delta-down' : spendD < 0 ? 'delta-up' : '';
-  const topLine = tl.revenue != null ? `
+  const ads = tl.ads_only || {};
+  const store = tl.store_total || {};
+  const deltaSpan = (pct, invert) => {
+    if (pct == null || pct === 0) return '';
+    const cls = invert ? (pct > 0 ? 'delta-down' : 'delta-up') : (pct > 0 ? 'delta-up' : 'delta-down');
+    return ` <span class="${cls}">(${pct > 0 ? '+' : ''}${pct}%)</span>`;
+  };
+  const legacyTop = tl.revenue != null && !tl.ads_only;
+  const topLine = legacyTop ? `
     <div class="action-banner-kpi">
-      <div>${fmt(tl.revenue)} revenue ${revD != null && revD !== 0 ? `<span class="${revDeltaCls}">(${revD > 0 ? '+' : ''}${revD}%)</span>` : ''}</div>
-      <div>${fmt(tl.ad_spend)} ad spend ${spendD != null && spendD !== 0 ? `<span class="${spendDeltaCls}">(${spendD > 0 ? '+' : ''}${spendD}%)</span>` : ''}</div>
-      <div>${tl.orders ?? '—'} orders · ${roas(tl.mer)} MER</div>
-    </div>` : '';
+      <div class="action-banner-kpi-row primary">
+        <span class="action-banner-kpi-label">Store</span>
+        <span>${fmt(tl.revenue)} revenue${deltaSpan(tl.revenue_delta_pct, false)}</span>
+        <span>${fmt(tl.ad_spend)} ad spend${deltaSpan(tl.spend_delta_pct, true)}</span>
+        <span>${tl.orders ?? '—'} orders · ${roas(tl.mer)} MER</span>
+      </div>
+    </div>` : (ads.revenue != null ? `
+    <div class="action-banner-kpi">
+      <div class="action-banner-kpi-row primary">
+        <span class="action-banner-kpi-label">Ads only</span>
+        <span>${fmt(ads.revenue)} revenue${deltaSpan(ads.revenue_delta_pct, false)}</span>
+        <span>${fmt(ads.ad_spend)} ad spend${deltaSpan(ads.spend_delta_pct, true)}</span>
+        <span>${ads.orders ?? '—'} orders · ${roas(ads.roas)} ROAS</span>
+      </div>
+      <div class="action-banner-kpi-row secondary">
+        <span class="action-banner-kpi-label">Total store</span>
+        <span>${fmt(store.revenue)} sales${deltaSpan(store.revenue_delta_pct, false)}</span>
+        <span>${store.orders ?? '—'} orders · ${roas(store.mer)} MER</span>
+        <span>+${store.unattributed_orders ?? '—'} / ${fmt(store.unattributed_revenue)} halo</span>
+      </div>
+    </div>` : '');
   const snaps = (roll.snapshots || []).map(s => `
     <div class="action-banner-snap">
       <strong>${s.label || ''}</strong><br>

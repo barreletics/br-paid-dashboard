@@ -482,12 +482,39 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
         if prior.get("paid_orders")
         else 0
     )
+    spend_chg = (
+        round((k["total_ad_spend"] - prior["total_ad_spend"]) / prior["total_ad_spend"] * 100)
+        if prior.get("total_ad_spend")
+        else 0
+    )
+
+    ad_rev = sum(float(c.get("shopify_revenue") or 0) for c in ch)
+    ad_orders = sum(int(c.get("shopify_orders") or 0) for c in ch)
+    ad_rev_prior = sum(float(c.get("shopify_revenue_last") or 0) for c in ch)
+    ad_orders_prior = sum(int(c.get("shopify_orders_last") or 0) for c in ch)
+    ad_roas = round(ad_rev / k["total_ad_spend"], 2) if k.get("total_ad_spend") else 0
+    ad_rev_chg = (
+        round((ad_rev - ad_rev_prior) / ad_rev_prior * 100) if ad_rev_prior else 0
+    )
+    ad_ord_chg = (
+        round((ad_orders - ad_orders_prior) / ad_orders_prior * 100) if ad_orders_prior else 0
+    )
+    unattributed_rev = round(k["paid_revenue"] - ad_rev)
+    unattributed_orders = k["paid_orders"] - ad_orders
 
     snapshots = [
         {
-            "label": f"This week · {w.get('label', '')}",
+            "label": f"Ads only · {w.get('label', '')}",
+            "value": f"{ad_orders} orders · {fmt_money(ad_rev)} · {ad_roas}× ROAS",
+            "sub": f"{ad_ord_chg:+d}% orders · {ad_rev_chg:+d}% revenue vs {w.get('prior_label', 'prior')}",
+        },
+        {
+            "label": f"Total store · {w.get('label', '')}",
             "value": f"{k['paid_orders']} orders · {fmt_money(k['paid_revenue'])}",
-            "sub": f"{ord_chg:+d}% orders · {rev_chg:+d}% revenue vs {w.get('prior_label', 'prior')}",
+            "sub": (
+                f"{ord_chg:+d}% orders · {rev_chg:+d}% revenue · "
+                f"+{unattributed_orders} orders / {fmt_money(unattributed_rev)} not UTM-tagged"
+            ),
         },
         {
             "label": "Meta US",
@@ -607,18 +634,27 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
         "title": "Action rollup",
         "period": w.get("label", ""),
         "top_line": {
-            "revenue": round(k["paid_revenue"]),
-            "ad_spend": round(k["total_ad_spend"]),
-            "orders": k["paid_orders"],
-            "mer": mer,
-            "revenue_delta_pct": rev_chg,
-            "spend_delta_pct": (
-                round((k["total_ad_spend"] - prior["total_ad_spend"]) / prior["total_ad_spend"] * 100)
-                if prior.get("total_ad_spend")
-                else 0
-            ),
+            "ads_only": {
+                "revenue": round(ad_rev),
+                "ad_spend": round(k["total_ad_spend"]),
+                "orders": ad_orders,
+                "roas": ad_roas,
+                "revenue_delta_pct": ad_rev_chg,
+                "spend_delta_pct": spend_chg,
+            },
+            "store_total": {
+                "revenue": round(k["paid_revenue"]),
+                "orders": k["paid_orders"],
+                "mer": mer,
+                "revenue_delta_pct": rev_chg,
+                "unattributed_revenue": unattributed_rev,
+                "unattributed_orders": unattributed_orders,
+            },
         },
-        "headline": intl.get("headline") or f"DTC {k['paid_orders']} orders · {fmt_money(k['paid_revenue'])} this week",
+        "headline": intl.get("headline") or (
+            f"Ads {fmt_money(ad_rev)} on {fmt_money(k['total_ad_spend'])} ({ad_roas}×) · "
+            f"store {fmt_money(k['paid_revenue'])} ({k['paid_orders']} orders incl. halo)"
+        ),
         "snapshots": snapshots,
         "items": items,
     }

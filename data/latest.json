@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-16T08:01:27.946606-04:00",
+  "generated_at": "2026-09-16T08:04:24.161513-04:00",
   "window": {
     "start": "2026-09-10",
     "end": "2026-09-16",
@@ -1981,19 +1981,34 @@
     "title": "Action rollup",
     "period": "Sep 10\u201316, 2026",
     "top_line": {
-      "revenue": 6497,
-      "ad_spend": 2509,
-      "orders": 61,
-      "mer": 2.59,
-      "revenue_delta_pct": 4,
-      "spend_delta_pct": -5
+      "ads_only": {
+        "revenue": 4290,
+        "ad_spend": 2509,
+        "orders": 41,
+        "roas": 1.71,
+        "revenue_delta_pct": -9,
+        "spend_delta_pct": -5
+      },
+      "store_total": {
+        "revenue": 6497,
+        "orders": 61,
+        "mer": 2.59,
+        "revenue_delta_pct": 4,
+        "unattributed_revenue": 2207,
+        "unattributed_orders": 20
+      }
     },
     "headline": "Total store flat (125 orders). US \u22127 orders \u00b7 Intl +7. Intl Meta ~$568 \u2192 9 platform / 6 Shopify UTM purch.",
     "snapshots": [
       {
-        "label": "This week \u00b7 Sep 10\u201316, 2026",
+        "label": "Ads only \u00b7 Sep 10\u201316, 2026",
+        "value": "41 orders \u00b7 $4,290 \u00b7 1.71\u00d7 ROAS",
+        "sub": "-13% orders \u00b7 -9% revenue vs Sep 3\u20139, 2026"
+      },
+      {
+        "label": "Total store \u00b7 Sep 10\u201316, 2026",
         "value": "61 orders \u00b7 $6,497",
-        "sub": "+0% orders \u00b7 +4% revenue vs Sep 3\u20139, 2026"
+        "sub": "+0% orders \u00b7 +4% revenue \u00b7 +20 orders / $2,207 not UTM-tagged"
       },
       {
         "label": "Meta US",
