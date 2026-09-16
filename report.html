@@ -619,17 +619,11 @@ h2 {
 }
 .action-banner-snap .muted { color: #78716c; font-size: 0.82rem; }
 .action-banner-kpi {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 0.5rem;
   padding-bottom: 0.65rem;
   border-bottom: 1px solid #fcd34d;
 }
-.action-banner-kpi span { font-weight: 400; color: #78716c; font-size: 0.88rem; }
+.action-banner-kpi-row.primary span { font-weight: 700; color: var(--text); }
+.action-banner-kpi-row.secondary span { font-weight: 400; color: var(--muted); }
 .action-banner-kpi .delta-up { color: var(--good); font-size: 0.82rem; font-weight: 600; }
 .action-banner-kpi .delta-down { color: var(--bad); font-size: 0.82rem; font-weight: 600; }
 .highlights-head {
@@ -1901,6 +1895,7 @@ function renderEasyRead(data) {
   const k = data.kpis || {};
   const p = priorKpis(data);
   const w = data.window || {};
+  const hasRollupTop = data.action_rollup?.top_line?.ad_revenue != null;
   const rev = storeRev(k);
   const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
   const adSales = adAttributedSales(data);
@@ -1913,16 +1908,19 @@ function renderEasyRead(data) {
   const highlightItems = exceptions.length
     ? exceptions.map(l => `<li>${l}</li>`).join('')
     : '<li>No major flags this week — scan platform rows and expand sections below for detail.</li>';
-  return `
-    ${renderActionBanner(data)}
-    <section class="easy-intro easy-read" data-view="all simple summary performance actions deep">
+  const statsBlock = hasRollupTop ? '' : `
       <p class="stat-period">${w.label || 'This period'} · vs ${w.prior_label || 'last period'}</p>
       <div class="stat-grid">
         ${statCard('Total sales', rev, revP, fmt)}
         ${statCard('Orders', k.paid_orders, p.paid_orders, v => v ?? '—')}
         ${statCard('Ad spend', k.total_ad_spend, p.total_ad_spend, fmt)}
         ${statCard('Ad ROAS', mer, merP, roas)}
-      </div>
+      </div>`;
+  return `
+    ${renderActionBanner(data)}
+    <section class="easy-intro easy-read" data-view="all simple summary performance actions deep">
+      ${statsBlock}
+      ${hasRollupTop ? '<p class="highlights-head" style="margin-top:0">By channel</p>' : ''}
       <div class="platform-stack">${platforms}</div>
       <p class="highlights-head">Highlights</p>
       <p class="highlights-hint">What changed, what to watch, and what to do next.</p>
