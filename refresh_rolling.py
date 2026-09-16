@@ -545,14 +545,74 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
     )
     items.append(
         {
-            "lane": "Pinterest",
-            "action": "Shopping Ads only (~$10/day) — Creative Test stays paused",
+            "lane": "US Meta",
+            "action": (
+                "Do NOT cut US Prospecting ($100/day). Meta recommends $100→$172 — "
+                "fund from Creative Test dead ads only, not from intl."
+            ),
             "owner": agency,
         }
     )
 
-    for a in intl.get("efficiency_actions") or []:
-        items.append({"lane": "Intl", "action": a, "owner": agency})
+    pin_roas = float(pin.get("shopify_roas") or 0)
+    pin_ord = int(pin.get("shopify_orders") or 0)
+    pin_spend = float(pin.get("spend") or 0)
+    if pin_roas < 1.0 and pin_ord <= 1:
+        items.append(
+            {
+                "lane": "Pinterest",
+                "action": (
+                    f"Decision needed: {pin_roas}× Shopify ROAS · {pin_ord} order on "
+                    f"{fmt_money(pin_spend)} — hold Shopping ~$10/day 1 more week or pause. "
+                    "Zaki has no Pinterest access; Andrew/Stefanie call."
+                ),
+                "owner": director,
+            }
+        )
+    else:
+        items.append(
+            {
+                "lane": "Pinterest",
+                "action": "Shopping Ads only (~$10/day) — Creative Test stays paused",
+                "owner": agency,
+            }
+        )
+
+    if intl.get("shopify"):
+        items.append(
+            {
+                "lane": "Intl",
+                "action": "Pause Italy intl ad set ($139 · 0 purch).",
+                "owner": agency,
+            }
+        )
+        items.append(
+            {
+                "lane": "Intl",
+                "action": "Keep AU + CA + UAE — purchases and ROAS above kill threshold.",
+                "owner": agency,
+            }
+        )
+        items.append(
+            {
+                "lane": "Intl",
+                "action": (
+                    "Intl budget stays additive (~$44/day). Reallocate Italy $8/day to AU winner — "
+                    "do NOT add MX / DE / SG / ES yet; only 4 of 8 countries were live."
+                ),
+                "owner": agency,
+            }
+        )
+        items.append(
+            {
+                "lane": "Intl",
+                "action": (
+                    "Spain had 2 Shopify orders with no Meta ad set — confirm whether to add Spain "
+                    "when Italy pauses, or wait 2 weeks on 3-country test first."
+                ),
+                "owner": agency,
+            }
+        )
 
     plat = int(meta.get("platform_purchases") or 0)
     shop = int(meta.get("shopify_orders") or 0)
@@ -581,9 +641,21 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
     net_chg = (
         round((ad_net - ad_net_prior) / abs(ad_net_prior) * 100) if ad_net_prior else 0
     )
+    if intl:
+        intl["efficiency_actions"] = [i["action"] for i in items if i.get("lane") == "Intl"]
+        prospect = next(
+            (i["action"] for i in items if i.get("lane") == "US Meta" and "Prospecting" in i.get("action", "")),
+            None,
+        )
+        if prospect:
+            intl["efficiency_actions"].insert(0, prospect)
+
+    hit_list = (payload.get("executive_summary") or [])[:4]
     payload["action_rollup"] = {
         "title": "Action rollup",
         "period": w.get("label", ""),
+        "zaki_confirm": f"{agency} — reply yes/no on each item below, or note what you'd change.",
+        "hit_list": hit_list,
         "top_line": {
             "ad_revenue": round(ad_rev),
             "ad_spend": round(k["total_ad_spend"]),
