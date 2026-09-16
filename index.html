@@ -519,6 +519,62 @@ h2 {
 }
 .exception-list li { padding: 0.15rem 0; }
 .exception-list li::before { content: "· "; color: var(--muted); font-weight: 700; }
+.action-banner {
+  background: var(--warn-bg);
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+.action-banner-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+.action-banner-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: #f59e0b;
+  color: #fff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+.action-banner-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.action-banner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+  font-size: 0.88rem;
+  margin-bottom: 0.65rem;
+}
+@media (max-width: 520px) { .action-banner-grid { grid-template-columns: 1fr; } }
+.action-banner-grid strong { font-weight: 700; }
+.action-banner-actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+.action-banner-actions li {
+  padding: 0.3rem 0 0.3rem 1.1rem;
+  position: relative;
+}
+.action-banner-actions li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #b45309;
+  font-weight: 700;
+}
 .highlights-head {
   font-size: 0.72rem;
   font-weight: 700;
@@ -1726,6 +1782,31 @@ function detailPanel(title, body, open) {
   </details>`;
 }
 
+function renderIntlActionBanner(data) {
+  const p = data.intl_performance;
+  if (!p) return '';
+  const s = p.shopify || {};
+  const m = p.meta || {};
+  const usDelta = (s.us_orders || 0) - (s.us_orders_prior || 0);
+  const intlDelta = (s.intl_orders || 0) - (s.intl_orders_prior || 0);
+  const actions = (p.efficiency_actions || []).slice(0, 4).map(a => `<li>${a}</li>`).join('');
+  return `
+    <div class="action-banner easy-read" data-view="all simple summary performance actions deep">
+      <div class="action-banner-head">
+        <span class="action-banner-badge">Action · Intl launch</span>
+        <span class="action-banner-title">US vs International since Sep 4</span>
+      </div>
+      <p class="info-card-sub" style="margin:0 0 0.65rem">${p.headline || ''}</p>
+      <div class="action-banner-grid">
+        <div><strong>US orders</strong> ${s.us_orders || 0} <span class="muted">(${usDelta >= 0 ? '+' : ''}${usDelta} vs pre-intl)</span></div>
+        <div><strong>Intl orders</strong> ${s.intl_orders || 0} <span class="muted">(${intlDelta >= 0 ? '+' : ''}${intlDelta} vs pre-intl)</span></div>
+        <div><strong>Intl Meta spend</strong> ${fmt(m.spend)} · ${m.platform_purch || 0} platform purch</div>
+        <div><strong>Winners</strong> AU · CA · UAE &nbsp;|&nbsp; <strong>Pause</strong> Italy (0 purch)</div>
+      </div>
+      ${actions ? `<ul class="action-banner-actions">${actions}</ul>` : ''}
+    </div>`;
+}
+
 function renderEasyRead(data) {
   const k = data.kpis || {};
   const p = priorKpis(data);
@@ -1743,6 +1824,7 @@ function renderEasyRead(data) {
     ? exceptions.map(l => `<li>${l}</li>`).join('')
     : '<li>No major flags this week — scan platform rows and expand sections below for detail.</li>';
   return `
+    ${renderIntlActionBanner(data)}
     <section class="easy-intro easy-read" data-view="all simple summary performance actions deep">
       <p class="stat-period">${w.label || 'This period'} · vs ${w.prior_label || 'last period'}</p>
       <div class="stat-grid">
