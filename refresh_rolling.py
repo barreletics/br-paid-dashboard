@@ -509,11 +509,11 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
             "sub": f"{ad_ord_chg:+d}% orders · {ad_rev_chg:+d}% revenue vs {w.get('prior_label', 'prior')}",
         },
         {
-            "label": f"Total store · {w.get('label', '')}",
-            "value": f"{k['paid_orders']} orders · {fmt_money(k['paid_revenue'])}",
+            "label": f"Total sales · {w.get('label', '')}",
+            "value": f"{fmt_money(k['paid_revenue'])} · {k['paid_orders']} orders",
             "sub": (
-                f"{ord_chg:+d}% orders · {rev_chg:+d}% revenue · "
-                f"+{unattributed_orders} orders / {fmt_money(unattributed_rev)} not UTM-tagged"
+                f"All DTC — ads + organic/email/direct · {ord_chg:+d}% orders · {rev_chg:+d}% revenue · "
+                f"+{unattributed_orders} / {fmt_money(unattributed_rev)} not ad-tagged"
             ),
         },
         {
@@ -657,7 +657,7 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
         "headline": intl.get("headline") or (
             f"{fmt_money(ad_rev)} ad revenue on {fmt_money(k['total_ad_spend'])} spend · "
             f"{fmt_money(ad_net)} net · {mer}× total ROAS (store ÷ spend) · "
-            f"store {fmt_money(k['paid_revenue'])} ({k['paid_orders']} orders)"
+            f"total sales {fmt_money(k['paid_revenue'])} ({k['paid_orders']} orders, ads + other)"
         ),
         "snapshots": snapshots,
         "items": items,

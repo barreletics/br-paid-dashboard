@@ -1872,7 +1872,7 @@ function renderActionBanner(data) {
       <div class="action-banner-kpi-row secondary">
         <span>${fmt(tl.net)} net${deltaSpan(tl.net_delta_pct, false)}</span>
         <span>${roas(tl.total_roas ?? storeTotal.mer)} total ROAS <span class="muted">(store ÷ spend)</span></span>
-        <span class="muted">${roas(tl.ad_roas ?? adsOnly.roas)} attributable ROAS · ${fmt(tl.store_revenue ?? storeTotal.revenue)} store (${tl.store_orders ?? storeTotal.orders ?? '—'} orders)</span>
+        <span class="muted">${roas(tl.ad_roas ?? adsOnly.roas)} attributable ROAS · total sales ${fmt(tl.store_revenue ?? storeTotal.revenue)} · ${tl.store_orders ?? storeTotal.orders ?? '—'} orders <span class="muted">(ads + organic/email/direct)</span></span>
       </div>
     </div>` : '');
   const snaps = (roll.snapshots || []).map(s => `
