@@ -2074,6 +2074,36 @@ function renderAgencyLog(data) {
     </section>`;
 }
 
+function renderIntlPerformance(data) {
+  const p = data.intl_performance;
+  if (!p) return '';
+  const s = p.shopify || {};
+  const m = p.meta || {};
+  const usDelta = s.us_orders_prior ? s.us_orders - s.us_orders_prior : 0;
+  const intlDelta = s.intl_orders_prior != null ? s.intl_orders - s.intl_orders_prior : 0;
+  const countries = (s.intl_countries || []).map(c =>
+    glanceRow(c.country, `${c.orders} orders`, 'Shopify', 'intl')
+  ).join('');
+  const metaCountries = (m.by_country || []).map(c =>
+    glanceRow(c.country, c.purch ? `${c.purch} purch · ${c.roas ? c.roas.toFixed(1) + '×' : '—'}` : '0 purch', fmt(c.spend), 'intl')
+  ).join('');
+  const actions = (p.efficiency_actions || []).map(a => `<li>${a}</li>`).join('');
+  return `
+    <section data-view="detailed summary performance actions">
+      <h2>US vs International (since intl launch)</h2>
+      <p class="sub">${p.label || ''} vs ${p.prior_label || 'prior'}</p>
+      <p class="info-card-sub">${p.headline || ''}</p>
+      <div class="glance-list">
+        ${glanceRow('US orders', `${s.us_orders || 0} (${usDelta >= 0 ? '+' : ''}${usDelta})`, `$${(s.us_revenue || 0).toLocaleString()} · Meta UTM ${s.meta_utm_us || 0}`, 'meta')}
+        ${glanceRow('Intl orders', `${s.intl_orders || 0} (${intlDelta >= 0 ? '+' : ''}${intlDelta})`, `$${(s.intl_revenue || 0).toLocaleString()} · Meta UTM ${s.meta_utm_intl || 0}`, 'intl')}
+        ${glanceRow('Intl Meta spend', fmt(m.spend), `${m.platform_purch || 0} platform purch · US Meta ${fmt(m.us_spend)}`, 'intl')}
+      </div>
+      ${countries ? `<p class="info-section-label">Intl Shopify countries</p><div class="glance-list">${countries}</div>` : ''}
+      ${metaCountries ? `<p class="info-section-label">Intl Meta by country (platform)</p><div class="glance-list">${metaCountries}</div>` : ''}
+      ${actions ? `<p class="info-section-label">Efficiency actions</p><ul class="exception-list">${actions}</ul>` : ''}
+    </section>`;
+}
+
 function renderIntlPlan(data) {
   const p = data.intl_plan;
   if (!p) return '';
@@ -2500,7 +2530,8 @@ function render(raw) {
       ${detailPanel('Flags', renderFlags(data), false)}
       ${detailPanel('Budget and daily orders', renderBudgetStrip(data) + renderDailySpark(data), false)}
       ${detailPanel('Agency changes', renderAgencyLog(data), false)}
-      ${detailPanel('International trial', renderIntlPlan(data), false)}
+      ${detailPanel('US vs International', renderIntlPerformance(data), true)}
+      ${detailPanel('International trial plan', renderIntlPlan(data), false)}
       ${detailPanel('Weekly history', renderHistoryTrend(data), false)}
       ${detailPanel('KPI vs target and strategy', `
         <section data-view="detailed performance">
