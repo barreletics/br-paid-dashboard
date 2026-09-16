@@ -498,44 +498,7 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
     unattributed_rev = round(k["paid_revenue"] - ad_rev)
     unattributed_orders = k["paid_orders"] - ad_orders
 
-    snapshots = [
-        {
-            "label": "Meta US",
-            "value": f"{meta.get('shopify_roas', 0)}× Shopify ROAS · {meta.get('shopify_orders', 0)} orders",
-            "sub": f"{fmt_money(meta.get('spend', 0))} spend · Prospecting $100/day",
-        },
-        {
-            "label": "Google PMax",
-            "value": f"{goog.get('shopify_roas', 0)}× ROAS · {goog.get('shopify_orders', 0)} orders",
-            "sub": f"{fmt_money(goog.get('spend', 0))} spend · best paid channel",
-        },
-        {
-            "label": "Pinterest",
-            "value": f"{pin.get('shopify_orders', 0)} Shopify orders",
-            "sub": f"{fmt_money(pin.get('spend', 0))} · Shopping only · Creative Test off",
-        },
-    ]
-
     intl = payload.get("intl_performance") or {}
-    if intl.get("shopify"):
-        s = intl["shopify"]
-        us_delta = int(s.get("us_orders") or 0) - int(s.get("us_orders_prior") or 0)
-        intl_delta = int(s.get("intl_orders") or 0) - int(s.get("intl_orders_prior") or 0)
-        m = intl.get("meta") or {}
-        snapshots.extend(
-            [
-                {
-                    "label": "US since intl launch (Sep 4)",
-                    "value": f"{s.get('us_orders', 0)} orders ({us_delta:+d})",
-                    "sub": f"{fmt_money(s.get('us_revenue', 0))} · Meta UTM {s.get('meta_utm_us', 0)}",
-                },
-                {
-                    "label": "Intl since Sep 4",
-                    "value": f"{s.get('intl_orders', 0)} orders ({intl_delta:+d})",
-                    "sub": f"Meta {fmt_money(m.get('spend', 0))} · {m.get('platform_purch', 0)} platform purch",
-                },
-            ]
-        )
 
     items: list[dict] = []
     meta_roas = float(meta.get("shopify_roas") or 0)
@@ -642,7 +605,6 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
             f"{fmt_money(ad_net)} net · {mer}× total ROAS (store ÷ spend) · "
             f"total sales {fmt_money(k['paid_revenue'])} ({k['paid_orders']} orders, ads + other)"
         ),
-        "snapshots": snapshots,
         "items": items,
     }
 

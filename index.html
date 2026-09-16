@@ -626,6 +626,12 @@ h2 {
 .action-banner-kpi-row.secondary span { font-weight: 400; color: var(--muted); }
 .action-banner-kpi .delta-up { color: var(--good); font-size: 0.82rem; font-weight: 600; }
 .action-banner-kpi .delta-down { color: var(--bad); font-size: 0.82rem; font-weight: 600; }
+.action-banner-context {
+  margin: 0 0 0.65rem;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+.action-banner-do { margin-top: 0.35rem; }
 .highlights-head {
   font-size: 0.72rem;
   font-weight: 700;
@@ -1869,12 +1875,6 @@ function renderActionBanner(data) {
         <span class="muted">${roas(tl.ad_roas ?? adsOnly.roas)} attributable ROAS · total sales ${fmt(tl.store_revenue ?? storeTotal.revenue)}${deltaSpan(tl.store_revenue_delta_pct ?? storeTotal.revenue_delta_pct, false)} · ${tl.store_orders ?? storeTotal.orders ?? '—'} orders (ads + other) · +${fmt(tl.unattributed_revenue ?? storeTotal.unattributed_revenue)} not ad-tagged</span>
       </div>
     </div>` : '');
-  const snaps = (roll.snapshots || []).map(s => `
-    <div class="action-banner-snap">
-      <strong>${s.label || ''}</strong><br>
-      ${s.value || ''}<br>
-      <span class="muted">${s.sub || ''}</span>
-    </div>`).join('');
   const actions = (roll.items || []).map(it => `
     <li><span class="action-lane">${it.lane || 'Action'}</span>${it.action || ''}${it.owner ? ` <span class="muted">· ${it.owner}</span>` : ''}</li>`).join('');
   return `
@@ -1884,9 +1884,8 @@ function renderActionBanner(data) {
         <span class="action-banner-title">${roll.period || ''}</span>
       </div>
       ${topLine}
-      ${roll.headline ? `<p class="info-card-sub" style="margin:0 0 0.65rem">${roll.headline}</p>` : ''}
-      <div class="action-banner-grid">${snaps}</div>
-      <p class="highlights-head" style="margin-top:0.75rem">Do this</p>
+      ${roll.headline ? `<p class="info-card-sub action-banner-context">${roll.headline}</p>` : ''}
+      <p class="highlights-head action-banner-do">Do this</p>
       <ul class="action-banner-actions">${actions}</ul>
     </div>`;
 }
