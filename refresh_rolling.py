@@ -602,9 +602,22 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
             }
         )
 
+    mer = round(k["paid_revenue"] / k["total_ad_spend"], 2) if k.get("total_ad_spend") else 0
     payload["action_rollup"] = {
         "title": "Action rollup",
         "period": w.get("label", ""),
+        "top_line": {
+            "revenue": round(k["paid_revenue"]),
+            "ad_spend": round(k["total_ad_spend"]),
+            "orders": k["paid_orders"],
+            "mer": mer,
+            "revenue_delta_pct": rev_chg,
+            "spend_delta_pct": (
+                round((k["total_ad_spend"] - prior["total_ad_spend"]) / prior["total_ad_spend"] * 100)
+                if prior.get("total_ad_spend")
+                else 0
+            ),
+        },
         "headline": intl.get("headline") or f"DTC {k['paid_orders']} orders · {fmt_money(k['paid_revenue'])} this week",
         "snapshots": snapshots,
         "items": items,

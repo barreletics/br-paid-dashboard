@@ -588,6 +588,20 @@ h2 {
   margin-right: 0.35rem;
 }
 .action-banner-snap .muted { color: #78716c; font-size: 0.82rem; }
+.action-banner-kpi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid #fcd34d;
+}
+.action-banner-kpi span { font-weight: 400; color: #78716c; font-size: 0.88rem; }
+.action-banner-kpi .delta-up { color: var(--good); font-size: 0.82rem; font-weight: 600; }
+.action-banner-kpi .delta-down { color: var(--bad); font-size: 0.82rem; font-weight: 600; }
 .highlights-head {
   font-size: 0.72rem;
   font-weight: 700;
@@ -1798,6 +1812,17 @@ function detailPanel(title, body, open) {
 function renderActionBanner(data) {
   const roll = data.action_rollup;
   if (!roll || !(roll.items || []).length) return '';
+  const tl = roll.top_line || {};
+  const revD = tl.revenue_delta_pct;
+  const spendD = tl.spend_delta_pct;
+  const revDeltaCls = revD > 0 ? 'delta-up' : revD < 0 ? 'delta-down' : '';
+  const spendDeltaCls = spendD > 0 ? 'delta-down' : spendD < 0 ? 'delta-up' : '';
+  const topLine = tl.revenue != null ? `
+    <div class="action-banner-kpi">
+      <div>${fmt(tl.revenue)} revenue ${revD != null && revD !== 0 ? `<span class="${revDeltaCls}">(${revD > 0 ? '+' : ''}${revD}%)</span>` : ''}</div>
+      <div>${fmt(tl.ad_spend)} ad spend ${spendD != null && spendD !== 0 ? `<span class="${spendDeltaCls}">(${spendD > 0 ? '+' : ''}${spendD}%)</span>` : ''}</div>
+      <div>${tl.orders ?? '—'} orders · ${roas(tl.mer)} MER</div>
+    </div>` : '';
   const snaps = (roll.snapshots || []).map(s => `
     <div class="action-banner-snap">
       <strong>${s.label || ''}</strong><br>
@@ -1810,8 +1835,9 @@ function renderActionBanner(data) {
     <div class="action-banner easy-read" data-view="all simple summary performance actions deep">
       <div class="action-banner-head">
         <span class="action-banner-badge">Action rollup</span>
-        <span class="action-banner-title">${roll.title || 'What to do now'} · ${roll.period || ''}</span>
+        <span class="action-banner-title">${roll.period || ''}</span>
       </div>
+      ${topLine}
       <p class="info-card-sub" style="margin:0 0 0.65rem">${roll.headline || ''}</p>
       <div class="action-banner-grid">${snaps}</div>
       <p class="highlights-head" style="margin-top:0.75rem">Do this</p>
