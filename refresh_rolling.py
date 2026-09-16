@@ -491,31 +491,14 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
     ad_rev = sum(float(c.get("shopify_revenue") or 0) for c in ch)
     ad_orders = sum(int(c.get("shopify_orders") or 0) for c in ch)
     ad_rev_prior = sum(float(c.get("shopify_revenue_last") or 0) for c in ch)
-    ad_orders_prior = sum(int(c.get("shopify_orders_last") or 0) for c in ch)
     ad_roas = round(ad_rev / k["total_ad_spend"], 2) if k.get("total_ad_spend") else 0
     ad_rev_chg = (
         round((ad_rev - ad_rev_prior) / ad_rev_prior * 100) if ad_rev_prior else 0
-    )
-    ad_ord_chg = (
-        round((ad_orders - ad_orders_prior) / ad_orders_prior * 100) if ad_orders_prior else 0
     )
     unattributed_rev = round(k["paid_revenue"] - ad_rev)
     unattributed_orders = k["paid_orders"] - ad_orders
 
     snapshots = [
-        {
-            "label": f"Ads only · {w.get('label', '')}",
-            "value": f"{ad_orders} orders · {fmt_money(ad_rev)} · {ad_roas}× ROAS",
-            "sub": f"{ad_ord_chg:+d}% orders · {ad_rev_chg:+d}% revenue vs {w.get('prior_label', 'prior')}",
-        },
-        {
-            "label": f"Total sales · {w.get('label', '')}",
-            "value": f"{fmt_money(k['paid_revenue'])} · {k['paid_orders']} orders",
-            "sub": (
-                f"All DTC — ads + organic/email/direct · {ord_chg:+d}% orders · {rev_chg:+d}% revenue · "
-                f"+{unattributed_orders} / {fmt_money(unattributed_rev)} not ad-tagged"
-            ),
-        },
         {
             "label": "Meta US",
             "value": f"{meta.get('shopify_roas', 0)}× Shopify ROAS · {meta.get('shopify_orders', 0)} orders",
