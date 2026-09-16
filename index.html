@@ -1843,35 +1843,36 @@ function renderActionBanner(data) {
   const roll = data.action_rollup;
   if (!roll || !(roll.items || []).length) return '';
   const tl = roll.top_line || {};
-  const ads = tl.ads_only || {};
-  const store = tl.store_total || {};
   const deltaSpan = (pct, invert) => {
     if (pct == null || pct === 0) return '';
     const cls = invert ? (pct > 0 ? 'delta-down' : 'delta-up') : (pct > 0 ? 'delta-up' : 'delta-down');
     return ` <span class="${cls}">(${pct > 0 ? '+' : ''}${pct}%)</span>`;
   };
-  const legacyTop = tl.revenue != null && !tl.ads_only;
+  const legacyTop = tl.revenue != null && tl.ad_revenue == null;
+  const adsOnly = tl.ads_only || {};
+  const storeTotal = tl.store_total || {};
+  const adRev = tl.ad_revenue ?? adsOnly.revenue;
+  const adSpend = tl.ad_spend ?? adsOnly.ad_spend;
   const topLine = legacyTop ? `
     <div class="action-banner-kpi">
       <div class="action-banner-kpi-row primary">
-        <span class="action-banner-kpi-label">Store</span>
-        <span>${fmt(tl.revenue)} revenue${deltaSpan(tl.revenue_delta_pct, false)}</span>
+        <span>${fmt(tl.revenue)} ad revenue${deltaSpan(tl.revenue_delta_pct, false)}</span>
         <span>${fmt(tl.ad_spend)} ad spend${deltaSpan(tl.spend_delta_pct, true)}</span>
-        <span>${tl.orders ?? '—'} orders · ${roas(tl.mer)} MER</span>
-      </div>
-    </div>` : (ads.revenue != null ? `
-    <div class="action-banner-kpi">
-      <div class="action-banner-kpi-row primary">
-        <span class="action-banner-kpi-label">Ads only</span>
-        <span>${fmt(ads.revenue)} revenue${deltaSpan(ads.revenue_delta_pct, false)}</span>
-        <span>${fmt(ads.ad_spend)} ad spend${deltaSpan(ads.spend_delta_pct, true)}</span>
-        <span>${ads.orders ?? '—'} orders · ${roas(ads.roas)} ROAS</span>
       </div>
       <div class="action-banner-kpi-row secondary">
-        <span class="action-banner-kpi-label">Total store</span>
-        <span>${fmt(store.revenue)} sales${deltaSpan(store.revenue_delta_pct, false)}</span>
-        <span>${store.orders ?? '—'} orders · ${roas(store.mer)} MER</span>
-        <span>+${store.unattributed_orders ?? '—'} / ${fmt(store.unattributed_revenue)} halo</span>
+        <span>${fmt((tl.revenue || 0) - (tl.ad_spend || 0))} net</span>
+        <span>${roas(tl.mer)} total ROAS <span class="muted">(store ÷ spend)</span></span>
+      </div>
+    </div>` : (adRev != null ? `
+    <div class="action-banner-kpi">
+      <div class="action-banner-kpi-row primary">
+        <span>${fmt(adRev)} ad revenue${deltaSpan(tl.ad_revenue_delta_pct ?? adsOnly.revenue_delta_pct, false)}</span>
+        <span>${fmt(adSpend)} ad spend${deltaSpan(tl.ad_spend_delta_pct ?? adsOnly.spend_delta_pct, true)}</span>
+      </div>
+      <div class="action-banner-kpi-row secondary">
+        <span>${fmt(tl.net)} net${deltaSpan(tl.net_delta_pct, false)}</span>
+        <span>${roas(tl.total_roas ?? storeTotal.mer)} total ROAS <span class="muted">(store ÷ spend)</span></span>
+        <span class="muted">${roas(tl.ad_roas ?? adsOnly.roas)} attributable ROAS · ${fmt(tl.store_revenue ?? storeTotal.revenue)} store (${tl.store_orders ?? storeTotal.orders ?? '—'} orders)</span>
       </div>
     </div>` : '');
   const snaps = (roll.snapshots || []).map(s => `

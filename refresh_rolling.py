@@ -630,30 +630,34 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
         )
 
     mer = round(k["paid_revenue"] / k["total_ad_spend"], 2) if k.get("total_ad_spend") else 0
+    ad_net = round(ad_rev - k["total_ad_spend"])
+    ad_net_prior = round(ad_rev_prior - prior.get("total_ad_spend", 0))
+    net_chg = (
+        round((ad_net - ad_net_prior) / abs(ad_net_prior) * 100) if ad_net_prior else 0
+    )
     payload["action_rollup"] = {
         "title": "Action rollup",
         "period": w.get("label", ""),
         "top_line": {
-            "ads_only": {
-                "revenue": round(ad_rev),
-                "ad_spend": round(k["total_ad_spend"]),
-                "orders": ad_orders,
-                "roas": ad_roas,
-                "revenue_delta_pct": ad_rev_chg,
-                "spend_delta_pct": spend_chg,
-            },
-            "store_total": {
-                "revenue": round(k["paid_revenue"]),
-                "orders": k["paid_orders"],
-                "mer": mer,
-                "revenue_delta_pct": rev_chg,
-                "unattributed_revenue": unattributed_rev,
-                "unattributed_orders": unattributed_orders,
-            },
+            "ad_revenue": round(ad_rev),
+            "ad_spend": round(k["total_ad_spend"]),
+            "ad_revenue_delta_pct": ad_rev_chg,
+            "ad_spend_delta_pct": spend_chg,
+            "net": ad_net,
+            "net_delta_pct": net_chg,
+            "ad_roas": ad_roas,
+            "total_roas": mer,
+            "ad_orders": ad_orders,
+            "store_revenue": round(k["paid_revenue"]),
+            "store_orders": k["paid_orders"],
+            "store_revenue_delta_pct": rev_chg,
+            "unattributed_revenue": unattributed_rev,
+            "unattributed_orders": unattributed_orders,
         },
         "headline": intl.get("headline") or (
-            f"Ads {fmt_money(ad_rev)} on {fmt_money(k['total_ad_spend'])} ({ad_roas}×) · "
-            f"store {fmt_money(k['paid_revenue'])} ({k['paid_orders']} orders incl. halo)"
+            f"{fmt_money(ad_rev)} ad revenue on {fmt_money(k['total_ad_spend'])} spend · "
+            f"{fmt_money(ad_net)} net · {mer}× total ROAS (store ÷ spend) · "
+            f"store {fmt_money(k['paid_revenue'])} ({k['paid_orders']} orders)"
         ),
         "snapshots": snapshots,
         "items": items,
