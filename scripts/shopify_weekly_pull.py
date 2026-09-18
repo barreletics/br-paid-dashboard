@@ -100,6 +100,18 @@ def order_net(o: dict[str, Any]) -> float:
     return float(o.get("total_price") or 0)
 
 
+def refund_cash_on_order(o: dict[str, Any]) -> float:
+    """Cash back to customer — total_refunded or gross − current total."""
+    ref = float(o.get("total_refunded") or 0)
+    if ref > 0:
+        return ref
+    gross = float(o.get("total_price") or 0)
+    net = order_net(o)
+    if gross > net:
+        return round(gross - net, 2)
+    return 0.0
+
+
 def classify_order(o: dict[str, Any]) -> str:
     """Return segment: dtc | wholesale | excluded."""
     tags = parse_tags(o.get("tags") or "")
@@ -402,23 +414,15 @@ def returns_rollup(
         tags = parse_tags(o.get("tags") or "")
         if is_wholesale(tags) or tags & RETURNS_SKIP_TAGS:
             continue
-        if (
-            "ReturnZap Exchanged" not in tags
-            and float(o.get("total_refunded") or 0) <= 0
-            and order_net(o) <= 0
-        ):
+        cash_back = refund_cash_on_order(o)
+        if "ReturnZap Exchanged" not in tags and cash_back <= 0 and order_net(o) <= 0:
             continue
         if "ReturnZap Exchanged" in tags:
             exchanges += 1
             continue
-        if any("returnzap" in t.lower() for t in tags) and "ReturnZap Exchanged" not in tags:
+        if cash_back > 0:
             refund_returns += 1
-            refunds_cash_out += float(o.get("total_refunded") or 0)
-            continue
-        ref = float(o.get("total_refunded") or 0)
-        if ref > 0:
-            refund_returns += 1
-            refunds_cash_out += ref
+            refunds_cash_out += cash_back
     fee_kept = round(refund_returns * refund_return_fee_usd, 2)
     exchange_cost = round(exchanges * exchange_outbound_ship_usd, 2)
     return {
