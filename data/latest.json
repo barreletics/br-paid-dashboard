@@ -1970,7 +1970,7 @@
       ]
     },
     "headline": "Total store flat (125 orders). US \u22127 orders \u00b7 Intl +7. Intl Meta ~$568 \u2192 9 platform / 6 Shopify UTM purch.",
-    "test_rules": "Intl test: 14 days per country \u00b7 pause at $100 spend or day 14 with 0 Shopify orders \u00b7 1+ Shopify order = stay in \u00b7 judge Shopify ship-to only \u00b7 additive budget (no US cuts)",
+    "test_rules": "International test: about 14 days per country (default). Pause at $100 spend or day 14 with zero Shopify orders \u2014 unless signals are clearly weak earlier (pause sooner) or clearly strong (keep or scale before day 14). Judge on Shopify orders only, not Meta reported purchases. International budget is extra only \u2014 do not cut United States spend.",
     "efficiency_actions": [
       "Shopify ROAS 1.47\u00d7 \u2014 below 1.5\u00d7 gate. Hold blanket raises; Meta recommends Prospecting $100\u2192$172 \u2014 fund from Creative Test trims only.",
       "Pause Italy intl ad set ($139 \u00b7 0 purch).",
@@ -1979,10 +1979,138 @@
       "Spain had 2 Shopify orders with no Meta ad set \u2014 confirm whether to add Spain when Italy pauses, or wait 2 weeks on 3-country test first."
     ]
   },
+  "returnzap": {
+    "status": "shopify_tags_only",
+    "note": "Connect RETURNZAP_API_TOKEN in GitHub Actions secrets when ReturnZap provides API access. Until then: exchanges via Shopify tag ReturnZap Exchanged; refunds via order total_refunded."
+  },
+  "director_economics": {
+    "window_label": "Sep 10\u201316, 2026",
+    "mer_gross": 2.59,
+    "mer_net": 2.59,
+    "shopify_roas_blended": 1.71,
+    "halo_revenue": 2207,
+    "halo_orders": 20,
+    "halo_index": 0.88,
+    "ad_spend": 2509,
+    "store_revenue_gross": 6497.16,
+    "store_revenue_net": 6487.21,
+    "refunds_and_adjustments": 9.95,
+    "refunds_recorded": null,
+    "shipping_collected": null,
+    "discounts": null,
+    "returnzap_exchanges": null,
+    "returnzap_status": "shopify_tags_only",
+    "returnzap_note": "Run refresh with Shopify env to populate shipping/refunds/exchanges \u2014 values null until next pull.",
+    "intl_ship_to_orders": null,
+    "fulfilled_pct": null,
+    "modeled_cogs_pct": 0.38,
+    "modeled_fulfillment_per_order": 9,
+    "estimated_contribution": 964,
+    "contribution_mer": 0.38,
+    "model_disclaimer": "Modeled contribution only \u2014 replace with Xero COGS + actual 3PL when available",
+    "strategy_lines": [
+      "MER 2.59\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
+      "Halo ~$2,207 (20 orders) not ad-tagged \u2014 likely organic/direct/email; MER includes this.",
+      "Tagged Shopify ROAS 1.71\u00d7 \u2014 measurable ads at/above gate after Zaki Sep 18 read (confirm on latest week)."
+    ]
+  },
+  "agency_intl_sync": {
+    "aligned": true,
+    "reply_date": "2026-09-18",
+    "from": "Zaki",
+    "window_label": "Sep 1\u201317, 2026",
+    "confirm_banner": "Zaki confirmed Sep 18 \u2014 aligned with dashboard. International table below uses Shopify-attributed orders (not Meta purchase counts).",
+    "metrics_key": "<strong>Shopify ROAS</strong> = Meta-tagged Shopify revenue ÷ Meta spend (not Meta Ads Manager ROAS). <strong>Cost per order</strong> = Meta spend ÷ Meta-tagged orders — this is <em>not</em> cost per click (CPC). Untagged orders are listed but excluded from ROAS math.",
+    "summary": "Italy paused. Australia strongest: 5/5 orders attributed to International Meta. Canada and United Arab Emirates running; no Dubai paid winner yet (one Dubai order had no campaign tag).",
+    "creative_note": "Australia: all 5 Shopify orders used creative \u201cPilates athletes deserve athletic.\u201d",
+    "gcc_note": "Saudi Arabia is the next Gulf market to test \u2014 after Australia budget change and current countries have a few more days of data. No wide Gulf region launch yet.",
+    "us_meta": {
+      "shopify_roas": 1.61,
+      "gate_passed": true,
+      "note": "Prospecting stays $100/day for now; no blanket raise without Andrew."
+    },
+    "countries": [
+      {
+        "name": "Australia",
+        "meta_spend": 168.76,
+        "shopify_orders_total": 5,
+        "shopify_orders_attributed": 5,
+        "shopify_revenue": 454.44,
+        "shopify_revenue_attributed": 454.44,
+        "shopify_roas": 2.69,
+        "shopify_cpa": 33.75,
+        "budget": "$15 \u2192 $20/day (Sep 18)",
+        "status": "scale",
+        "status_label": "Scaled",
+        "zaki_view": "Watch Shopify before next increase"
+      },
+      {
+        "name": "Canada",
+        "meta_spend": 169.9,
+        "shopify_orders_total": 4,
+        "shopify_orders_attributed": 3,
+        "shopify_revenue": 218.92,
+        "shopify_revenue_attributed": 218.92,
+        "shopify_roas": 1.29,
+        "shopify_cpa": 56.63,
+        "budget": "Hold current",
+        "status": "hold",
+        "status_label": "Hold",
+        "zaki_view": "1 unattributed order excluded from ROAS · keep running"
+      },
+      {
+        "name": "United Arab Emirates",
+        "meta_spend": 166.43,
+        "shopify_orders_total": 3,
+        "shopify_orders_attributed": 2,
+        "shopify_revenue": 225.45,
+        "shopify_revenue_attributed": 225.45,
+        "shopify_revenue_total_ship_to": 375.75,
+        "shopify_roas": 1.35,
+        "shopify_cpa": 83.22,
+        "budget": "Hold current",
+        "status": "watch",
+        "status_label": "Test",
+        "zaki_view": "Dubai order unattributed ($375.75 total ship-to) — ROAS uses 2 tagged orders only"
+      }
+    ],
+    "dashboard_actions": [
+      {
+        "lane": "Intl",
+        "action": "Italy paused \u2713 (confirmed)",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Intl",
+        "action": "Australia $20/day \u2014 5/5 Shopify orders Meta-attributed; watch several days before next increase",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Intl",
+        "action": "Canada hold \u2014 3/4 orders attributed, ~1.29\u00d7 Shopify ROAS",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Intl",
+        "action": "United Arab Emirates hold \u2014 2/3 attributed; Dubai order had no UTM; no Dubai-specific scale yet",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Intl",
+        "action": "Saudi Arabia next Gulf test after current setup settles \u2014 not launching today",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Intl",
+        "action": "Hold Spain, Mexico, Germany, Singapore \u2014 no new markets yet",
+        "owner": "Zaki"
+      }
+    ]
+  },
   "action_rollup": {
     "title": "Action rollup",
     "period": "Sep 10\u201316, 2026",
-    "zaki_confirm": "Zaki \u2014 reply yes/no on each item below, or note what you'd change.",
+    "zaki_confirm": "Zaki confirmed Sep 18 \u2014 aligned with dashboard. International table below uses Shopify-attributed orders (not Meta purchase counts).",
     "hit_list": [
       "DTC store 61 orders \u00b7 $6,497 (+4% vs Sep 3\u20139, 2026).",
       "Google PMax \u00b7 Shopify ROAS 3.47\u00d7 on $1,449 \u2014 best paid channel.",
@@ -2006,11 +2134,11 @@
       "unattributed_orders": 20
     },
     "headline": "Total store flat (125 orders). US \u22127 orders \u00b7 Intl +7. Intl Meta ~$568 \u2192 9 platform / 6 Shopify UTM purch.",
-    "intl_test_rules": "Intl test: 14 days per country \u00b7 pause at $100 spend or day 14 with 0 Shopify orders \u00b7 1+ Shopify order = stay in \u00b7 judge Shopify ship-to only \u00b7 additive budget (no US cuts)",
+    "intl_test_rules": "International test: about 14 days per country (default). Pause at $100 spend or day 14 with zero Shopify orders \u2014 unless signals are clearly weak earlier (pause sooner) or clearly strong (keep or scale before day 14). Judge on Shopify orders only, not Meta reported purchases. International budget is extra only \u2014 do not cut United States spend.",
     "items": [
       {
         "lane": "US Meta",
-        "action": "Shopify ROAS 1.47\u00d7 \u2014 below 1.5\u00d7 gate. Hold blanket raises; Meta recommends Prospecting $100\u2192$172 \u2014 fund from Creative Test trims only.",
+        "action": "Shopify ROAS 1.61\u00d7 \u2014 gate passed. Prospecting stays $100/day for now; no blanket raise without Andrew.",
         "owner": "Zaki"
       },
       {
@@ -2040,27 +2168,37 @@
       },
       {
         "lane": "Intl",
-        "action": "Intl test: 14 days per country \u00b7 pause at $100 spend or day 14 with 0 Shopify orders \u00b7 1+ Shopify order = stay in \u00b7 judge Shopify ship-to only \u00b7 additive budget (no US cuts)",
+        "action": "International test: about 14 days per country (default). Pause at $100 spend or day 14 with zero Shopify orders \u2014 unless signals are clearly weak earlier (pause sooner) or clearly strong (keep or scale before day 14). Judge on Shopify orders only, not Meta reported purchases. International budget is extra only \u2014 do not cut United States spend.",
         "owner": "Zaki"
       },
       {
         "lane": "Intl",
-        "action": "Pause Italy intl ad set ($139 \u00b7 0 purch).",
+        "action": "Italy paused \u2713 (confirmed)",
         "owner": "Zaki"
       },
       {
         "lane": "Intl",
-        "action": "Keep AU + CA + UAE \u2014 purchases and ROAS above kill threshold.",
+        "action": "Australia $20/day \u2014 5/5 Shopify orders Meta-attributed; watch several days before next increase",
         "owner": "Zaki"
       },
       {
         "lane": "Intl",
-        "action": "Intl budget stays additive (~$44/day). Reallocate Italy $8/day to AU winner \u2014 do NOT add MX / DE / SG / ES yet; only 4 of 8 countries were live.",
+        "action": "Canada hold \u2014 3/4 orders attributed, ~1.29\u00d7 Shopify ROAS",
         "owner": "Zaki"
       },
       {
         "lane": "Intl",
-        "action": "Spain had 2 Shopify orders with no Meta ad set \u2014 confirm whether to add Spain when Italy pauses, or wait 2 weeks on 3-country test first.",
+        "action": "United Arab Emirates hold \u2014 2/3 attributed; Dubai order had no UTM; no Dubai-specific scale yet",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Intl",
+        "action": "Saudi Arabia next Gulf test after current setup settles \u2014 not launching today",
+        "owner": "Zaki"
+      },
+      {
+        "lane": "Intl",
+        "action": "Hold Spain, Mexico, Germany, Singapore \u2014 no new markets yet",
         "owner": "Zaki"
       },
       {

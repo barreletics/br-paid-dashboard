@@ -657,6 +657,89 @@ h2 {
   font-weight: 600;
   color: #92400e;
 }
+.action-intl-block {
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.75rem;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 8px;
+  border: 1px solid #fcd34d;
+}
+.action-intl-block h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #92400e;
+}
+.action-intl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+.action-intl-table th,
+.action-intl-table td {
+  text-align: left;
+  padding: 0.35rem 0.4rem;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.35);
+}
+.action-intl-table th {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #78716c;
+}
+.action-intl-note {
+  margin: 0.45rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.action-intl-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(21, 128, 61, 0.15);
+  color: #15803d;
+}
+.action-intl-tag.hold {
+  background: rgba(120, 113, 108, 0.15);
+  color: #57534e;
+}
+.action-intl-tag.watch {
+  background: rgba(245, 158, 11, 0.2);
+  color: #b45309;
+}
+.action-intl-key {
+  margin: 0 0 0.55rem;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  background: #fffbeb;
+  border-radius: 6px;
+  border: 1px dashed #f59e0b;
+}
+.action-intl-key strong { color: #92400e; }
+.action-intl-metric-cell { min-width: 11rem; }
+.action-intl-metric-main {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.88rem;
+}
+.action-intl-metric-formula {
+  font-size: 0.75rem;
+  color: #78716c;
+  margin-bottom: 0.35rem;
+}
+.action-intl-metric-formula:last-child { margin-bottom: 0; }
+.platform-mid-sub {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--muted);
+}
 .highlights-head {
   font-size: 0.72rem;
   font-weight: 700;
@@ -1824,7 +1907,7 @@ function platformStatCard(c) {
   const arr = trendArrow(c.shopify_orders, c.shopify_orders_last);
   return `<div class="platform-row ${arr.cls}" data-channel="${channelSlug(c.name)}">
     <div class="platform-name">${label}</div>
-    <div class="platform-mid">${c.shopify_orders} orders · ${roas(roasNow)} ROAS</div>
+    <div class="platform-mid">${c.shopify_orders} Shopify orders · ${roas(roasNow)} Shopify ROAS<span class="platform-mid-sub">revenue ÷ spend (UTM-tagged)</span></div>
     <div class="platform-pct">${arr.pct === '—' ? '→' : arr.arrow + ' ' + arr.pct}</div>
   </div>`;
 }
@@ -1864,6 +1947,76 @@ function detailPanel(title, body, open) {
   </details>`;
 }
 
+function intlCountryShopifyMetrics(c) {
+  const spend = Number(c.meta_spend) || 0;
+  const ordA = Number(c.shopify_orders_attributed);
+  const revA = Number(
+    c.shopify_revenue_attributed != null ? c.shopify_revenue_attributed : c.shopify_revenue
+  ) || 0;
+  const roasX = spend > 0 && revA ? Math.round((revA / spend) * 100) / 100 : null;
+  const cpo = ordA > 0 && spend ? Math.round((spend / ordA) * 100) / 100 : null;
+  return {
+    spend,
+    ordA,
+    revA,
+    roasX: c.shopify_roas != null ? c.shopify_roas : roasX,
+    cpo: c.shopify_cpa != null ? c.shopify_cpa : cpo,
+    roasFormula: spend && revA ? `${fmt(revA)} ÷ ${fmt(spend)} spend` : '',
+    cpoFormula: ordA > 0 && spend ? `${fmt(spend)} ÷ ${ordA} tagged orders` : '',
+  };
+}
+
+function renderAgencyIntlSync(data) {
+  const sync = data.agency_intl_sync;
+  if (!sync || !(sync.countries || []).length) return '';
+  const key = sync.metrics_key || `
+    <strong>Shopify ROAS</strong> = Meta-tagged Shopify revenue ÷ Meta spend (not Meta Ads Manager ROAS).
+    <strong>Cost per order</strong> = Meta spend ÷ Meta-tagged orders (not cost per click — CPC is separate).
+    ROAS uses tagged revenue only — untagged ship-to orders are shown but not in the math.`;
+  const rows = sync.countries.map(c => {
+    const m = intlCountryShopifyMetrics(c);
+    let attr = c.shopify_orders_attributed != null
+      ? `${c.shopify_orders_attributed} tagged / ${c.shopify_orders_total} total`
+      : `${c.shopify_orders_total ?? '—'} orders`;
+    if (c.shopify_revenue_total_ship_to != null && c.shopify_orders_attributed != null
+        && c.shopify_orders_total > c.shopify_orders_attributed) {
+      attr += `<br><span class="muted">${fmt(c.shopify_revenue_total_ship_to)} total ship-to revenue</span>`;
+    }
+    const tagCls = c.status === 'scale' ? '' : c.status === 'hold' ? ' hold' : ' watch';
+    const tag = c.status_label || c.status || '';
+    const cpcLine = c.meta_cpc != null
+      ? `<div class="action-intl-metric-formula">Meta CPC ${fmt(c.meta_cpc)} (per ad click — not per order)</div>`
+      : '';
+    return `<tr>
+      <td><strong>${c.name}</strong>${tag ? `<br><span class="action-intl-tag${tagCls}">${tag}</span>` : ''}</td>
+      <td>${fmt(m.spend)}</td>
+      <td>${attr}</td>
+      <td class="action-intl-metric-cell">
+        <div class="action-intl-metric-main">${m.roasX != null ? roas(m.roasX) : '—'} Shopify ROAS</div>
+        <div class="action-intl-metric-formula">${m.roasFormula || '—'}</div>
+        <div class="action-intl-metric-main">${m.cpo != null ? fmt(m.cpo) : '—'} cost per tagged order</div>
+        <div class="action-intl-metric-formula">${m.cpoFormula || '—'}</div>
+        ${cpcLine}
+      </td>
+      <td>${c.budget || '—'}<br><span class="muted">${shortText(c.zaki_view || '', 90)}</span></td>
+    </tr>`;
+  }).join('');
+  const gcc = sync.gcc_note ? `<p class="action-intl-note"><strong>Gulf region:</strong> ${sync.gcc_note}</p>` : '';
+  const creative = sync.creative_note ? `<p class="action-intl-note">${sync.creative_note}</p>` : '';
+  return `<div class="action-intl-block easy-read" data-view="all simple summary performance actions deep">
+    <h3>International · Shopify verified (${sync.window_label || 'agency check'})</h3>
+    <div class="action-intl-key">${key}</div>
+    <p class="action-intl-note">${sync.summary || ''}</p>
+    <table class="action-intl-table">
+      <thead><tr>
+        <th>Country</th><th>Meta spend</th><th>Shopify orders</th><th>Shopify ROAS &amp; cost per order</th><th>Budget / view</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    ${creative}${gcc}
+  </div>`;
+}
+
 function renderActionBanner(data) {
   const roll = data.action_rollup;
   if (!roll || !(roll.items || []).length) return '';
@@ -1897,7 +2050,7 @@ function renderActionBanner(data) {
       <div class="action-banner-kpi-row secondary">
         <span>${fmt(tl.net)} net${deltaSpan(tl.net_delta_pct, false)}</span>
         <span>${roas(tl.total_roas ?? storeTotal.mer)} total ROAS <span class="muted">(store ÷ spend)</span></span>
-        <span class="muted">${roas(tl.ad_roas ?? adsOnly.roas)} attributable ROAS · total sales ${fmt(tl.store_revenue ?? storeTotal.revenue)}${deltaSpan(tl.store_revenue_delta_pct ?? storeTotal.revenue_delta_pct, false)} · ${tl.store_orders ?? storeTotal.orders ?? '—'} orders (ads + other) · +${fmt(tl.unattributed_revenue ?? storeTotal.unattributed_revenue)} not ad-tagged</span>
+        <span class="muted">${roas(tl.ad_roas ?? adsOnly.roas)} attributable Shopify ROAS (tagged revenue ÷ ad spend) · total sales ${fmt(tl.store_revenue ?? storeTotal.revenue)}${deltaSpan(tl.store_revenue_delta_pct ?? storeTotal.revenue_delta_pct, false)} · ${tl.store_orders ?? storeTotal.orders ?? '—'} orders (ads + other) · +${fmt(tl.unattributed_revenue ?? storeTotal.unattributed_revenue)} not ad-tagged</span>
       </div>
     </div>` : '');
   const actions = (roll.items || []).map(it => `
@@ -1909,7 +2062,8 @@ function renderActionBanner(data) {
         <span class="action-banner-title">${roll.period || ''}</span>
       </div>
       ${topLine}
-      ${roll.intl_test_rules ? `<p class="action-banner-context"><strong>Intl rules:</strong> ${roll.intl_test_rules}</p>` : ''}
+      ${renderAgencyIntlSync(data)}
+      ${roll.intl_test_rules ? `<p class="action-banner-context"><strong>International rules:</strong> ${roll.intl_test_rules}</p>` : ''}
       ${roll.headline ? `<p class="info-card-sub action-banner-context">${roll.headline}</p>` : ''}
       ${(roll.hit_list || []).length ? `
       <p class="highlights-head" style="margin-top:0">At a glance</p>

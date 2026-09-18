@@ -502,7 +502,20 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
 
     items: list[dict] = []
     meta_roas = float(meta.get("shopify_roas") or 0)
-    if meta_roas < 1.5:
+    sync = payload.get("agency_intl_sync") or {}
+    us_meta = sync.get("us_meta") or {}
+    if us_meta.get("gate_passed"):
+        items.append(
+            {
+                "lane": "US Meta",
+                "action": (
+                    f"Shopify ROAS {us_meta.get('shopify_roas')}× — gate passed. "
+                    f"{us_meta.get('note') or 'Hold Prospecting $100/day until Andrew approves a raise from Creative Test trims.'}"
+                ),
+                "owner": agency,
+            }
+        )
+    elif meta_roas < 1.5:
         items.append(
             {
                 "lane": "US Meta",
@@ -579,54 +592,50 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
         )
 
     intl_test_rules = (
-        "Intl test: 14 days per country · pause at $100 spend or day 14 with 0 Shopify orders · "
-        "1+ Shopify order = stay in · judge Shopify ship-to only · additive budget (no US cuts)"
+        "International test: about 14 days per country (default). Pause at $100 spend or day 14 "
+        "with zero Shopify orders to that country — unless signals are clearly weak earlier (pause "
+        "sooner) or clearly strong (keep or scale before day 14). Judge on Shopify orders only, "
+        "not what Meta reports. International budget is extra only — do not cut United States spend."
     )
     if intl:
         intl["test_rules"] = intl_test_rules
 
     if intl.get("shopify"):
-        items.append(
-            {
-                "lane": "Intl",
-                "action": intl_test_rules,
-                "owner": agency,
-            }
-        )
-        items.append(
-            {
-                "lane": "Intl",
-                "action": "Pause Italy intl ad set ($139 · 0 purch).",
-                "owner": agency,
-            }
-        )
-        items.append(
-            {
-                "lane": "Intl",
-                "action": "Keep AU + CA + UAE — purchases and ROAS above kill threshold.",
-                "owner": agency,
-            }
-        )
-        items.append(
-            {
-                "lane": "Intl",
-                "action": (
-                    "Intl budget stays additive (~$44/day). Reallocate Italy $8/day to AU winner — "
-                    "do NOT add MX / DE / SG / ES yet; only 4 of 8 countries were live."
-                ),
-                "owner": agency,
-            }
-        )
-        items.append(
-            {
-                "lane": "Intl",
-                "action": (
-                    "Spain had 2 Shopify orders with no Meta ad set — confirm whether to add Spain "
-                    "when Italy pauses, or wait 2 weeks on 3-country test first."
-                ),
-                "owner": agency,
-            }
-        )
+        items.append({"lane": "Intl", "action": intl_test_rules, "owner": agency})
+        if sync.get("dashboard_actions"):
+            for row in sync["dashboard_actions"]:
+                items.append(
+                    {
+                        "lane": row.get("lane") or "Intl",
+                        "action": row["action"],
+                        "owner": row.get("owner") or agency,
+                    }
+                )
+        else:
+            items.append(
+                {
+                    "lane": "Intl",
+                    "action": "Pause Italy intl ad set ($139 · 0 purch).",
+                    "owner": agency,
+                }
+            )
+            items.append(
+                {
+                    "lane": "Intl",
+                    "action": "Keep AU + CA + UAE — purchases and ROAS above kill threshold.",
+                    "owner": agency,
+                }
+            )
+            items.append(
+                {
+                    "lane": "Intl",
+                    "action": (
+                        "Intl budget stays additive (~$44/day). Reallocate Italy $8/day to AU winner — "
+                        "do NOT add MX / DE / SG / ES yet; only 4 of 8 countries were live."
+                    ),
+                    "owner": agency,
+                }
+            )
 
     plat = int(meta.get("platform_purchases") or 0)
     shop = int(meta.get("shopify_orders") or 0)
@@ -665,10 +674,13 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
             intl["efficiency_actions"].insert(0, prospect)
 
     hit_list = (payload.get("executive_summary") or [])[:4]
+    zaki_confirm = sync.get("confirm_banner") if sync.get("aligned") else (
+        f"{agency} — reply yes/no on each item below, or note what you'd change."
+    )
     payload["action_rollup"] = {
         "title": "Action rollup",
         "period": w.get("label", ""),
-        "zaki_confirm": f"{agency} — reply yes/no on each item below, or note what you'd change.",
+        "zaki_confirm": zaki_confirm,
         "hit_list": hit_list,
         "intl_test_rules": intl_test_rules if intl else "",
         "top_line": {
