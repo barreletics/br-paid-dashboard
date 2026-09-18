@@ -1909,6 +1909,7 @@ function renderActionBanner(data) {
         <span class="action-banner-title">${roll.period || ''}</span>
       </div>
       ${topLine}
+      ${roll.intl_test_rules ? `<p class="action-banner-context"><strong>Intl rules:</strong> ${roll.intl_test_rules}</p>` : ''}
       ${roll.headline ? `<p class="info-card-sub action-banner-context">${roll.headline}</p>` : ''}
       ${(roll.hit_list || []).length ? `
       <p class="highlights-head" style="margin-top:0">At a glance</p>

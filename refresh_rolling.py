@@ -578,7 +578,21 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
             }
         )
 
+    intl_test_rules = (
+        "Intl test: 14 days per country · pause at $100 spend or day 14 with 0 Shopify orders · "
+        "1+ Shopify order = stay in · judge Shopify ship-to only · additive budget (no US cuts)"
+    )
+    if intl:
+        intl["test_rules"] = intl_test_rules
+
     if intl.get("shopify"):
+        items.append(
+            {
+                "lane": "Intl",
+                "action": intl_test_rules,
+                "owner": agency,
+            }
+        )
         items.append(
             {
                 "lane": "Intl",
@@ -656,6 +670,7 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
         "period": w.get("label", ""),
         "zaki_confirm": f"{agency} — reply yes/no on each item below, or note what you'd change.",
         "hit_list": hit_list,
+        "intl_test_rules": intl_test_rules if intl else "",
         "top_line": {
             "ad_revenue": round(ad_rev),
             "ad_spend": round(k["total_ad_spend"]),
