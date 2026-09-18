@@ -400,11 +400,124 @@ RETURNS_SKIP_TAGS = frozenset(
 )
 
 
+RETURNS_GQL = """
+query ReturnsOnUpdatedOrders($query: String!, $cursor: String) {
+  orders(first: 50, after: $cursor, query: $query, sortKey: UPDATED_AT, reverse: true) {
+    pageInfo { hasNextPage endCursor }
+    edges {
+      node {
+        name
+        tags
+        currentTotalPriceSet { shopMoney { amount } }
+        returns(first: 10) {
+          edges {
+            node {
+              name
+              status
+              createdAt
+              totalQuantity
+            }
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+
+def graphql_request(domain: str, token: str, query: str, variables: dict[str, Any]) -> dict[str, Any]:
+    url = f"https://{domain}/admin/api/{API_VERSION}/graphql.json"
+    body = json.dumps({"query": query, "variables": variables}).encode()
+    req = urllib.request.Request(
+        url,
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": token,
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        payload = json.loads(resp.read())
+    if payload.get("errors"):
+        raise RuntimeError(str(payload["errors"][:2]))
+    return payload.get("data") or {}
+
+
+def shopify_return_refund_activity(
+    domain: str,
+    token: str,
+    start: date,
+    end: date,
+) -> dict[str, Any]:
+    """ReturnZap refund path: Shopify Return objects (e.g. #5535-R1) — often no order tag until refunded."""
+    start_dt = datetime.combine(start, datetime.min.time(), tzinfo=TZ)
+    end_dt = datetime.combine(end + timedelta(days=1), datetime.min.time(), tzinfo=TZ)
+    search_q = f"updated_at:>={start.isoformat()} updated_at:<{(end + timedelta(days=1)).isoformat()}"
+    open_statuses = frozenset({"OPEN", "REQUESTED", "IN_PROGRESS"})
+    in_progress = 0
+    completed = 0
+    samples: list[dict[str, Any]] = []
+    cursor: str | None = None
+    pages = 0
+    while pages < 8:
+        pages += 1
+        data = graphql_request(
+            domain,
+            token,
+            RETURNS_GQL,
+            {"query": search_q, "cursor": cursor},
+        )
+        conn = (data.get("orders") or {})
+        for edge in conn.get("edges") or []:
+            node = edge.get("node") or {}
+            tags = parse_tags(node.get("tags") or "")
+            if "ReturnZap Exchanged" in tags:
+                continue
+            for re_edge in (node.get("returns") or {}).get("edges") or []:
+                ret = re_edge.get("node") or {}
+                created_raw = ret.get("createdAt") or ""
+                if not created_raw:
+                    continue
+                created = datetime.fromisoformat(created_raw.replace("Z", "+00:00"))
+                if created < start_dt or created >= end_dt:
+                    continue
+                status = (ret.get("status") or "").upper()
+                row = {
+                    "order": node.get("name"),
+                    "return": ret.get("name"),
+                    "status": status,
+                    "created_at": created_raw[:10],
+                }
+                if status in open_statuses:
+                    in_progress += 1
+                    samples.append(row)
+                elif status == "CLOSED":
+                    completed += 1
+                    samples.append(row)
+        page = conn.get("pageInfo") or {}
+        if not page.get("hasNextPage"):
+            break
+        cursor = page.get("endCursor")
+    return {
+        "refund_returns_in_progress": in_progress,
+        "refund_returns_closed": completed,
+        "samples": samples[:6],
+        "source": "shopify_admin_returns_graphql",
+        "note": (
+            "Refund returns from ReturnZap create Shopify Return objects (no tag like Exchanged). "
+            "OPEN = return in progress; CLOSED = processed. Cash $ still from order refunds when closed."
+        ),
+    }
+
+
 def returns_rollup(
     orders: list[dict[str, Any]],
     *,
     refund_return_fee_usd: float = 7.95,
     exchange_outbound_ship_usd: float = 9.0,
+    shopify_returns: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """All non-wholesale orders in window — includes excluded refund/exchange rows."""
     refund_returns = 0
@@ -425,8 +538,16 @@ def returns_rollup(
             refunds_cash_out += cash_back
     fee_kept = round(refund_returns * refund_return_fee_usd, 2)
     exchange_cost = round(exchanges * exchange_outbound_ship_usd, 2)
-    return {
-        "refund_return_orders": refund_returns,
+    sr = shopify_returns or {}
+    in_prog = int(sr.get("refund_returns_in_progress") or 0)
+    closed = int(sr.get("refund_returns_closed") or 0)
+    # Completed refund $ on orders; in-progress RMAs from Shopify Return API
+    refund_return_orders = max(refund_returns, in_prog + closed)
+    out = {
+        "refund_return_orders": refund_return_orders,
+        "refund_returns_cash_completed": refund_returns,
+        "refund_returns_in_progress": in_prog,
+        "refund_returns_closed": closed,
         "exchange_orders": exchanges,
         "refunds_cash_out": round(refunds_cash_out, 2),
         "return_fee_kept_est": fee_kept,
@@ -434,17 +555,24 @@ def returns_rollup(
         "returns_cash_cost": round(refunds_cash_out + exchange_cost, 2),
         "policy_note": (
             "Refund returns: $7.95 kept per return (deducted from refund). "
-            "Exchanges: $0 to customer; outbound replacement ship is modeled."
+            "Exchanges: $0 to customer; tag ReturnZap Exchanged on resolve."
         ),
         "scope_note": (
-            "Counts orders created this period plus older orders with refund/exchange "
-            "activity updated in this period."
+            "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. "
+            "Cash out only after refund processed on order."
         ),
+        "shopify_returns_samples": sr.get("samples") or [],
     }
+    if sr.get("note"):
+        out["returnzap_refund_note"] = sr["note"]
+    return out
 
 
 def summarize(
-    orders: list[dict[str, Any]], *, returns_orders: list[dict[str, Any]] | None = None
+    orders: list[dict[str, Any]],
+    *,
+    returns_orders: list[dict[str, Any]] | None = None,
+    shopify_returns: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     dtc: list[dict[str, Any]] = []
     wholesale: list[dict[str, Any]] = []
@@ -492,7 +620,10 @@ def summarize(
         "paid_revenue": gross_total,
         "paid_revenue_net": net_total,
         "returns_adjusted": round(gross_total - net_total, 2),
-        "returns_rollup": returns_rollup(returns_orders if returns_orders is not None else orders),
+        "returns_rollup": returns_rollup(
+            returns_orders if returns_orders is not None else orders,
+            shopify_returns=shopify_returns,
+        ),
         "unit_economics": dtc_roll.get("unit_economics") or {},
         "channels": dtc_roll.get("channels", {}),
         "daily_orders": dtc_roll.get("daily_orders", {}),
@@ -540,9 +671,18 @@ def main() -> None:
         domain, token, updated_at_min=updated_min, updated_at_max=updated_max
     )
     returns_orders = orders_for_returns_window(orders, updated)
+    shopify_returns: dict[str, Any] = {}
+    try:
+        shopify_returns = shopify_return_refund_activity(domain, token, start, end)
+    except Exception as exc:
+        shopify_returns = {"error": str(exc)[:200]}
     result = {
         "window": {"start": start.isoformat(), "end": end.isoformat()},
-        "summary": summarize(orders, returns_orders=returns_orders),
+        "summary": summarize(
+            orders,
+            returns_orders=returns_orders,
+            shopify_returns=shopify_returns if "error" not in shopify_returns else None,
+        ),
         "order_count_raw": len(orders),
         "returns_orders_scanned": len(returns_orders),
     }

@@ -1969,11 +1969,13 @@ function intlCountryShopifyMetrics(c) {
 function returnsRollupSummary(rr) {
   if (!rr || typeof rr.refund_return_orders !== 'number') return '';
   const n = rr.refund_return_orders;
+  const inProg = rr.refund_returns_in_progress ?? 0;
   const ex = rr.exchange_orders ?? 0;
   const cash = rr.refunds_cash_out != null ? fmt(rr.refunds_cash_out) : '—';
   const exCost = rr.exchange_outbound_cost_modeled != null ? fmt(rr.exchange_outbound_cost_modeled) : '—';
   const fee = rr.return_fee_kept_est != null ? ` · ~${fmt(rr.return_fee_kept_est)} fees kept ($7.95/return)` : '';
-  return `${n} refund returns · ${cash} refunded to customers${fee} · ${ex} exchanges · ~${exCost} outbound ship (Barreletics pays; customer $0)`;
+  const prog = inProg ? ` · ${inProg} return in progress (no $ yet)` : '';
+  return `${n} refund returns${prog} · ${cash} refunded to customers${fee} · ${ex} exchanges · ~${exCost} outbound ship (Barreletics pays; customer $0)`;
 }
 
 function renderDirectorEconomics(data) {
