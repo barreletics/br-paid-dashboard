@@ -411,6 +411,10 @@ def returns_rollup(
         if "ReturnZap Exchanged" in tags:
             exchanges += 1
             continue
+        if any("returnzap" in t.lower() for t in tags) and "ReturnZap Exchanged" not in tags:
+            refund_returns += 1
+            refunds_cash_out += float(o.get("total_refunded") or 0)
+            continue
         ref = float(o.get("total_refunded") or 0)
         if ref > 0:
             refund_returns += 1

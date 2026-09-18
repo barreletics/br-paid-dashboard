@@ -1967,7 +1967,7 @@ function intlCountryShopifyMetrics(c) {
 }
 
 function returnsRollupSummary(rr) {
-  if (!rr || rr.refund_return_orders == null) return '';
+  if (!rr || typeof rr.refund_return_orders !== 'number') return '';
   const n = rr.refund_return_orders;
   const ex = rr.exchange_orders ?? 0;
   const cash = rr.refunds_cash_out != null ? fmt(rr.refunds_cash_out) : '—';
@@ -2105,7 +2105,7 @@ function renderActionBanner(data) {
         <span><strong>${roas(tl.total_roas_net ?? tl.total_roas ?? storeTotal.mer)}</strong> total ROAS after refunds <span class="muted">(net store ÷ spend)</span></span>
         <span class="muted">${roas(tl.total_roas ?? storeTotal.mer)} gross · ${roas(tl.total_roas_after_exchange_cost)} after exchange ship · ${roas(tl.ad_roas ?? adsOnly.roas)} tagged ad ROAS</span>
       </div>
-      ${returnsRollupSummary(tl.returns) ? `<div class="action-banner-kpi-row secondary"><span><strong>Returns:</strong> ${returnsRollupSummary(tl.returns)}</span></div>` : ''}
+      ${typeof (tl.returns || {}).refund_return_orders === 'number' ? `<div class="action-banner-kpi-row secondary"><span><strong>Returns:</strong> ${returnsRollupSummary(tl.returns)}</span></div>` : ''}
       <div class="action-banner-kpi-row secondary muted">
         <span>Total sales ${fmt(tl.store_revenue ?? storeTotal.revenue)}${deltaSpan(tl.store_revenue_delta_pct ?? storeTotal.revenue_delta_pct, false)} · ${tl.store_orders ?? storeTotal.orders ?? '—'} DTC orders · +${fmt(tl.unattributed_revenue ?? storeTotal.unattributed_revenue)} not ad-tagged (exchanges not in order count)</span>
       </div>
