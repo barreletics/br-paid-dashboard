@@ -1726,7 +1726,7 @@ const filters = {
   showTarget: false,
   showMonthCompare: false,
   useNetRevenue: false,
-  periodDays: 7,
+  periodDays: 30,
   periodMode: 'preset',
   customStart: '',
   customEnd: ''
@@ -1763,7 +1763,12 @@ function activeData(raw) {
   if (!raw) return raw;
   if (filters.periodMode === 'preset' && raw.windows?.[String(filters.periodDays)]) {
     const snap = raw.windows[String(filters.periodDays)];
-    return { ...raw, ...snap, _source: raw };
+    return {
+      ...raw,
+      ...snap,
+      director_economics: snap.director_economics || raw.director_economics,
+      _source: raw,
+    };
   }
   if (filters.periodMode === 'custom' && filters.customStart && filters.customEnd) {
     return sliceCustomRange(raw, filters.customStart, filters.customEnd);
@@ -1999,8 +2004,8 @@ function renderDirectorEconomics(data) {
         <th>Measure</th><th>Value</th><th>What it means</th>
       </tr></thead>
       <tbody>
-        <tr><td>Refund returns (count)</td><td><strong>${rr.refund_return_orders ?? '—'}</strong></td><td>Cash-back path; $7.95/return kept (not charged on exchanges)</td></tr>
-        <tr><td>Exchanges (count)</td><td><strong>${rr.exchange_orders ?? d.returnzap_exchanges ?? '—'}</strong></td><td>ReturnZap Exchanged tag; excluded from order count above</td></tr>
+        <tr><td>Refund returns (count)</td><td><strong>${rr.refund_return_orders ?? '—'}</strong>${typeof rr.refund_returns_in_progress === 'number' && rr.refund_returns_in_progress ? `<br><span class="muted">${rr.refund_returns_in_progress} in progress (Shopify Return, no $ yet)</span>` : ''}</td><td>Cash-back path; $7.95/return kept (not charged on exchanges)</td></tr>
+        <tr><td>Exchanges (count)</td><td><strong>${rr.exchange_orders ?? '—'}</strong></td><td>ReturnZap Exchanged tag; excluded from order count above</td></tr>
         <tr><td>Refunds to customers</td><td><strong>${rr.refunds_cash_out != null ? fmt(rr.refunds_cash_out) : fmt(d.refunds_and_adjustments)}</strong></td><td>Cash out via Shopify refunds this window</td></tr>
         <tr><td>Exchange outbound (modeled)</td><td><strong>${rr.exchange_outbound_cost_modeled != null ? fmt(rr.exchange_outbound_cost_modeled) : '—'}</strong></td><td>We pay ship on replacement — not in store revenue</td></tr>
         <tr><td>Total ROAS (gross store)</td><td><strong>${roas(d.mer_gross)}</strong></td><td>Gross DTC ÷ ad spend</td></tr>
@@ -2010,7 +2015,7 @@ function renderDirectorEconomics(data) {
         <tr><td>Halo</td><td><strong>${fmt(d.halo_revenue)}</strong> · ${d.halo_orders ?? '—'} orders · index ${roas(d.halo_index)}</td><td>Not UTM-tagged — may include ad-driven organic</td></tr>
         <tr><td>Refunds / adjustments</td><td>${fmt(d.refunds_and_adjustments)}${d.refunds_recorded != null ? `<br><span class="muted">refunded field ${fmt(d.refunds_recorded)}</span>` : ''}</td><td>On orders this period</td></tr>
         <tr><td>Shipping (customer paid)</td><td>${d.shipping_collected != null ? fmt(d.shipping_collected) : '—'}</td><td>Not same as 3PL cost — refresh pulls from Shopify</td></tr>
-        <tr><td>ReturnZap exchanges</td><td>${d.returnzap_exchanges ?? '—'} orders tagged</td><td>${d.returnzap_note || ''}</td></tr>
+        <tr><td>ReturnZap (how we count)</td><td colspan="2"><span class="muted">${d.returnzap_note || ''}</span></td></tr>
         <tr><td>Intl ship-to orders</td><td>${d.intl_ship_to_orders ?? '—'}</td><td>All DTC intl destinations</td></tr>
         <tr><td>Fulfilled</td><td>${d.fulfilled_pct != null ? d.fulfilled_pct + '%' : '—'}</td><td>Shopify fulfillment status</td></tr>
         <tr><td>Modeled contribution</td><td><strong>${fmt(d.estimated_contribution)}</strong> · ${roas(d.contribution_mer)} vs spend</td><td>After ~${Math.round((d.modeled_cogs_pct || 0) * 100)}% COGS + $${d.modeled_fulfillment_per_order}/order fulfillment model</td></tr>

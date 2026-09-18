@@ -749,7 +749,7 @@ def resolve_returns_rollup(snap: dict, cfg: dict) -> dict:
     }
 
 
-def regenerate_director_economics(snap: dict, payload: dict, cfg: dict) -> None:
+def build_director_economics(snap: dict, cfg: dict, rz: dict) -> dict:
     """Shopify unit economics + MER/halo/contribution model for director view."""
     k = snap["kpis"]
     ch = snap["channels"]
@@ -771,7 +771,6 @@ def regenerate_director_economics(snap: dict, payload: dict, cfg: dict) -> None:
     contribution = net - est_cogs - est_fulfillment - ad_spend
     cont_mer = round(contribution / ad_spend, 2) if ad_spend else 0
     shopify_roas = round(ad_rev / ad_spend, 2) if ad_spend else 0
-    rz = payload.get("returnzap") or {}
 
     strategy: list[str] = []
     mer = float(k.get("blended_mer") or 0)
@@ -798,7 +797,7 @@ def regenerate_director_economics(snap: dict, payload: dict, cfg: dict) -> None:
         round(store_after_exchange_cost / ad_spend_de, 2) if ad_spend_de else 0
     )
 
-    payload["director_economics"] = {
+    return {
         "window_label": snap["window"].get("label", ""),
         "returns_rollup": rr,
         "mer_gross": k.get("blended_mer"),
@@ -816,11 +815,12 @@ def regenerate_director_economics(snap: dict, payload: dict, cfg: dict) -> None:
         "refunds_recorded": ue.get("refunds_recorded"),
         "shipping_collected": ue.get("shipping_collected_from_customer"),
         "discounts": ue.get("discounts"),
-        "returnzap_exchanges": ue.get("returnzap_exchange_orders"),
+        "returnzap_exchanges": (k.get("returns_rollup") or rr).get("exchange_orders")
+        or ue.get("returnzap_exchange_orders"),
         "returnzap_status": rz.get("status", "shopify_tags_only"),
-        "returnzap_note": rz.get(
-            "note",
-            "ReturnZap API not connected — exchanges counted via Shopify tag ReturnZap Exchanged.",
+        "returnzap_note": (
+            "Exchanges: Shopify tag ReturnZap Exchanged. "
+            "Refund RMAs: Shopify Return in progress / refund $. ReturnZap API not wired."
         ),
         "intl_ship_to_orders": ue.get("intl_ship_to_orders"),
         "fulfilled_pct": ue.get("fulfilled_pct"),
@@ -834,6 +834,12 @@ def regenerate_director_economics(snap: dict, payload: dict, cfg: dict) -> None:
         ),
         "strategy_lines": strategy,
     }
+
+
+def regenerate_director_economics(snap: dict, payload: dict, cfg: dict) -> None:
+    payload["director_economics"] = build_director_economics(
+        snap, cfg, payload.get("returnzap") or {}
+    )
 
 
 def fmt_money(n: float) -> str:
@@ -1021,8 +1027,11 @@ def main() -> None:
     channels_base = payload.get("channels", [])
 
     windows: dict[str, dict] = {}
+    rz = payload.get("returnzap") or {}
     for days in WINDOW_SIZES:
-        windows[str(days)] = build_snapshot(days, through, channels_base, targets, cfg)
+        snap = build_snapshot(days, through, channels_base, targets, cfg)
+        snap["director_economics"] = build_director_economics(snap, cfg, rz)
+        windows[str(days)] = snap
 
     default_snap = windows[str(default_days)]
     apply_snapshot(payload, default_snap)
