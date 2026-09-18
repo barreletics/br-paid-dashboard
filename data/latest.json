@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-18T08:29:15.242121-04:00",
+  "generated_at": "2026-09-18T08:41:00.853474-04:00",
   "window": {
     "start": "2026-09-12",
     "end": "2026-09-18",
@@ -164,13 +164,17 @@
     },
     "returns_rollup": {
       "refund_return_orders": 0,
+      "refund_returns_cash_completed": 0,
+      "refund_returns_in_progress": 0,
+      "refund_returns_closed": 0,
       "exchange_orders": 2,
       "refunds_cash_out": 0.0,
       "return_fee_kept_est": 0.0,
       "exchange_outbound_cost_modeled": 18.0,
       "returns_cash_cost": 18.0,
-      "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; outbound replacement ship is modeled.",
-      "scope_note": "Counts orders created this period plus older orders with refund/exchange activity updated in this period."
+      "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; tag ReturnZap Exchanged on resolve.",
+      "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
+      "shopify_returns_samples": []
     }
   },
   "channels": [
@@ -1027,13 +1031,17 @@
         },
         "returns_rollup": {
           "refund_return_orders": 0,
+          "refund_returns_cash_completed": 0,
+          "refund_returns_in_progress": 0,
+          "refund_returns_closed": 0,
           "exchange_orders": 2,
           "refunds_cash_out": 0.0,
           "return_fee_kept_est": 0.0,
           "exchange_outbound_cost_modeled": 18.0,
           "returns_cash_cost": 18.0,
-          "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; outbound replacement ship is modeled.",
-          "scope_note": "Counts orders created this period plus older orders with refund/exchange activity updated in this period."
+          "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; tag ReturnZap Exchanged on resolve.",
+          "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
+          "shopify_returns_samples": []
         }
       },
       "channels": [
@@ -1336,14 +1344,18 @@
           "avg_shipping_collected": 13.31
         },
         "returns_rollup": {
-          "refund_return_orders": 0,
+          "refund_return_orders": 1,
+          "refund_returns_cash_completed": 1,
+          "refund_returns_in_progress": 0,
+          "refund_returns_closed": 0,
           "exchange_orders": 5,
-          "refunds_cash_out": 0.0,
-          "return_fee_kept_est": 0.0,
+          "refunds_cash_out": 9.95,
+          "return_fee_kept_est": 7.95,
           "exchange_outbound_cost_modeled": 45.0,
-          "returns_cash_cost": 45.0,
-          "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; outbound replacement ship is modeled.",
-          "scope_note": "Counts orders created this period plus older orders with refund/exchange activity updated in this period."
+          "returns_cash_cost": 54.95,
+          "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; tag ReturnZap Exchanged on resolve.",
+          "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
+          "shopify_returns_samples": []
         }
       },
       "channels": [
@@ -1668,14 +1680,18 @@
           "avg_shipping_collected": 13.54
         },
         "returns_rollup": {
-          "refund_return_orders": 0,
+          "refund_return_orders": 7,
+          "refund_returns_cash_completed": 7,
+          "refund_returns_in_progress": 0,
+          "refund_returns_closed": 0,
           "exchange_orders": 6,
-          "refunds_cash_out": 0.0,
-          "return_fee_kept_est": 0.0,
+          "refunds_cash_out": 1279.77,
+          "return_fee_kept_est": 55.65,
           "exchange_outbound_cost_modeled": 54.0,
-          "returns_cash_cost": 54.0,
-          "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; outbound replacement ship is modeled.",
-          "scope_note": "Counts orders created this period plus older orders with refund/exchange activity updated in this period."
+          "returns_cash_cost": 1333.77,
+          "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; tag ReturnZap Exchanged on resolve.",
+          "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
+          "shopify_returns_samples": []
         }
       },
       "channels": [
@@ -2193,13 +2209,17 @@
       "total_roas_after_exchange_cost": 2.95,
       "returns": {
         "refund_return_orders": 0,
+        "refund_returns_cash_completed": 0,
+        "refund_returns_in_progress": 0,
+        "refund_returns_closed": 0,
         "exchange_orders": 2,
         "refunds_cash_out": 0.0,
         "return_fee_kept_est": 0.0,
         "exchange_outbound_cost_modeled": 18.0,
         "returns_cash_cost": 18.0,
-        "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; outbound replacement ship is modeled.",
-        "scope_note": "Counts orders created this period plus older orders with refund/exchange activity updated in this period."
+        "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; tag ReturnZap Exchanged on resolve.",
+        "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
+        "shopify_returns_samples": []
       },
       "ad_orders": 44,
       "store_revenue": 7425,
@@ -2271,13 +2291,17 @@
     "window_label": "Sep 12\u201318, 2026",
     "returns_rollup": {
       "refund_return_orders": 0,
+      "refund_returns_cash_completed": 0,
+      "refund_returns_in_progress": 0,
+      "refund_returns_closed": 0,
       "exchange_orders": 2,
       "refunds_cash_out": 0.0,
       "return_fee_kept_est": 0.0,
       "exchange_outbound_cost_modeled": 18.0,
       "returns_cash_cost": 18.0,
-      "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; outbound replacement ship is modeled.",
-      "scope_note": "Counts orders created this period plus older orders with refund/exchange activity updated in this period."
+      "policy_note": "Refund returns: $7.95 kept per return (deducted from refund). Exchanges: $0 to customer; tag ReturnZap Exchanged on resolve.",
+      "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
+      "shopify_returns_samples": []
     },
     "mer_gross": 2.96,
     "mer_net": 2.96,
