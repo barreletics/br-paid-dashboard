@@ -659,6 +659,15 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
         )
 
     mer = round(k["paid_revenue"] / k["total_ad_spend"], 2) if k.get("total_ad_spend") else 0
+    mer_net = round(k["paid_revenue_net"] / k["total_ad_spend"], 2) if k.get("total_ad_spend") else 0
+    rr = resolve_returns_rollup(snap, cfg)
+    exchange_cost = float(rr.get("exchange_outbound_cost_modeled") or 0)
+    store_net = float(k.get("paid_revenue_net") or 0)
+    mer_after_exchange = (
+        round((store_net - exchange_cost) / k["total_ad_spend"], 2)
+        if k.get("total_ad_spend")
+        else 0
+    )
     ad_net = round(ad_rev - k["total_ad_spend"])
     ad_net_prior = round(ad_rev_prior - prior.get("total_ad_spend", 0))
     net_chg = (
@@ -692,6 +701,9 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
             "net_delta_pct": net_chg,
             "ad_roas": ad_roas,
             "total_roas": mer,
+            "total_roas_net": mer_net,
+            "total_roas_after_exchange_cost": mer_after_exchange,
+            "returns": rr,
             "ad_orders": ad_orders,
             "store_revenue": round(k["paid_revenue"]),
             "store_orders": k["paid_orders"],
@@ -705,6 +717,122 @@ def regenerate_action_rollup(snap: dict, payload: dict, cfg: dict) -> None:
             f"total sales {fmt_money(k['paid_revenue'])} ({k['paid_orders']} orders, ads + other)"
         ),
         "items": items,
+    }
+
+
+def resolve_returns_rollup(snap: dict, cfg: dict) -> dict:
+    """Returns/exchanges in window; full counts from shopify returns_rollup after refresh."""
+    k = snap["kpis"]
+    rr = k.get("returns_rollup")
+    if rr:
+        return rr
+    rm = cfg.get("returns_model") or {}
+    fee = float(rm.get("refund_return_fee_usd", 7.95))
+    exch_ship = float(rm.get("exchange_outbound_ship_usd", 9))
+    ue = k.get("unit_economics") or {}
+    ex = snap.get("excluded") or {}
+    by = ex.get("by_reason") or {}
+    exchanges = int(by.get("exchange") or ue.get("returnzap_exchange_orders") or 0)
+    refunds_cash = float(ue.get("refunds_recorded") or k.get("returns_adjusted") or 0)
+    return {
+        "refund_return_orders": None,
+        "exchange_orders": exchanges,
+        "refunds_cash_out": round(refunds_cash, 2),
+        "return_fee_kept_est": None,
+        "exchange_outbound_cost_modeled": round(exchanges * exch_ship, 2),
+        "returns_cash_cost": round(refunds_cash + exchanges * exch_ship, 2),
+        "policy_note": (
+            f"Refund returns: ${fee:.2f} kept per return. Exchanges: $0 to customer; "
+            f"~${exch_ship:.0f}/exchange outbound modeled. Run refresh for exact return counts."
+        ),
+        "partial": True,
+    }
+
+
+def regenerate_director_economics(snap: dict, payload: dict, cfg: dict) -> None:
+    """Shopify unit economics + MER/halo/contribution model for director view."""
+    k = snap["kpis"]
+    ch = snap["channels"]
+    ue = k.get("unit_economics") or {}
+    rr = resolve_returns_rollup(snap, cfg)
+    model = cfg.get("economics_model") or {}
+    cogs_pct = float(model.get("cogs_pct_of_net_dtc", 0.38))
+    ship_cost = float(model.get("fulfillment_cost_per_order_usd", 9.0))
+    ad_spend = float(k.get("total_ad_spend") or 0)
+    gross = float(k.get("paid_revenue") or 0)
+    net = float(k.get("paid_revenue_net") or gross)
+    orders = int(k.get("paid_orders") or 0)
+    ad_rev = sum(float(c.get("shopify_revenue") or 0) for c in ch)
+    ad_orders = sum(int(c.get("shopify_orders") or 0) for c in ch)
+    halo_rev = gross - ad_rev
+    halo_orders = max(0, orders - ad_orders)
+    est_cogs = net * cogs_pct
+    est_fulfillment = ship_cost * orders
+    contribution = net - est_cogs - est_fulfillment - ad_spend
+    cont_mer = round(contribution / ad_spend, 2) if ad_spend else 0
+    shopify_roas = round(ad_rev / ad_spend, 2) if ad_spend else 0
+    rz = payload.get("returnzap") or {}
+
+    strategy: list[str] = []
+    mer = float(k.get("blended_mer") or 0)
+    if mer >= 3:
+        strategy.append(f"MER {mer}× — total store supports ad spend; watch modeled contribution before scaling.")
+    elif mer >= 2:
+        strategy.append(f"MER {mer}× — acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).")
+    else:
+        strategy.append(f"MER {mer}× — total store not covering spend enough; hold scale.")
+    if halo_rev > 0 and ad_spend:
+        strategy.append(
+            f"Halo ~{fmt_money(halo_rev)} ({halo_orders} orders) not ad-tagged — likely organic/direct/email; MER includes this."
+        )
+    if shopify_roas and shopify_roas < 1.5:
+        strategy.append(f"Tagged Shopify ROAS {shopify_roas}× — measurable ads below gate; do not trust Meta purchase counts alone.")
+    elif shopify_roas >= 1.5:
+        strategy.append(f"Tagged Shopify ROAS {shopify_roas}× — measurable ads at/above gate.")
+
+    ad_spend_de = float(k.get("total_ad_spend") or 0)
+    store_net = float(k.get("paid_revenue_net") or 0)
+    exchange_cost = float(rr.get("exchange_outbound_cost_modeled") or 0)
+    store_after_exchange_cost = round(store_net - exchange_cost, 2)
+    mer_after_exchange_cost = (
+        round(store_after_exchange_cost / ad_spend_de, 2) if ad_spend_de else 0
+    )
+
+    payload["director_economics"] = {
+        "window_label": snap["window"].get("label", ""),
+        "returns_rollup": rr,
+        "mer_gross": k.get("blended_mer"),
+        "mer_net": k.get("blended_mer_net"),
+        "mer_after_exchange_cost": mer_after_exchange_cost,
+        "store_after_exchange_cost": store_after_exchange_cost,
+        "shopify_roas_blended": shopify_roas,
+        "halo_revenue": round(halo_rev, 2),
+        "halo_orders": halo_orders,
+        "halo_index": round(halo_rev / ad_spend, 2) if ad_spend else 0,
+        "ad_spend": round(ad_spend),
+        "store_revenue_gross": round(gross, 2),
+        "store_revenue_net": round(net, 2),
+        "refunds_and_adjustments": ue.get("returns_adjusted_on_orders") or k.get("returns_adjusted"),
+        "refunds_recorded": ue.get("refunds_recorded"),
+        "shipping_collected": ue.get("shipping_collected_from_customer"),
+        "discounts": ue.get("discounts"),
+        "returnzap_exchanges": ue.get("returnzap_exchange_orders"),
+        "returnzap_status": rz.get("status", "shopify_tags_only"),
+        "returnzap_note": rz.get(
+            "note",
+            "ReturnZap API not connected — exchanges counted via Shopify tag ReturnZap Exchanged.",
+        ),
+        "intl_ship_to_orders": ue.get("intl_ship_to_orders"),
+        "fulfilled_pct": ue.get("fulfilled_pct"),
+        "modeled_cogs_pct": cogs_pct,
+        "modeled_fulfillment_per_order": ship_cost,
+        "estimated_contribution": round(contribution, 2),
+        "contribution_mer": cont_mer,
+        "model_disclaimer": model.get(
+            "label",
+            "Modeled contribution — not Xero truth.",
+        ),
+        "strategy_lines": strategy,
     }
 
 
@@ -768,6 +896,8 @@ def build_snapshot(days: int, through: str, channels_base: list[dict], targets: 
         "aov": round(paid_revenue / paid_orders, 2) if paid_orders else None,
         "aov_net": round(paid_revenue_net / paid_orders, 2) if paid_orders else None,
         "spend_estimated": False,
+        "unit_economics": cur_s.get("unit_economics") or {},
+        "returns_rollup": cur_s.get("returns_rollup") or {},
     }
 
     return {
@@ -899,6 +1029,7 @@ def main() -> None:
     regenerate_executive_summary(default_snap, payload)
     regenerate_strategy_todos(default_snap, payload, cfg)
     regenerate_action_rollup(default_snap, payload, cfg)
+    regenerate_director_economics(default_snap, payload, cfg)
 
     w = default_snap["window"]
     cur_start = date.fromisoformat(w["start"])

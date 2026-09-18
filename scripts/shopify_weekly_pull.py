@@ -51,9 +51,28 @@ WHOLESALE_TAGS = frozenset(
 COUNTABLE_FINANCIAL = frozenset({"paid", "partially_paid", "partially_refunded"})
 
 ORDER_FIELDS = (
-    "id,name,created_at,total_price,current_total_price,total_refunded,tags,"
-    "landing_site,referring_site,financial_status,cancelled_at,source_name"
+    "id,name,created_at,total_price,current_total_price,total_refunded,total_discounts,"
+    "total_shipping_price_set,tags,landing_site,referring_site,financial_status,"
+    "cancelled_at,source_name,shipping_address,fulfillment_status"
 )
+
+
+def shipping_collected(o: dict[str, Any]) -> float:
+    raw = o.get("total_shipping_price_set") or {}
+    shop = raw.get("shop_money") or raw.get("shopMoney") or {}
+    if shop.get("amount") is not None:
+        return float(shop["amount"])
+    return 0.0
+
+
+def ship_to_country(o: dict[str, Any]) -> str:
+    addr = o.get("shipping_address") or {}
+    return (addr.get("country") or addr.get("country_code") or "").strip()
+
+
+def is_intl_ship_to(o: dict[str, Any]) -> bool:
+    c = ship_to_country(o)
+    return bool(c and c not in ("United States", "US", "USA"))
 
 
 def _env(name: str) -> str:
@@ -261,6 +280,12 @@ def channel(o: dict[str, Any]) -> str:
 def _rollup_segment(orders: list[dict[str, Any]], track_daily: bool) -> dict[str, Any]:
     gross_total = 0.0
     net_total = 0.0
+    refunded_sum = 0.0
+    shipping_sum = 0.0
+    discounts_sum = 0.0
+    returnzap_exchanges = 0
+    intl_orders = 0
+    fulfilled = 0
     by_ch: dict[str, list[float]] = defaultdict(list)
     by_ch_net: dict[str, list[float]] = defaultdict(list)
     daily: Counter[str] = Counter()
@@ -273,6 +298,16 @@ def _rollup_segment(orders: list[dict[str, Any]], track_daily: bool) -> dict[str
         net = order_net(o)
         gross_total += gross
         net_total += net
+        refunded_sum += float(o.get("total_refunded") or 0)
+        shipping_sum += shipping_collected(o)
+        discounts_sum += float(o.get("total_discounts") or 0)
+        tags = parse_tags(o.get("tags") or "")
+        if "ReturnZap Exchanged" in tags:
+            returnzap_exchanges += 1
+        if is_intl_ship_to(o):
+            intl_orders += 1
+        if (o.get("fulfillment_status") or "").lower() == "fulfilled":
+            fulfilled += 1
         if track_daily:
             c = channel(o)
             by_ch[c].append(gross)
@@ -297,10 +332,22 @@ def _rollup_segment(orders: list[dict[str, Any]], track_daily: bool) -> dict[str
         for k, v in sorted(by_ch.items(), key=lambda x: -sum(x[1]))
     }
 
+    n = len(orders)
     out: dict[str, Any] = {
-        "orders": len(orders),
+        "orders": n,
         "revenue": round(gross_total, 2),
         "revenue_net": round(net_total, 2),
+        "unit_economics": {
+            "refunds_recorded": round(refunded_sum, 2),
+            "returns_adjusted_on_orders": round(gross_total - net_total, 2),
+            "shipping_collected_from_customer": round(shipping_sum, 2),
+            "discounts": round(discounts_sum, 2),
+            "returnzap_exchange_orders": returnzap_exchanges,
+            "intl_ship_to_orders": intl_orders,
+            "fulfilled_orders": fulfilled,
+            "fulfilled_pct": round(fulfilled / n * 100) if n else 0,
+            "avg_shipping_collected": round(shipping_sum / n, 2) if n else 0,
+        },
     }
     if track_daily:
         out["channels"] = channels
@@ -311,6 +358,54 @@ def _rollup_segment(orders: list[dict[str, Any]], track_daily: bool) -> dict[str
         }
         out["meta_utm_campaigns"] = meta_camps.most_common(10)
     return out
+
+
+RETURNS_SKIP_TAGS = frozenset(
+    {"TEST ORDER", "TEST", "od-converted", "Samples", "Promo Item"}
+)
+
+
+def returns_rollup(
+    orders: list[dict[str, Any]],
+    *,
+    refund_return_fee_usd: float = 7.95,
+    exchange_outbound_ship_usd: float = 9.0,
+) -> dict[str, Any]:
+    """All non-wholesale orders in window — includes excluded refund/exchange rows."""
+    refund_returns = 0
+    exchanges = 0
+    refunds_cash_out = 0.0
+    for o in orders:
+        tags = parse_tags(o.get("tags") or "")
+        if is_wholesale(tags) or tags & RETURNS_SKIP_TAGS:
+            continue
+        if (
+            "ReturnZap Exchanged" not in tags
+            and float(o.get("total_refunded") or 0) <= 0
+            and order_net(o) <= 0
+        ):
+            continue
+        if "ReturnZap Exchanged" in tags:
+            exchanges += 1
+            continue
+        ref = float(o.get("total_refunded") or 0)
+        if ref > 0:
+            refund_returns += 1
+            refunds_cash_out += ref
+    fee_kept = round(refund_returns * refund_return_fee_usd, 2)
+    exchange_cost = round(exchanges * exchange_outbound_ship_usd, 2)
+    return {
+        "refund_return_orders": refund_returns,
+        "exchange_orders": exchanges,
+        "refunds_cash_out": round(refunds_cash_out, 2),
+        "return_fee_kept_est": fee_kept,
+        "exchange_outbound_cost_modeled": exchange_cost,
+        "returns_cash_cost": round(refunds_cash_out + exchange_cost, 2),
+        "policy_note": (
+            "Refund returns: $7.95 kept per return (deducted from refund). "
+            "Exchanges: $0 to customer; outbound replacement ship is modeled."
+        ),
+    }
 
 
 def summarize(orders: list[dict[str, Any]]) -> dict[str, Any]:
@@ -360,6 +455,8 @@ def summarize(orders: list[dict[str, Any]]) -> dict[str, Any]:
         "paid_revenue": gross_total,
         "paid_revenue_net": net_total,
         "returns_adjusted": round(gross_total - net_total, 2),
+        "returns_rollup": returns_rollup(orders),
+        "unit_economics": dtc_roll.get("unit_economics") or {},
         "channels": dtc_roll.get("channels", {}),
         "daily_orders": dtc_roll.get("daily_orders", {}),
         "daily_revenue": dtc_roll.get("daily_revenue", {}),

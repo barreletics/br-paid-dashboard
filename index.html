@@ -1966,6 +1966,59 @@ function intlCountryShopifyMetrics(c) {
   };
 }
 
+function returnsRollupSummary(rr) {
+  if (!rr || (rr.refund_return_orders == null && !rr.exchange_orders && !rr.refunds_cash_out)) return '';
+  const n = rr.refund_return_orders != null ? rr.refund_return_orders : '—';
+  const ex = rr.exchange_orders ?? 0;
+  const cash = rr.refunds_cash_out != null ? fmt(rr.refunds_cash_out) : '—';
+  const exCost = rr.exchange_outbound_cost_modeled != null ? fmt(rr.exchange_outbound_cost_modeled) : '—';
+  const fee = rr.return_fee_kept_est != null ? ` · ~${fmt(rr.return_fee_kept_est)} fees kept ($7.95/return)` : '';
+  return `${n} refund returns · ${cash} refunded to customers${fee} · ${ex} exchanges · ~${exCost} outbound ship (Barreletics pays; customer $0)`;
+}
+
+function renderDirectorEconomics(data) {
+  const d = data.director_economics;
+  if (!d) return '';
+  const rr = d.returns_rollup || {};
+  const returnsSummary = returnsRollupSummary(rr);
+  const key = `
+    <strong>Total ROAS (net)</strong> = net DTC store sales ÷ ad spend — refunds on orders already reduce net.
+    <strong>After exchange ship</strong> = net store minus modeled replacement outbound ($9/exchange) ÷ spend.
+    <strong>Shopify ROAS</strong> = tagged ad revenue ÷ spend only.
+    <strong>Modeled contribution</strong> = net DTC − COGS − fulfillment − ad spend (not Xero).`;
+  const lines = (d.strategy_lines || []).map(l => `<li>${l}</li>`).join('');
+  return `<div class="action-intl-block easy-read" data-view="all simple summary performance actions deep">
+    <h3>Director economics · ${d.window_label || 'this period'}</h3>
+    <div class="action-intl-key">${key}</div>
+    ${returnsSummary ? `<p class="action-banner-context"><strong>Returns this period:</strong> ${returnsSummary}</p>` : ''}
+    ${rr.policy_note ? `<p class="action-intl-note muted">${rr.policy_note}</p>` : ''}
+    <table class="action-intl-table">
+      <thead><tr>
+        <th>Measure</th><th>Value</th><th>What it means</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>Refund returns (count)</td><td><strong>${rr.refund_return_orders ?? '—'}</strong></td><td>Cash-back path; $7.95/return kept (not charged on exchanges)</td></tr>
+        <tr><td>Exchanges (count)</td><td><strong>${rr.exchange_orders ?? d.returnzap_exchanges ?? '—'}</strong></td><td>ReturnZap Exchanged tag; excluded from order count above</td></tr>
+        <tr><td>Refunds to customers</td><td><strong>${rr.refunds_cash_out != null ? fmt(rr.refunds_cash_out) : fmt(d.refunds_and_adjustments)}</strong></td><td>Cash out via Shopify refunds this window</td></tr>
+        <tr><td>Exchange outbound (modeled)</td><td><strong>${rr.exchange_outbound_cost_modeled != null ? fmt(rr.exchange_outbound_cost_modeled) : '—'}</strong></td><td>We pay ship on replacement — not in store revenue</td></tr>
+        <tr><td>Total ROAS (gross store)</td><td><strong>${roas(d.mer_gross)}</strong></td><td>Gross DTC ÷ ad spend</td></tr>
+        <tr><td>Total ROAS (net — use this)</td><td><strong>${roas(d.mer_net)}</strong></td><td>Net DTC after refunds on counted orders ÷ spend</td></tr>
+        <tr><td>Total ROAS after exchange ship</td><td><strong>${roas(d.mer_after_exchange_cost)}</strong></td><td>Net store − modeled exchange outbound ÷ spend</td></tr>
+        <tr><td>Shopify ROAS (tagged)</td><td><strong>${roas(d.shopify_roas_blended)}</strong></td><td>Measurable ad sales only</td></tr>
+        <tr><td>Halo</td><td><strong>${fmt(d.halo_revenue)}</strong> · ${d.halo_orders ?? '—'} orders · index ${roas(d.halo_index)}</td><td>Not UTM-tagged — may include ad-driven organic</td></tr>
+        <tr><td>Refunds / adjustments</td><td>${fmt(d.refunds_and_adjustments)}${d.refunds_recorded != null ? `<br><span class="muted">refunded field ${fmt(d.refunds_recorded)}</span>` : ''}</td><td>On orders this period</td></tr>
+        <tr><td>Shipping (customer paid)</td><td>${d.shipping_collected != null ? fmt(d.shipping_collected) : '—'}</td><td>Not same as 3PL cost — refresh pulls from Shopify</td></tr>
+        <tr><td>ReturnZap exchanges</td><td>${d.returnzap_exchanges ?? '—'} orders tagged</td><td>${d.returnzap_note || ''}</td></tr>
+        <tr><td>Intl ship-to orders</td><td>${d.intl_ship_to_orders ?? '—'}</td><td>All DTC intl destinations</td></tr>
+        <tr><td>Fulfilled</td><td>${d.fulfilled_pct != null ? d.fulfilled_pct + '%' : '—'}</td><td>Shopify fulfillment status</td></tr>
+        <tr><td>Modeled contribution</td><td><strong>${fmt(d.estimated_contribution)}</strong> · ${roas(d.contribution_mer)} vs spend</td><td>After ~${Math.round((d.modeled_cogs_pct || 0) * 100)}% COGS + $${d.modeled_fulfillment_per_order}/order fulfillment model</td></tr>
+      </tbody>
+    </table>
+    ${lines ? `<p class="highlights-head" style="margin-top:0.5rem">Strategy read</p><ul class="action-banner-hit">${lines}</ul>` : ''}
+    <p class="action-intl-note">${d.model_disclaimer || ''}</p>
+  </div>`;
+}
+
 function renderAgencyIntlSync(data) {
   const sync = data.agency_intl_sync;
   if (!sync || !(sync.countries || []).length) return '';
@@ -2049,8 +2102,12 @@ function renderActionBanner(data) {
       </div>
       <div class="action-banner-kpi-row secondary">
         <span>${fmt(tl.net)} net${deltaSpan(tl.net_delta_pct, false)}</span>
-        <span>${roas(tl.total_roas ?? storeTotal.mer)} total ROAS <span class="muted">(store ÷ spend)</span></span>
-        <span class="muted">${roas(tl.ad_roas ?? adsOnly.roas)} attributable Shopify ROAS (tagged revenue ÷ ad spend) · total sales ${fmt(tl.store_revenue ?? storeTotal.revenue)}${deltaSpan(tl.store_revenue_delta_pct ?? storeTotal.revenue_delta_pct, false)} · ${tl.store_orders ?? storeTotal.orders ?? '—'} orders (ads + other) · +${fmt(tl.unattributed_revenue ?? storeTotal.unattributed_revenue)} not ad-tagged</span>
+        <span><strong>${roas(tl.total_roas_net ?? tl.total_roas ?? storeTotal.mer)}</strong> total ROAS after refunds <span class="muted">(net store ÷ spend)</span></span>
+        <span class="muted">${roas(tl.total_roas ?? storeTotal.mer)} gross · ${roas(tl.total_roas_after_exchange_cost)} after exchange ship · ${roas(tl.ad_roas ?? adsOnly.roas)} tagged ad ROAS</span>
+      </div>
+      ${returnsRollupSummary(tl.returns) ? `<div class="action-banner-kpi-row secondary"><span><strong>Returns:</strong> ${returnsRollupSummary(tl.returns)}</span></div>` : ''}
+      <div class="action-banner-kpi-row secondary muted">
+        <span>Total sales ${fmt(tl.store_revenue ?? storeTotal.revenue)}${deltaSpan(tl.store_revenue_delta_pct ?? storeTotal.revenue_delta_pct, false)} · ${tl.store_orders ?? storeTotal.orders ?? '—'} DTC orders · +${fmt(tl.unattributed_revenue ?? storeTotal.unattributed_revenue)} not ad-tagged (exchanges not in order count)</span>
       </div>
     </div>` : '');
   const actions = (roll.items || []).map(it => `
@@ -2101,6 +2158,7 @@ function renderEasyRead(data) {
       </div>`;
   return `
     ${renderActionBanner(data)}
+    ${renderDirectorEconomics(data)}
     <section class="easy-intro easy-read" data-view="all simple summary performance actions deep">
       ${statsBlock}
       ${hasRollupTop ? '<p class="highlights-head" style="margin-top:0">By channel</p>' : ''}

@@ -17,6 +17,16 @@
   },
   "weekly_order_target": 63,
   "weekly_revenue_target": 7000,
+  "economics_model": {
+    "cogs_pct_of_net_dtc": 0.38,
+    "fulfillment_cost_per_order_usd": 9,
+    "label": "Modeled contribution only — replace with Xero COGS + actual 3PL when available"
+  },
+  "returns_model": {
+    "refund_return_fee_usd": 7.95,
+    "exchange_outbound_ship_usd": 9,
+    "label": "Refund fee per return (customer); modeled outbound ship per exchange (Barreletics pays)"
+  },
   "refresh_schedule": {
     "timezone": "America/Detroit",
     "timezone_label": "Eastern (Detroit)",
