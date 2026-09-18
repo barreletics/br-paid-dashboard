@@ -1967,8 +1967,8 @@ function intlCountryShopifyMetrics(c) {
 }
 
 function returnsRollupSummary(rr) {
-  if (!rr || (rr.refund_return_orders == null && !rr.exchange_orders && !rr.refunds_cash_out)) return '';
-  const n = rr.refund_return_orders != null ? rr.refund_return_orders : '—';
+  if (!rr || rr.refund_return_orders == null) return '';
+  const n = rr.refund_return_orders;
   const ex = rr.exchange_orders ?? 0;
   const cash = rr.refunds_cash_out != null ? fmt(rr.refunds_cash_out) : '—';
   const exCost = rr.exchange_outbound_cost_modeled != null ? fmt(rr.exchange_outbound_cost_modeled) : '—';

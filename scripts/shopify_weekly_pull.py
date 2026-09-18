@@ -195,21 +195,31 @@ def get_token(domain: str, client_id: str, client_secret: str) -> str:
     return token
 
 
-def fetch_orders_curl(
-    domain: str, token: str, created_at_min: str, created_at_max: str
+def merge_orders_by_id(*groups: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_id: dict[Any, dict[str, Any]] = {}
+    for group in groups:
+        for o in group:
+            by_id[o["id"]] = o
+    return list(by_id.values())
+
+
+def orders_for_returns_window(
+    created: list[dict[str, Any]], updated: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
+    """Sales use created_at; returns include older orders refunded/exchanged this window."""
+    by_id = {o["id"]: o for o in created}
+    for o in updated:
+        tags = parse_tags(o.get("tags") or "")
+        ref = float(o.get("total_refunded") or 0)
+        if ref > 0 or "ReturnZap Exchanged" in tags:
+            by_id[o["id"]] = o
+    return list(by_id.values())
+
+
+def fetch_orders_curl(domain: str, token: str, query: dict[str, str]) -> list[dict[str, Any]]:
     import subprocess
 
-    params = urllib.parse.urlencode(
-        {
-            "status": "any",
-            "limit": "250",
-            "order": "created_at desc",
-            "created_at_min": created_at_min,
-            "created_at_max": created_at_max,
-            "fields": ORDER_FIELDS,
-        }
-    )
+    params = urllib.parse.urlencode(query)
     url = f"https://{domain}/admin/api/{API_VERSION}/orders.json?{params}"
     proc = subprocess.run(
         ["curl", "-sS", url, "-H", f"X-Shopify-Access-Token: {token}"],
@@ -223,22 +233,35 @@ def fetch_orders_curl(
 
 
 def fetch_orders(
-    domain: str, token: str, created_at_min: str, created_at_max: str
+    domain: str,
+    token: str,
+    *,
+    created_at_min: str | None = None,
+    created_at_max: str | None = None,
+    updated_at_min: str | None = None,
+    updated_at_max: str | None = None,
 ) -> list[dict[str, Any]]:
+    query: dict[str, str] = {
+        "status": "any",
+        "limit": "250",
+        "fields": ORDER_FIELDS,
+    }
+    if updated_at_min:
+        query["order"] = "updated_at desc"
+        query["updated_at_min"] = updated_at_min
+        if updated_at_max:
+            query["updated_at_max"] = updated_at_max
+    else:
+        query["order"] = "created_at desc"
+        if created_at_min:
+            query["created_at_min"] = created_at_min
+        if created_at_max:
+            query["created_at_max"] = created_at_max
     try:
-        return fetch_orders_curl(domain, token, created_at_min, created_at_max)
+        return fetch_orders_curl(domain, token, query)
     except Exception:
         pass
-    params = urllib.parse.urlencode(
-        {
-            "status": "any",
-            "limit": "250",
-            "order": "created_at desc",
-            "created_at_min": created_at_min,
-            "created_at_max": created_at_max,
-            "fields": ORDER_FIELDS,
-        }
-    )
+    params = urllib.parse.urlencode(query)
     url = f"https://{domain}/admin/api/{API_VERSION}/orders.json?{params}"
     req = urllib.request.Request(
         url, headers={"X-Shopify-Access-Token": token}, method="GET"
@@ -405,10 +428,16 @@ def returns_rollup(
             "Refund returns: $7.95 kept per return (deducted from refund). "
             "Exchanges: $0 to customer; outbound replacement ship is modeled."
         ),
+        "scope_note": (
+            "Counts orders created this period plus older orders with refund/exchange "
+            "activity updated in this period."
+        ),
     }
 
 
-def summarize(orders: list[dict[str, Any]]) -> dict[str, Any]:
+def summarize(
+    orders: list[dict[str, Any]], *, returns_orders: list[dict[str, Any]] | None = None
+) -> dict[str, Any]:
     dtc: list[dict[str, Any]] = []
     wholesale: list[dict[str, Any]] = []
     excluded: list[dict[str, Any]] = []
@@ -455,7 +484,7 @@ def summarize(orders: list[dict[str, Any]]) -> dict[str, Any]:
         "paid_revenue": gross_total,
         "paid_revenue_net": net_total,
         "returns_adjusted": round(gross_total - net_total, 2),
-        "returns_rollup": returns_rollup(orders),
+        "returns_rollup": returns_rollup(returns_orders if returns_orders is not None else orders),
         "unit_economics": dtc_roll.get("unit_economics") or {},
         "channels": dtc_roll.get("channels", {}),
         "daily_orders": dtc_roll.get("daily_orders", {}),
@@ -492,12 +521,22 @@ def main() -> None:
     created_min = f"{start.isoformat()}T00:00:00-04:00"
     created_max = f"{(end + timedelta(days=1)).isoformat()}T00:00:00-04:00"
 
+    updated_min = created_min
+    updated_max = created_max
+
     token = get_token(domain, cid, sec)
-    orders = fetch_orders(domain, token, created_min, created_max)
+    orders = fetch_orders(
+        domain, token, created_at_min=created_min, created_at_max=created_max
+    )
+    updated = fetch_orders(
+        domain, token, updated_at_min=updated_min, updated_at_max=updated_max
+    )
+    returns_orders = orders_for_returns_window(orders, updated)
     result = {
         "window": {"start": start.isoformat(), "end": end.isoformat()},
-        "summary": summarize(orders),
+        "summary": summarize(orders, returns_orders=returns_orders),
         "order_count_raw": len(orders),
+        "returns_orders_scanned": len(returns_orders),
     }
     out = json.dumps(result, indent=2)
     if args.out:
