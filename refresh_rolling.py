@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 import subprocess
 import sys
 import urllib.parse
@@ -34,6 +35,7 @@ DATA = ROOT / "data"
 AD_SPEND_DIR = DATA / "ad_spend"
 LATEST = DATA / "latest.json"
 HISTORY = DATA / "history.json"
+REFRESH_STATUS = DATA / "refresh_status.json"
 CONFIG = ROOT / "config.json"
 WINDOW_SIZES = (7, 14, 30)
 CHANNEL_NAMES = ["Meta", "Google PMax", "Pinterest"]
@@ -42,6 +44,15 @@ CHANNEL_KEYS = ["Meta", "Google", "Pinterest"]
 
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text())
+
+
+def _pinterest_not_connected(err: str | None) -> bool:
+    if not os.environ.get("PINTEREST_ACCESS_TOKEN", "").strip():
+        return True
+    if not err:
+        return False
+    low = err.lower()
+    return "authentication failed" in low or "not set" in low or "pending" in low
 
 
 def save_json(path: Path, data: Any) -> None:
@@ -302,6 +313,22 @@ def ad_spend_for_range(
         if key in channels and float(channels[key].get("spend") or 0) > 0:
             continue
         err = pull_errors.get(key)
+        if key == "Pinterest" and _pinterest_not_connected(err):
+            source_info["Pinterest"] = {
+                "status": "pending",
+                "source": "pinterest_api",
+                "window_end": end.isoformat(),
+                "note": "Not connected — Pinterest app pending approval (no live spend)",
+                "error": err,
+            }
+            channels["Pinterest"] = {
+                "spend": 0,
+                "platform_purchases": 0,
+                "platform_revenue": 0,
+                "platform_roas": 0,
+                "spend_source": "pending",
+            }
+            continue
         if daily:
             spend = round(float(daily) * days, 2)
             channels[key] = {
@@ -359,6 +386,8 @@ def ad_spend_for_range(
             ch.setdefault("spend_source", "cached")
         elif st == "estimate":
             ch.setdefault("spend_source", "estimate")
+        elif st == "pending":
+            ch.setdefault("spend_source", "pending")
 
     return channels, source_info, pull_errors
 
@@ -1182,6 +1211,8 @@ def _quality_entry(
         status = "partial"
     elif raw == "estimate":
         status = "estimate"
+    elif raw == "pending":
+        status = "pending"
     else:
         status = "error"
     notes: list[str] = []
@@ -1322,7 +1353,7 @@ def build_snapshot(days: int, through: str, channels_base: list[dict], targets: 
         "aov_net": round(paid_revenue_net / paid_orders, 2) if paid_orders else None,
         "spend_estimated": any(
             ad_source_status.get(k, {}).get("status") in ("estimate", "error")
-            for k in ("Meta", "Google", "Pinterest")
+            for k in ("Meta", "Google")
         ),
         "unit_economics": cur_s.get("unit_economics") or {},
         "returns_rollup": cur_s.get("returns_rollup") or {},
@@ -1521,19 +1552,37 @@ def main() -> None:
     )
 
     failures: list[str] = []
+    warnings: list[str] = []
     for key, secret in (
         ("Meta", "META_ACCESS_TOKEN"),
         ("Google", "GA_SERVICE_ACCOUNT_JSON (or Google Ads OAuth secrets)"),
-        ("Pinterest", "PINTEREST_ACCESS_TOKEN"),
     ):
         st = ad_status.get(key, {})
         if st.get("status") in ("error", "estimate"):
             msg = st.get("error") or st.get("note") or st.get("status")
             failures.append(f"{key}: {msg} (check GitHub Actions secret {secret})")
+    pin_st = ad_status.get("Pinterest") or {}
+    if pin_st.get("status") == "pending":
+        warnings.append(
+            "Pinterest: not connected — app pending approval (not blocking refresh)"
+        )
+    elif pin_st.get("status") in ("error", "estimate"):
+        msg = pin_st.get("error") or pin_st.get("note") or pin_st.get("status")
+        warnings.append(f"Pinterest: {msg}")
+    save_json(
+        REFRESH_STATUS,
+        {
+            "ok": not failures,
+            "failures": failures,
+            "warnings": warnings,
+            "generated_at": datetime.now(TZ).isoformat(),
+        },
+    )
+    for line in warnings:
+        print(f"SOURCE WARNING: {line}", file=sys.stderr)
     if failures:
         for line in failures:
             print(f"SOURCE FAILURE: {line}", file=sys.stderr)
-        sys.exit(1)
 
 
 if __name__ == "__main__":

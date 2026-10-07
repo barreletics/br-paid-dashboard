@@ -1073,6 +1073,7 @@ tr:nth-child(even) td { background: #fafafa; }
 .q-item.ok { border-color: #bbf7d0; }
 .q-item.partial { border-color: #fde68a; }
 .q-item.estimate { border-color: #fed7aa; background: #fff7ed; }
+.q-item.pending { border-color: #e2e8f0; background: #f8fafc; }
 .q-item.error { border-color: #fecaca; background: #fef2f2; }
 .q-item.skip { opacity: 0.6; }
 .spend-estimate { color: var(--warn); font-size: 0.75rem; font-weight: 600; }
@@ -1467,6 +1468,7 @@ function qualitySummary(dq) {
   const entries = adQualityEntries(dq).filter(([k]) => k !== 'shopify');
   const errors = entries.filter(([, v]) => v.status === 'error');
   const estimates = entries.filter(([, v]) => v.status === 'estimate');
+  const pending = entries.filter(([, v]) => v.status === 'pending');
   const partials = entries.filter(([, v]) => v.status === 'partial');
   if (errors.length || estimates.length) {
     const bad = [...errors, ...estimates];
@@ -1481,6 +1483,10 @@ function qualitySummary(dq) {
       note: 'Shopify store totals are still live. Ad platform numbers may be config estimates until pulls succeed.',
       title
     };
+  }
+  if (pending.length && !errors.length && !estimates.length) {
+    const detail = pending.map(([k, v]) => qualitySourceName(k) + ': ' + (v.note || 'pending')).join(' · ');
+    return { cls: 'partial', text: 'Pending connector — ' + pending.map(([k]) => qualitySourceName(k)).join(', '), note: detail, title: detail };
   }
   if (partials.length) {
     const detail = partials.map(([k, v]) => {
@@ -1543,6 +1549,7 @@ function renderQuality(dq) {
 function spendDisplay(c) {
   const val = fmt(c.spend);
   if (c.spend_source === 'estimate') return `${val} <span class="spend-estimate">(est.)</span>`;
+  if (c.spend_source === 'pending') return `${val} <span class="spend-estimate">(not connected)</span>`;
   if (c.spend_source === 'cached') return `${val} <span class="spend-estimate">(cached)</span>`;
   return val;
 }
