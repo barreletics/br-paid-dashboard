@@ -26,6 +26,10 @@ from zoneinfo import ZoneInfo
 TZ = ZoneInfo("America/Detroit")
 ROOT = Path(__file__).resolve().parent
 SCRIPTS = ROOT / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+from pull_common import is_config_estimate, looks_like_live_channel  # noqa: E402
+
 DATA = ROOT / "data"
 AD_SPEND_DIR = DATA / "ad_spend"
 LATEST = DATA / "latest.json"
@@ -97,14 +101,83 @@ def cache_path(start: date, end: date) -> Path:
     return AD_SPEND_DIR / f"{start.isoformat()}_{end.isoformat()}.json"
 
 
-def ad_spend_for_range(start: date, end: date, cfg: dict | None = None) -> dict[str, dict]:
-    """Live Meta + Google/Pinterest for exact date range; fill gaps from cache or daily rates."""
+def _channel_from_google_payload(g: dict) -> dict:
+    spend = float(g.get("spend") or 0)
+    val = float(g.get("conversion_value") or 0)
+    conv = float(g.get("conversions") or 0)
+    return {
+        "spend": round(spend, 2),
+        "platform_purchases": round(conv),
+        "platform_revenue": round(val, 2),
+        "platform_roas": roas(val, spend),
+        "spend_source": "live",
+    }
+
+
+def _channel_from_pinterest_payload(p: dict) -> dict:
+    spend = float(p.get("spend") or 0)
+    val = float(p.get("checkout_value") or 0)
+    chk = int(float(p.get("checkouts") or 0))
+    return {
+        "spend": round(spend, 2),
+        "platform_purchases": chk,
+        "platform_revenue": round(val, 2),
+        "platform_roas": roas(val, spend),
+        "spend_source": "live",
+    }
+
+
+def last_successful_live_end(source_key: str, cfg: dict | None = None) -> str | None:
+    """Latest window end date with a non-estimate live pull for source_key."""
+    rates = (cfg or {}).get("ad_daily_spend") or {}
+    best: date | None = None
+    if not AD_SPEND_DIR.is_dir():
+        return None
+    for path in AD_SPEND_DIR.glob("*.json"):
+        parts = path.stem.split("_")
+        if len(parts) != 2:
+            continue
+        try:
+            w_start = date.fromisoformat(parts[0])
+            w_end = date.fromisoformat(parts[1])
+        except ValueError:
+            continue
+        days = (w_end - w_start).days + 1
+        blob = json.loads(path.read_text())
+        ch = (blob.get("channels") or {}).get(source_key) or {}
+        prov = (blob.get("provenance") or {}).get(source_key) or {}
+        if prov.get("status") == "estimate":
+            continue
+        if prov.get("status") == "ok" and float(ch.get("spend") or 0) > 0:
+            if best is None or w_end > best:
+                best = w_end
+            continue
+        daily = rates.get(source_key)
+        if float(ch.get("spend") or 0) > 0 and looks_like_live_channel(ch, days, daily):
+            if best is None or w_end > best:
+                best = w_end
+    return best.isoformat() if best else None
+
+
+def ad_spend_for_range(
+    start: date, end: date, cfg: dict | None = None
+) -> tuple[dict[str, dict], dict[str, dict], dict[str, str]]:
+    """Live Meta + Google/Pinterest; cache only prior live pulls; label config fallbacks as estimates."""
     path = cache_path(start, end)
     cached: dict[str, dict] = {}
+    provenance: dict[str, dict] = {}
     if path.exists():
-        cached = json.loads(path.read_text()).get("channels") or {}
+        blob = json.loads(path.read_text())
+        cached = blob.get("channels") or {}
+        provenance = blob.get("provenance") or {}
 
+    rates = (cfg or {}).get("ad_daily_spend") or {}
+    days = (end - start).days + 1
     channels: dict[str, dict] = {}
+    source_info: dict[str, dict] = {}
+    pull_errors: dict[str, str] = {}
+    pulled_at = datetime.now(TZ).isoformat()
+
     cmd = [
         sys.executable,
         str(SCRIPTS / "ad_spend_pull.py"),
@@ -114,8 +187,25 @@ def ad_spend_for_range(start: date, end: date, cfg: dict | None = None) -> dict[
         end.isoformat(),
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
-    if proc.returncode == 0 and proc.stdout.strip():
-        channels = json.loads(proc.stdout).get("channels") or {}
+    if proc.stderr.strip():
+        print(proc.stderr.strip(), file=sys.stderr)
+    if proc.stdout.strip():
+        try:
+            payload = json.loads(proc.stdout)
+            channels.update(payload.get("channels") or {})
+            pull_errors.update(payload.get("errors") or {})
+        except json.JSONDecodeError:
+            pull_errors["Meta"] = "ad_spend_pull.py returned invalid JSON"
+    elif proc.returncode != 0:
+        pull_errors["Meta"] = proc.stderr.strip() or f"ad_spend_pull.py exited {proc.returncode}"
+
+    if channels.get("Meta"):
+        source_info["Meta"] = {
+            "status": "ok",
+            "source": "meta_graph_api",
+            "pulled_at": pulled_at,
+            "window_end": end.isoformat(),
+        }
 
     gp = subprocess.run(
         [
@@ -130,30 +220,28 @@ def ad_spend_for_range(start: date, end: date, cfg: dict | None = None) -> dict[
         text=True,
         check=False,
     )
-    if gp.returncode == 0 and gp.stdout.strip():
-        extra = json.loads(gp.stdout)
-        if extra.get("Google"):
-            g = extra["Google"]
-            spend = float(g.get("spend") or 0)
-            val = float(g.get("conversion_value") or 0)
-            conv = float(g.get("conversions") or 0)
-            channels["Google"] = {
-                "spend": round(spend, 2),
-                "platform_purchases": round(conv),
-                "platform_revenue": round(val, 2),
-                "platform_roas": roas(val, spend),
-            }
-        if extra.get("Pinterest"):
-            p = extra["Pinterest"]
-            spend = float(p.get("spend") or 0)
-            val = float(p.get("checkout_value") or 0)
-            chk = int(float(p.get("checkouts") or 0))
-            channels["Pinterest"] = {
-                "spend": round(spend, 2),
-                "platform_purchases": chk,
-                "platform_revenue": round(val, 2),
-                "platform_roas": roas(val, spend),
-            }
+    if gp.stdout.strip():
+        try:
+            extra = json.loads(gp.stdout)
+            pull_errors.update(extra.get("errors") or {})
+            if extra.get("Google"):
+                channels["Google"] = _channel_from_google_payload(extra["Google"])
+                source_info["Google"] = {
+                    "status": "ok",
+                    "source": "google_ads_api",
+                    "pulled_at": pulled_at,
+                    "window_end": end.isoformat(),
+                }
+            if extra.get("Pinterest"):
+                channels["Pinterest"] = _channel_from_pinterest_payload(extra["Pinterest"])
+                source_info["Pinterest"] = {
+                    "status": "ok",
+                    "source": "pinterest_api",
+                    "pulled_at": pulled_at,
+                    "window_end": end.isoformat(),
+                }
+        except json.JSONDecodeError:
+            pull_errors["Google"] = pull_errors.get("Google") or "google_pinterest_pull.py returned invalid JSON"
 
     if "Google" not in channels:
         ga = subprocess.run(
@@ -169,41 +257,263 @@ def ad_spend_for_range(start: date, end: date, cfg: dict | None = None) -> dict[
             text=True,
             check=False,
         )
+        if ga.stderr.strip():
+            try:
+                ga_err = json.loads(ga.stderr.strip())
+                if ga_err.get("error"):
+                    pull_errors["Google"] = ga_err["error"]
+            except json.JSONDecodeError:
+                pull_errors["Google"] = ga.stderr.strip()
         if ga.returncode == 0 and ga.stdout.strip():
             g = json.loads(ga.stdout)
             spend = float(g.get("spend") or 0)
-            val = float(g.get("conversion_value") or 0)
-            conv = float(g.get("conversions") or 0)
             if spend:
-                channels["Google"] = {
-                    "spend": round(spend, 2),
-                    "platform_purchases": round(conv),
-                    "platform_revenue": round(val, 2),
-                    "platform_roas": roas(val, spend),
+                channels["Google"] = _channel_from_google_payload(g)
+                source_info["Google"] = {
+                    "status": "ok",
+                    "source": "ga4_ad_cost",
+                    "pulled_at": pulled_at,
+                    "window_end": end.isoformat(),
                 }
 
     for key in ("Meta", "Google", "Pinterest"):
-        if key not in channels and key in cached:
-            channels[key] = cached[key]
+        if key in channels and float(channels[key].get("spend") or 0) > 0:
+            continue
+        if key not in cached:
+            continue
+        csp = float(cached[key].get("spend") or 0)
+        if csp <= 0:
+            continue
+        daily = rates.get(key)
+        if not looks_like_live_channel(cached[key], days, daily):
+            continue
+        channels[key] = copy.deepcopy(cached[key])
+        prov = provenance.get(key) or {}
+        source_info[key] = {
+            "status": "cached",
+            "source": prov.get("source") or "ad_spend_cache",
+            "pulled_at": prov.get("pulled_at"),
+            "window_end": end.isoformat(),
+            "note": f"Using cached live pull for {start.isoformat()}–{end.isoformat()}",
+        }
+        channels[key]["spend_source"] = "cached"
 
-    rates = (cfg or {}).get("ad_daily_spend") or {}
-    days = (end - start).days + 1
     for key, daily in rates.items():
         if key in channels and float(channels[key].get("spend") or 0) > 0:
             continue
+        err = pull_errors.get(key)
         if daily:
             spend = round(float(daily) * days, 2)
             channels[key] = {
                 "spend": spend,
-                "platform_purchases": cached.get(key, {}).get("platform_purchases", 0),
-                "platform_revenue": cached.get(key, {}).get("platform_revenue", 0),
-                "platform_roas": cached.get(key, {}).get("platform_roas", 0),
+                "platform_purchases": 0,
+                "platform_revenue": 0,
+                "platform_roas": 0,
+                "spend_source": "estimate",
+            }
+            source_info[key] = {
+                "status": "estimate",
+                "source": "config_daily_rate",
+                "window_end": end.isoformat(),
+                "note": f"Estimate: config.json ${daily}/day × {days} days (not live platform data)",
+                "error": err,
+            }
+        elif err:
+            source_info[key] = {
+                "status": "error",
+                "source": None,
+                "error": err,
+                "window_end": end.isoformat(),
             }
 
-    if channels:
-        path.write_text(json.dumps({"channels": channels}, indent=2) + "\n")
+    for key in ("Meta", "Google", "Pinterest"):
+        if key in source_info:
+            continue
+        if pull_errors.get(key):
+            source_info[key] = {
+                "status": "error",
+                "source": None,
+                "error": pull_errors[key],
+                "window_end": end.isoformat(),
+            }
 
-    return channels
+    live_write: dict[str, dict] = {}
+    live_prov: dict[str, dict] = {}
+    for key, ch in channels.items():
+        if source_info.get(key, {}).get("status") == "ok":
+            live_write[key] = ch
+            live_prov[key] = source_info[key]
+
+    if live_write:
+        merged = {**cached, **live_write}
+        merged_prov = {**provenance, **live_prov}
+        path.write_text(
+            json.dumps({"channels": merged, "provenance": merged_prov}, indent=2) + "\n"
+        )
+
+    for key, ch in channels.items():
+        st = source_info.get(key, {}).get("status")
+        if st == "ok":
+            ch.setdefault("spend_source", "live")
+        elif st == "cached":
+            ch.setdefault("spend_source", "cached")
+        elif st == "estimate":
+            ch.setdefault("spend_source", "estimate")
+
+    return channels, source_info, pull_errors
+
+
+def calendar_mtd_range(through: str) -> tuple[date, date]:
+    end_d = today_detroit()
+    if through == "yesterday":
+        end_d -= timedelta(days=1)
+    return end_d.replace(day=1), end_d
+
+
+def build_budget_pacing(
+    cfg: dict,
+    mtd_start: date,
+    mtd_end: date,
+    mtd_channels: dict[str, dict],
+    mtd_status: dict[str, dict],
+) -> dict:
+    plans = cfg.get("monthly_plan") or {}
+    rates = cfg.get("ad_daily_spend") or {}
+    month_key = f"{mtd_end.year}-{mtd_end.month:02d}"
+    if mtd_end.month == 12:
+        first_next = date(mtd_end.year + 1, 1, 1)
+    else:
+        first_next = date(mtd_end.year, mtd_end.month + 1, 1)
+    days_in_month = (first_next - timedelta(days=1)).day
+    mtd_days = (mtd_end - mtd_start).days + 1
+    channel_rows = []
+    total_mtd = 0.0
+    any_estimate = False
+    channel_specs = (
+        ("Meta", "Meta"),
+        ("Google", "Google PMax"),
+        ("Pinterest", "Pinterest"),
+    )
+    for key, plan_name in channel_specs:
+        ch = mtd_channels.get(key) or {}
+        st = mtd_status.get(key) or {}
+        mtd_spend = float(ch.get("spend") or 0)
+        total_mtd += mtd_spend
+        if st.get("status") == "estimate" or ch.get("spend_source") == "estimate":
+            any_estimate = True
+        plan = float(plans.get(plan_name) or 0)
+        used_pct = round(mtd_spend / plan * 100) if plan else None
+        pace = "on_track"
+        if plan and mtd_days > 0:
+            projected = mtd_spend / mtd_days * days_in_month
+            if projected > plan * 1.1:
+                pace = "over"
+            elif projected < plan * 0.85:
+                pace = "under"
+        row_status = pace
+        if st.get("status") == "estimate":
+            row_status = "estimate"
+        elif st.get("status") == "error":
+            row_status = "error"
+        channel_rows.append(
+            {
+                "channel": plan_name if key == "Google" else key,
+                "mtd_spend": round(mtd_spend),
+                "monthly_plan": round(plan),
+                "status": row_status,
+                "spend_source": ch.get("spend_source") or st.get("status"),
+                "used_pct": used_pct,
+            }
+        )
+    total_plan = float(plans.get("total") or 0) or sum(float(plans.get(n) or 0) for _, n in channel_specs)
+    projected = round(total_mtd / mtd_days * days_in_month) if mtd_days else 0
+    note_parts = [f"Calendar MTD {mtd_start.isoformat()}–{mtd_end.isoformat()} ({mtd_days} days)"]
+    if any_estimate:
+        note_parts.append(
+            "includes config.json daily-rate estimates where live API pulls failed — not for audit"
+        )
+    else:
+        note_parts.append("from live platform pulls for this calendar month")
+    return {
+        "month": month_key,
+        "mtd_start": mtd_start.isoformat(),
+        "mtd_end": mtd_end.isoformat(),
+        "month_to_date_spend": round(total_mtd),
+        "monthly_plan": round(total_plan),
+        "projected_month_spend": projected,
+        "pacing_status": "estimate" if any_estimate else ("on_track" if projected <= total_plan * 1.05 else "over"),
+        "spend_includes_estimates": any_estimate,
+        "note": " · ".join(note_parts),
+        "by_channel": channel_rows,
+    }
+
+
+def regenerate_anomalies(snap: dict) -> list[dict]:
+    """Replace stale hand-written anomalies with rolling-window deltas."""
+
+    def pct(cur: float, prev: float) -> int | None:
+        if not prev:
+            return None
+        return round((cur - prev) / prev * 100)
+
+    k = snap.get("kpis") or {}
+    prior_k = (snap.get("prior_period") or {}).get("kpis") or {}
+    w = snap.get("window") or {}
+    prior_label = w.get("prior_label") or "prior period"
+    out: list[dict] = []
+
+    ord_pct = pct(float(k.get("paid_orders") or 0), float(prior_k.get("paid_orders") or 0))
+    if ord_pct is not None and abs(ord_pct) >= 12:
+        out.append(
+            {
+                "metric": "Store orders",
+                "change": f"{ord_pct:+d}%",
+                "vs": prior_label,
+                "cause": "Rolling store order volume vs the same-length prior window.",
+                "response": "Confirm paid vs organic; check Meta/Google UTMs before changing budgets.",
+            }
+        )
+
+    rev_pct = pct(float(k.get("paid_revenue") or 0), float(prior_k.get("paid_revenue") or 0))
+    if rev_pct is not None and abs(rev_pct) >= 12:
+        out.append(
+            {
+                "metric": "Store revenue",
+                "change": f"{rev_pct:+d}%",
+                "vs": prior_label,
+                "cause": "Rolling DTC revenue vs prior window (Shopify REST).",
+                "response": "Use channel compare for attribution; do not react to a single metric alone.",
+            }
+        )
+
+    for c in snap.get("channels") or []:
+        name = c.get("name") or "Channel"
+        roas_now = float(c.get("shopify_roas") or 0)
+        roas_last = float(c.get("shopify_roas_last") or 0)
+        roas_pct = pct(roas_now, roas_last)
+        if roas_pct is not None and abs(roas_pct) >= 15:
+            out.append(
+                {
+                    "metric": f"{name} Shopify ROAS",
+                    "change": f"{roas_pct:+d}%",
+                    "vs": prior_label,
+                    "cause": "UTM-attributed Shopify revenue ÷ spend for this window.",
+                    "response": "Judge on Shopify UTM ROAS; verify spend is live not estimated.",
+                }
+            )
+        if c.get("spend_source") == "estimate":
+            out.append(
+                {
+                    "metric": f"{name} ad spend",
+                    "change": "estimate",
+                    "vs": w.get("label") or "this window",
+                    "cause": "Live platform pull failed; spend is config.json daily rate × days.",
+                    "response": "Renew API tokens in GitHub Actions — do not use for budget decisions.",
+                }
+            )
+            break
+
+    return out[:5]
 
 
 def channel_status(name: str, shopify_orders: int, shopify_roas: float, spend: float, targets: dict) -> str:
@@ -268,6 +578,11 @@ def build_channels(
         "platform_purchases": ca.get("platform_purchases", base.get("platform_purchases")),
         "platform_revenue": ca.get("platform_revenue", base.get("platform_revenue")),
         "platform_roas": ca.get("platform_roas", base.get("platform_roas")),
+        "spend_source": ca.get("spend_source", base.get("spend_source")),
+        "impressions": ca.get("impressions", base.get("impressions")),
+        "clicks": ca.get("clicks", base.get("clicks")),
+        "ctr": ca.get("ctr", base.get("ctr")),
+        "cpc": ca.get("cpc", base.get("cpc")),
         "status": status,
         "interpretation": "",
     }
@@ -852,6 +1167,110 @@ def scale_spend(base_spend: float, days: int, base_days: int = 7) -> float:
     return round(base_spend * days / base_days)
 
 
+def _quality_entry(
+    key: str,
+    ad_status: dict[str, dict],
+    default_source: str,
+    last_live: str | None,
+    window_label: str,
+) -> dict:
+    st = ad_status.get(key, {})
+    raw = st.get("status") or "error"
+    if raw == "ok":
+        status = "ok"
+    elif raw == "cached":
+        status = "partial"
+    elif raw == "estimate":
+        status = "estimate"
+    else:
+        status = "error"
+    notes: list[str] = []
+    if raw == "ok":
+        notes.append(f"Live pull for {window_label}")
+    elif st.get("note"):
+        notes.append(st["note"])
+    if st.get("error"):
+        notes.append(st["error"])
+    if last_live and raw != "ok":
+        notes.append(f"Last successful live window ended {last_live}")
+    return {
+        "status": status,
+        "source": st.get("source") or default_source,
+        "note": " · ".join(notes) if notes else f"No live data for {window_label}",
+        "last_live_through": last_live,
+        "pulled_at": st.get("pulled_at"),
+    }
+
+
+def _ga4_quality(ad_status: dict[str, dict], pull_errors: dict[str, str], window_label: str) -> dict:
+    google = ad_status.get("Google") or {}
+    src = google.get("source")
+    if google.get("status") == "ok" and src == "ga4_ad_cost":
+        return {
+            "status": "ok",
+            "source": "ga4_ad_cost",
+            "note": f"GA4 advertiserAdCost for {window_label}",
+            "pulled_at": google.get("pulled_at"),
+        }
+    if google.get("status") == "ok" and src == "google_ads_api":
+        return {
+            "status": "skip",
+            "source": "ga4_ad_cost",
+            "note": f"Not used — Google Ads API supplied spend for {window_label}",
+        }
+    err = pull_errors.get("Google") or google.get("error")
+    if google.get("status") == "estimate":
+        return {
+            "status": "estimate",
+            "source": "ga4_ad_cost",
+            "note": err or f"GA4 did not return spend for {window_label}",
+        }
+    return {
+        "status": "error",
+        "source": "ga4_ad_cost",
+        "note": err or f"GA4 pull failed for {window_label}",
+    }
+
+
+def build_data_quality(
+    ad_status: dict[str, dict],
+    cfg: dict,
+    window_label: str,
+    pull_errors: dict[str, str] | None = None,
+    shopify_pulled_at: str | None = None,
+) -> dict:
+    pull_errors = pull_errors or {}
+    last_meta = last_successful_live_end("Meta", cfg)
+    last_google = last_successful_live_end("Google", cfg)
+    last_pin = last_successful_live_end("Pinterest", cfg)
+    meta = _quality_entry("Meta", ad_status, "meta_graph_api", last_meta, window_label)
+    google = _quality_entry("Google", ad_status, "google_spend", last_google, window_label)
+    if ad_status.get("Google", {}).get("source") == "google_ads_api":
+        google["source"] = "google_ads_api"
+    elif ad_status.get("Google", {}).get("source") == "ga4_ad_cost":
+        google["source"] = "ga4_ad_cost"
+    pin = _quality_entry("Pinterest", ad_status, "pinterest_api", last_pin, window_label)
+    ga4 = _ga4_quality(ad_status, pull_errors, window_label)
+    shopify_note = "DTC paid orders + UTM; wholesale separate; excludes cancelled, test, promo, exchanges"
+    if shopify_pulled_at:
+        shopify_note += f" · pulled {shopify_pulled_at}"
+    return {
+        "shopify": {
+            "status": "ok",
+            "source": "shopify_rest",
+            "note": shopify_note,
+            "pulled_at": shopify_pulled_at,
+        },
+        "meta": meta,
+        "google": google,
+        "pinterest": pin,
+        "ga4": ga4,
+        "blend_meta": meta,
+        "blend_google": google,
+        "blend_pinterest": pin,
+    }
+
+
 def build_snapshot(days: int, through: str, channels_base: list[dict], targets: dict, cfg: dict) -> dict:
     cur_start, cur_end = window_for(days, through)
     prior_end = cur_start - timedelta(days=1)
@@ -863,9 +1282,9 @@ def build_snapshot(days: int, through: str, channels_base: list[dict], targets: 
     prior = shopify_pull(prior_start, prior_end)
     month = shopify_pull(month_start, month_end)
 
-    cur_ad = ad_spend_for_range(cur_start, cur_end, cfg)
-    prior_ad = ad_spend_for_range(prior_start, prior_end, cfg)
-    month_ad = ad_spend_for_range(month_start, month_end, cfg)
+    cur_ad, ad_source_status, ad_pull_errors = ad_spend_for_range(cur_start, cur_end, cfg)
+    prior_ad, _, _ = ad_spend_for_range(prior_start, prior_end, cfg)
+    month_ad, _, _ = ad_spend_for_range(month_start, month_end, cfg)
 
     cur_s, prior_s, month_s = cur["summary"], prior["summary"], month["summary"]
     channels = build_channels(cur_s, prior_s, month_s, cur_ad, prior_ad, month_ad, channels_base, targets)
@@ -901,12 +1320,17 @@ def build_snapshot(days: int, through: str, channels_base: list[dict], targets: 
         "cpa_blended": round(total_spend / paid_orders, 2) if paid_orders else None,
         "aov": round(paid_revenue / paid_orders, 2) if paid_orders else None,
         "aov_net": round(paid_revenue_net / paid_orders, 2) if paid_orders else None,
-        "spend_estimated": False,
+        "spend_estimated": any(
+            ad_source_status.get(k, {}).get("status") in ("estimate", "error")
+            for k in ("Meta", "Google", "Pinterest")
+        ),
         "unit_economics": cur_s.get("unit_economics") or {},
         "returns_rollup": cur_s.get("returns_rollup") or {},
     }
 
     return {
+        "ad_source_status": ad_source_status,
+        "ad_pull_errors": ad_pull_errors,
         "window": {
             "start": cur_start.isoformat(),
             "end": cur_end.isoformat(),
@@ -1047,28 +1471,19 @@ def main() -> None:
     if top_ads:
         payload["meta_top_ads"] = top_ads
 
-    has_google = bool(default_snap["channels"][1].get("spend")) if len(default_snap["channels"]) > 1 else False
-    has_pin = bool(default_snap["channels"][2].get("spend")) if len(default_snap["channels"]) > 2 else False
+    ad_status = default_snap.get("ad_source_status") or {}
+    pull_errors = default_snap.get("ad_pull_errors") or {}
+    generated_at = datetime.now(TZ).isoformat()
     dq = payload.setdefault("data_quality", {})
-    dq["shopify"] = {
-        "status": "ok",
-        "source": "shopify_rest",
-        "note": "DTC paid orders + UTM; wholesale separate; excludes cancelled, test, promo, exchanges",
-    }
-    dq["blend_meta"] = {"status": "ok", "source": "meta_graph_api", "note": f"Spend for {w['label']}"}
-    dq["blend_google"] = {
-        "status": "ok" if has_google else "partial",
-        "source": "ga4_ad_cost",
-        "note": f"Live Google spend for {w['label']}" if has_google else "Google spend not returned — check GA secret",
-    }
-    dq["blend_pinterest"] = {
-        "status": "ok" if has_pin else "partial",
-        "source": "pinterest_api",
-        "note": f"Spend for {w['label']}" if has_pin else "Pinterest spend not returned — check credentials",
-    }
+    dq.update(build_data_quality(ad_status, cfg, w["label"], pull_errors, generated_at))
+
+    mtd_start, mtd_end = calendar_mtd_range(through)
+    mtd_ch, mtd_st, _ = ad_spend_for_range(mtd_start, mtd_end, cfg)
+    payload["budget_pacing"] = build_budget_pacing(cfg, mtd_start, mtd_end, mtd_ch, mtd_st)
+    payload["anomalies"] = regenerate_anomalies(default_snap)
 
     payload["windows"] = windows
-    payload["generated_at"] = datetime.now(TZ).isoformat()
+    payload["generated_at"] = generated_at
     payload["ad_spend_window"] = {"start": w["start"], "end": w["end"], "label": w["label"]}
 
     history = load_json(HISTORY) if HISTORY.exists() else []
@@ -1104,6 +1519,21 @@ def main() -> None:
         f"Windows 7/14/30 refreshed · default {w['label']} · "
         f"{k['paid_orders']} orders · ${k['paid_revenue']:,.0f} gross · ${k.get('paid_revenue_net', k['paid_revenue']):,.0f} net"
     )
+
+    failures: list[str] = []
+    for key, secret in (
+        ("Meta", "META_ACCESS_TOKEN"),
+        ("Google", "GA_SERVICE_ACCOUNT_JSON (or Google Ads OAuth secrets)"),
+        ("Pinterest", "PINTEREST_ACCESS_TOKEN"),
+    ):
+        st = ad_status.get(key, {})
+        if st.get("status") in ("error", "estimate"):
+            msg = st.get("error") or st.get("note") or st.get("status")
+            failures.append(f"{key}: {msg} (check GitHub Actions secret {secret})")
+    if failures:
+        for line in failures:
+            print(f"SOURCE FAILURE: {line}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

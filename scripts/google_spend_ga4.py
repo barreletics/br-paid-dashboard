@@ -13,8 +13,9 @@ import argparse
 import json
 import os
 import sys
-import urllib.request
 from datetime import date
+
+from pull_common import fetch_url
 
 
 def _load_sa_json() -> dict:
@@ -43,12 +44,17 @@ def _access_token(sa: dict) -> str:
     return creds.token
 
 
-def google_spend_ga4(start: date, end: date) -> dict:
+def google_spend_ga4(start: date, end: date) -> tuple[dict, str | None]:
     sa = _load_sa_json()
     prop = os.environ.get("GA_PROPERTY_ID", "300437005").replace("properties/", "")
-    if not sa or not prop:
-        return {}
-    token = _access_token(sa)
+    if not sa:
+        return {}, "GA_SERVICE_ACCOUNT_JSON is not set (GitHub Actions secret GA_SERVICE_ACCOUNT_JSON)"
+    if not prop:
+        return {}, "GA_PROPERTY_ID is not set"
+    try:
+        token = _access_token(sa)
+    except Exception as exc:
+        return {}, f"GA4 service account auth failed: {exc}"
     body = {
         "dateRanges": [{"startDate": start.isoformat(), "endDate": end.isoformat()}],
         "dimensions": [{"name": "sessionGoogleAdsCampaignName"}],
@@ -60,46 +66,26 @@ def google_spend_ga4(start: date, end: date) -> dict:
         "limit": 100,
     }
     url = f"https://analyticsdata.googleapis.com/v1beta/properties/{prop}:runReport"
-    payload = json.dumps(body)
-    raw = ""
+    payload = json.dumps(body).encode()
+    raw, transport_err = fetch_url(
+        url,
+        method="POST",
+        body=payload,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+    )
+    if transport_err and not raw.strip():
+        return {}, f"GA4 request failed: {transport_err}"
     try:
-        import subprocess
-
-        proc = subprocess.run(
-            [
-                "curl",
-                "-sS",
-                "-X",
-                "POST",
-                url,
-                "-H",
-                f"Authorization: Bearer {token}",
-                "-H",
-                "Content-Type: application/json",
-                "-d",
-                payload,
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if proc.returncode == 0 and proc.stdout.strip():
-            raw = proc.stdout
-    except Exception:
-        pass
-    if not raw:
-        req = urllib.request.Request(
-            url,
-            data=payload.encode(),
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
-        with urllib.request.urlopen(req, timeout=90) as resp:
-            raw = resp.read().decode()
-    data = json.loads(raw)
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return {}, "GA4 returned non-JSON response"
+    if data.get("error"):
+        err = data["error"]
+        msg = err.get("message") if isinstance(err, dict) else str(err)
+        return {}, f"GA4 API error: {msg}"
     spend = conv = rev = 0.0
     for row in data.get("rows") or []:
         dim = (row.get("dimensionValues") or [{}])[0].get("value") or ""
@@ -111,12 +97,12 @@ def google_spend_ga4(start: date, end: date) -> dict:
             conv += float(vals[1].get("value") or 0)
             rev += float(vals[2].get("value") or 0)
     if not spend:
-        return {}
+        return {}, "GA4 returned zero advertiserAdCost for this range (check GA ↔ Google Ads link)"
     return {
         "spend": round(spend, 2),
         "conversions": round(conv, 2),
         "conversion_value": round(rev, 2),
-    }
+    }, None
 
 
 def main() -> None:
@@ -126,8 +112,9 @@ def main() -> None:
     args = p.parse_args()
     start = date.fromisoformat(args.start)
     end = date.fromisoformat(args.end)
-    out = google_spend_ga4(start, end)
-    if not out:
+    out, err = google_spend_ga4(start, end)
+    if err:
+        print(json.dumps({"error": err}), file=sys.stderr)
         sys.exit(1)
     print(json.dumps(out, indent=2))
 
