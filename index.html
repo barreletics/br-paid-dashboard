@@ -118,6 +118,111 @@ header {
   color: var(--muted);
   margin-left: 0.25rem;
 }
+.ceo-board {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.25rem 1.35rem 1.35rem;
+  margin-bottom: 1.25rem;
+}
+.ceo-period {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.ceo-tiles {
+  margin-bottom: 1.25rem;
+}
+.ceo-subhead {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 1rem 0 0.5rem;
+}
+.ceo-platform-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.55rem;
+}
+.ceo-platform-tile {
+  background: #fafafa;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+  text-align: center;
+}
+.ceo-platform-name { font-size: 0.78rem; font-weight: 700; }
+.ceo-platform-val { font-size: 1.25rem; font-weight: 700; margin: 0.2rem 0; }
+.ceo-platform-delta { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+.ceo-platform-tile.up .ceo-platform-delta { color: var(--good); }
+.ceo-platform-tile.down .ceo-platform-delta { color: var(--bad); }
+.ceo-claim-table { margin-top: 0.35rem; }
+.claim-flag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--bad);
+  background: var(--bad-bg);
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+}
+.claim-ok {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--good);
+}
+.ceo-verdict {
+  margin-top: 1.15rem;
+  padding: 1rem 1.1rem;
+  background: #111;
+  color: #fff;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.ceo-verdict h3 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+  margin-bottom: 0.35rem;
+}
+.ceo-verdict ul { margin: 0.35rem 0 0.75rem 1.1rem; }
+.ceo-verdict li { margin-bottom: 0.25rem; }
+.ceo-verdict .ceo-verdict-actions { margin-bottom: 0; }
+.agency-fold {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-bottom: 0.55rem;
+}
+.agency-fold > summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0.75rem 1rem;
+  list-style: none;
+}
+.agency-fold > summary::-webkit-details-marker { display: none; }
+.agency-fold > summary::after {
+  content: '+';
+  float: right;
+  color: var(--muted);
+  font-weight: 400;
+}
+.agency-fold[open] > summary::after { content: '−'; }
+.agency-fold-body {
+  padding: 0 1rem 1rem;
+  border-top: 1px solid var(--line);
+}
+.agency-fold-body .agency-section,
+.agency-fold-body section {
+  border: none;
+  padding: 0.75rem 0 0;
+  margin: 0;
+  background: transparent;
+}
 .refresh-btn {
   font-family: "DM Sans", system-ui, sans-serif;
   font-size: 0.75rem;
@@ -2902,6 +3007,153 @@ function exportCsv() {
   URL.revokeObjectURL(a.href);
 }
 
+function storeMerFromKpis(k) {
+  if (!k) return null;
+  const rev = storeRev(k);
+  const spend = Number(k.total_ad_spend) || 0;
+  if (!spend) return k.blended_mer ?? k.blended_mer_net ?? null;
+  return round2(rev / spend);
+}
+
+function priorMer(data, p) {
+  const spendP = p.total_ad_spend;
+  if (!spendP) return p.blended_mer ?? null;
+  const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
+  return round2(revP / spendP);
+}
+
+function claimGapRow(c) {
+  const platO = Number(c.platform_purchases) || 0;
+  const platR = Number(c.platform_revenue) || 0;
+  const shopO = Number(c.shopify_orders) || 0;
+  const shopR = channelRev(c);
+  const gapO = platO - shopO;
+  const over = platO > shopO + 1 || (platR > shopR * 1.12 && shopR > 0);
+  const flag = over
+    ? '<span class="claim-flag">Over-claim</span>'
+    : (platO && shopO ? '<span class="claim-ok">OK</span>' : '—');
+  const gapTxt = gapO > 0 ? `+${gapO} purch` : '—';
+  return `<tr data-channel="${channelSlug(c.name)}">
+    <td><strong>${channelLabel(c.name)}</strong></td>
+    <td>${spendDisplay(c)}</td>
+    <td>${platO} · ${fmt(platR)}</td>
+    <td>${shopO} · ${fmt(shopR)}</td>
+    <td>${gapTxt}</td>
+    <td>${flag}</td>
+  </tr>`;
+}
+
+function buildZakiVerdict(data) {
+  const agency = reportConfig.agency_owner || 'Zaki';
+  const working = [];
+  const waste = [];
+  (data.channels || []).forEach(c => {
+    const name = channelLabel(c.name);
+    const r = channelRoas(c);
+    const s = Number(c.spend) || 0;
+    const shop = Number(c.shopify_orders) || 0;
+    const plat = Number(c.platform_purchases) || 0;
+    if (s >= 50 && r >= 1.8) working.push(`${name}: ${roas(r)} Shopify ROAS · ${fmt(s)} spend · ${shop} orders`);
+    if (plat > shop + 1 && s >= 50) {
+      waste.push(`${name}: platform ${plat} purch vs ${shop} Shopify UTM — do not scale on platform ROAS`);
+    } else if (s >= 150 && r < 1.25 && shop > 0) {
+      waste.push(`${name}: ${roas(r)} on ${fmt(s)} — hold budget`);
+    } else if (s >= 100 && shop === 0) {
+      waste.push(`${name}: ${fmt(s)} · 0 Shopify orders`);
+    }
+  });
+  const rollHead = data.action_rollup?.headline ? `<p class="muted" style="color:#9ca3af;margin-bottom:0.5rem">${shortText(data.action_rollup.headline, 160)}</p>` : '';
+  const workList = working.length
+    ? `<ul>${working.slice(0, 2).map(w => `<li>${w}</li>`).join('')}</ul>`
+    : '<p class="muted" style="color:#9ca3af">No channel cleared 1.8× Shopify ROAS this window.</p>';
+  const wasteList = waste.length
+    ? `<ul>${waste.slice(0, 2).map(w => `<li>${w}</li>`).join('')}</ul>`
+    : '<p class="muted" style="color:#9ca3af">No major waste flags.</p>';
+  const actions = (data.action_rollup?.items || []).slice(0, 3).map(it =>
+    `<li><strong>${it.lane || 'Action'}:</strong> ${shortText(it.action, 110)}</li>`
+  ).join('');
+  return `
+    ${rollHead}
+    <h3>For ${agency} · working</h3>${workList}
+    <h3>Wasting / risky</h3>${wasteList}
+    <h3>Do next (2–3)</h3>
+    <ul class="ceo-verdict-actions">${actions || '<li>See task list below.</li>'}</ul>`;
+}
+
+function renderCEOBoard(data) {
+  const k = data.kpis || {};
+  const p = priorKpis(data);
+  const w = data.window || {};
+  const rev = storeRev(k);
+  const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
+  const adRev = adAttributedSales(data);
+  const adRevP = adAttributedSalesPrior(data);
+  const spend = k.total_ad_spend;
+  const spendP = p.total_ad_spend;
+  const netStore = rev - (Number(spend) || 0);
+  const netStoreP = revP - (Number(spendP) || 0);
+  const merStore = storeMerFromKpis(k);
+  const merStoreP = priorMer(data, p);
+  const taggedRoas = adRev && spend ? round2(adRev / spend) : k.blended_mer;
+  const taggedRoasP = adRevP && spendP ? round2(adRevP / spendP) : merStoreP;
+  const adOrd = adAttributedOrders(data);
+  const cpaAd = adOrd && spend ? round2(spend / adOrd) : k.cpa_blended;
+
+  const platformTiles = (data.channels || []).map(c => {
+    const arr = trendArrow(c.spend, c.spend_last);
+    return `<div class="ceo-platform-tile ${arr.cls}" data-channel="${channelSlug(c.name)}">
+      <div class="ceo-platform-name">${channelLabel(c.name)}</div>
+      <div class="ceo-platform-val">${spendDisplay(c)}</div>
+      <div class="ceo-platform-delta">${arr.pct === '—' ? '→ flat' : arr.arrow + ' ' + arr.pct}</div>
+    </div>`;
+  }).join('');
+
+  const claimRows = (data.channels || []).map(claimGapRow).join('');
+  const metaAds = (data.meta_top_ads || []).filter(a => Number(a.spend) >= 50)
+    .sort((a, b) => (Number(b.roas) || 0) - (Number(a.roas) || 0)).slice(0, 3);
+  const metaGlance = metaAds.map(a =>
+    glanceRow(shortText(a.ad, 40), roas(a.roas), `${fmt(a.spend)} · ${a.purch ?? '—'} plat purch`, 'meta')
+  ).join('');
+
+  const unattributed = Math.max(0, rev - adRev);
+  const sharePct = rev ? Math.round(adRev / rev * 100) : null;
+
+  return `
+    <section class="ceo-board easy-read" data-view="all simple summary performance actions deep">
+      <p class="ceo-period">${w.label || 'Period'} <span class="muted">vs ${w.prior_label || 'prior'}</span> · ${adSpendSourceHint(data)}</p>
+      <div class="stat-grid ceo-tiles">
+        ${statCard('Ad spend', spend, spendP, fmt)}
+        ${statCard('DTC revenue', rev, revP, fmt)}
+        ${statCard('Ad-tagged revenue', adRev, adRevP, fmt)}
+        ${statCard('Rev − spend', netStore, netStoreP, fmt)}
+        ${statCard('Store MER', merStore, merStoreP, roas)}
+        ${statCard('Tagged ROAS', taggedRoas, taggedRoasP, roas)}
+        ${statCard('Cost / ad order', cpaAd, null, fmt)}
+        ${statCard('DTC orders', k.paid_orders, p.paid_orders, v => v ?? '—')}
+      </div>
+      <p class="section-hint" style="margin:-0.35rem 0 0">Ad-tagged ${fmt(adRev)}${sharePct != null ? ` (${sharePct}% of DTC)` : ''} · Not tagged ${fmt(unattributed)} (halo / organic / untagged).</p>
+      <p class="ceo-subhead">Spend by platform</p>
+      <div class="ceo-platform-row">${platformTiles}</div>
+      <p class="ceo-subhead">Platform claimed vs Shopify UTM</p>
+      <table class="compact-table ceo-claim-table">
+        <thead><tr>
+          <th>Channel</th><th>Spend</th><th>Platform</th><th>Shopify</th><th>Gap</th><th>Flag</th>
+        </tr></thead>
+        <tbody>${claimRows || '<tr><td colspan="6">No channel data</td></tr>'}</tbody>
+      </table>
+      ${metaGlance ? `<p class="ceo-subhead">Top Meta ads (platform only)</p><div class="glance-list">${metaGlance}</div><p class="section-hint">Per-ad Shopify UTM not in JSON — judge ads on platform rank here, channel on table above.</p>` : ''}
+      <div class="ceo-verdict"><h3 style="color:#fff;font-size:0.85rem;margin:0 0 0.35rem">CEO read → social team</h3>${buildZakiVerdict(data)}</div>
+    </section>`;
+}
+
+function agencyFold(title, body, open) {
+  if (!body || !String(body).trim()) return '';
+  return `<details class="agency-fold" data-view="all simple summary performance actions deep"${open ? ' open' : ''}>
+    <summary>${title}</summary>
+    <div class="agency-fold-body">${body}</div>
+  </details>`;
+}
+
 function adSpendSourceHint(data) {
   const k = data.kpis || {};
   if (k.spend_estimated) return '<span class="spend-estimate">(includes estimated spend)</span>';
@@ -2960,8 +3212,8 @@ function renderGa4FunnelBlock(data) {
   const note = f.note ? `<p class="section-hint">${f.note}</p>` : '';
   return `
     <div data-view="all simple summary performance actions deep" style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--line)">
-      <h2 style="font-size:1rem;margin-bottom:0.25rem">Site funnel (GA4 direction)</h2>
-      <p class="section-lead">Paid Social path in GA4 — counts can disagree with Shopify; use for trend only.</p>
+      <p class="ceo-subhead" style="margin-top:0">GA4 · Paid Social</p>
+      <p class="section-hint">Direction only — not Shopify truth.</p>
       ${note}
       <table class="compact-table">
         <thead><tr><th>Sessions</th><th>Add to cart</th><th>Checkout</th><th>Purchase</th><th>ATC → checkout</th></tr></thead>
@@ -2981,9 +3233,12 @@ function renderAgencyChannels(data) {
     <section class="agency-section" data-view="all simple summary performance actions deep">
       <h2>Channels and funnel</h2>
       <p class="section-lead">Spend shows live, estimated, or pending per connector. ROAS = Shopify UTM revenue ÷ spend.</p>
-      ${renderSimpleChannels(data, { agency: true })}
-      ${renderGa4FunnelBlock(data)}
+      ${renderAgencyChannelsContent(data)}
     </section>`;
+}
+
+function renderAgencyChannelsContent(data) {
+  return `${renderSimpleChannels(data, { agency: true })}${renderGa4FunnelBlock(data)}`;
 }
 
 function renderAgencyTrendChart(raw) {
@@ -2998,8 +3253,7 @@ function renderAgencyTrendChart(raw) {
   }).join('');
   return `
     <section class="agency-section" data-view="all simple summary performance actions deep">
-      <h2>Last 30 days · store revenue</h2>
-      <p class="section-lead">Daily Shopify DTC revenue (bars). Rolling 30-day ad spend total: <strong>${fmt(w30.total_ad_spend)}</strong> — no daily spend series in feed.</p>
+      <p class="section-lead">Daily DTC revenue · 30d ad spend total <strong>${fmt(w30.total_ad_spend)}</strong> (no daily spend in feed).</p>
       <div class="bar-chart">${bars}</div>
     </section>`;
 }
@@ -3013,8 +3267,7 @@ function renderMetaCreativesRanked(data) {
   const card = (a, tag) => glanceRow(shortText(a.ad, 42), roas(a.roas), `${fmt(a.spend)} spend · ${a.purch ?? '—'} platform purch · ${shortText(a.campaign, 36)}`, 'meta');
   return `
     <section class="agency-section" data-view="all simple summary performance actions deep">
-      <h2>Meta creatives by platform ROAS</h2>
-      <p class="section-lead">Platform purchase counts can overclaim vs Shopify — use for relative creative rank only.</p>
+      <p class="section-lead">Platform ROAS rank · not Shopify per-ad.</p>
       <p class="highlights-head">Top 3</p>
       <div class="glance-list">${top.map(a => card(a)).join('')}</div>
       <p class="highlights-head" style="margin-top:0.75rem">Bottom 3 (min $50 spend)</p>
@@ -3025,8 +3278,7 @@ function renderMetaCreativesRanked(data) {
 function renderAgencyNewReturning() {
   return `
     <section class="agency-section" data-view="all simple summary performance actions deep">
-      <h2>New vs returning customers</h2>
-      <p class="section-lead muted">Not in <code>latest.json</code> yet — needs a GA4 or Shopify repeat-customer pull. No number shown until the refresh script adds it (backend change).</p>
+      <p class="section-lead muted">Not in JSON yet — needs refresh script field.</p>
     </section>`;
 }
 
@@ -3045,8 +3297,7 @@ function renderAgencyDoNow(data) {
   const agency = reportConfig.agency_owner || 'Zaki';
   return `
     <section class="agency-section" data-view="all simple summary performance actions deep">
-      <h2>Do now</h2>
-      <p class="section-lead">${director} directs · ${agency} runs agency tasks · 3–5 moves for this week.</p>
+      <p class="section-lead">${director} → ${agency}</p>
       <ul class="action-banner-actions">${lines}</ul>
       ${roll?.zaki_confirm ? `<p class="action-banner-zaki">${roll.zaki_confirm}</p>` : ''}
     </section>`;
@@ -3062,8 +3313,6 @@ function renderAgencyInvestigate(data) {
   if (!rows && !chRows && !extraList) return '';
   return `
     <section class="agency-section" data-view="all simple summary performance actions deep">
-      <h2>Investigate</h2>
-      <p class="section-lead">Open questions tied to numbers in this snapshot.</p>
       ${extraList}
       ${rows ? `<table class="compact-table"><thead><tr><th>Metric</th><th>Move</th><th>Likely cause</th></tr></thead><tbody>${rows}</tbody></table>` : ''}
       ${chRows ? `<ul class="action-banner-hit" style="margin-top:0.75rem">${chRows}</ul>` : ''}
@@ -3071,17 +3320,20 @@ function renderAgencyInvestigate(data) {
 }
 
 function renderAgencyPage(data, raw) {
+  const stripSection = (html) => String(html || '')
+    .replace(/^\s*<section[^>]*>/, '')
+    .replace(/<\/section>\s*$/, '');
   return `
     ${renderAgencyAlert(data)}
     ${renderStoreSlowdownBanner(data)}
-    ${renderAgencyTopLine(data)}
-    <div class="agency-section" data-view="all simple summary performance actions deep">${renderBudgetStrip(data, { agency: true })}</div>
-    ${renderAgencyChannels(data)}
-    ${renderAgencyTrendChart(raw)}
-    ${renderMetaCreativesRanked(data)}
-    ${renderAgencyNewReturning()}
-    ${renderAgencyDoNow(data)}
-    ${renderAgencyInvestigate(data)}
+    ${renderCEOBoard(data)}
+    ${agencyFold('Budget · MTD', renderBudgetStrip(data, { agency: true }), false)}
+    ${agencyFold('Channels · GA4', renderAgencyChannelsContent(data), false)}
+    ${agencyFold('30-day revenue', stripSection(renderAgencyTrendChart(raw)), false)}
+    ${agencyFold('Meta ads · rank', stripSection(renderMetaCreativesRanked(data)), false)}
+    ${agencyFold('New vs returning', stripSection(renderAgencyNewReturning()), false)}
+    ${agencyFold('Tasks', stripSection(renderAgencyDoNow(data)), false)}
+    ${agencyFold('Investigate', stripSection(renderAgencyInvestigate(data)), false)}
   `;
 }
 
@@ -3209,18 +3461,18 @@ function render(raw) {
   document.getElementById('app').innerHTML = `
     ${renderAgencyPage(data, raw)}
 
-    <p class="highlights-head" data-view="detailed summary performance actions deep" style="margin-top:0.5rem">Details</p>
+    <p class="highlights-head" data-view="detailed summary performance actions deep" style="margin-top:0.75rem">Full detail</p>
     <div class="detail-stack" data-view="detailed summary performance actions deep">
-      ${detailPanel('Returns and director economics', renderDirectorEconomics(data), false)}
-      ${detailPanel('Campaigns and ads', renderCampaignTables(data), false)}
-      ${detailPanel('By channel (full table)', renderSimpleChannels(data), false)}
+      ${detailPanel('Returns · economics', renderDirectorEconomics(data), false)}
+      ${detailPanel('Campaigns · ads', renderCampaignTables(data), false)}
+      ${detailPanel('Channels', renderSimpleChannels(data), false)}
       ${detailPanel('This week', renderWeekTodos(data), false)}
-      ${detailPanel('Compare to last period', renderWowCompare(data) + renderChannelWow(data), false)}
+      ${detailPanel('vs last period', renderWowCompare(data) + renderChannelWow(data), false)}
       ${detailPanel('Flags', renderFlags(data), false)}
       ${detailPanel('Daily orders', renderDailySpark(data), false)}
-      ${detailPanel('Agency changes', renderAgencyLog(data), false)}
-      ${detailPanel('Weekly history', renderHistoryTrend(data), false)}
-      ${detailPanel('KPI vs target and strategy', `
+      ${detailPanel('Agency log', renderAgencyLog(data), false)}
+      ${detailPanel('History', renderHistoryTrend(data), false)}
+      ${detailPanel('Targets · todos', `
         <section data-view="detailed performance">
           <h2 class="old-style">KPI vs target</h2>
           <table>
@@ -3243,7 +3495,7 @@ function render(raw) {
             <tbody>${priRows || '<tr><td colspan="5">None set</td></tr>'}</tbody>
           </table>
         </section>`, false)}
-      ${detailPanel('Analyst appendix', `
+      ${detailPanel('Appendix', `
         ${renderHealthStrip(data)}
         <section data-view="detailed performance">
           <h2>Weekly trend</h2>
