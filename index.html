@@ -1443,14 +1443,14 @@ function roas(n) {
 }
 
 function qualitySourceName(k) {
-  const map = { meta: 'Meta', google: 'Google', pinterest: 'Pinterest', shopify: 'Shopify' };
+  const map = { meta: 'Meta', google: 'Google', ga4: 'GA4', pinterest: 'Pinterest', shopify: 'Shopify' };
   if (map[k]) return map[k];
   return k.replace(/^blend_/, '').replace(/_/g, ' ');
 }
 
 function adQualityEntries(dq) {
   const d = dq || {};
-  const keys = ['shopify', 'meta', 'google', 'pinterest'];
+  const keys = ['shopify', 'meta', 'google', 'ga4', 'pinterest'];
   const seen = new Set();
   const out = [];
   keys.forEach(k => {
@@ -2588,16 +2588,20 @@ function renderIntlPlan(data) {
 
 function renderBudgetStrip(data) {
   const bp = data.budget_pacing || {};
-  if (!bp.month_to_date_spend) return '';
-  const rows = (bp.by_channel || []).map(b =>
-    `<tr><td>${b.channel}</td><td>${fmt(b.mtd_spend)}</td><td>${fmt(b.monthly_plan)}</td>
-    <td>${b.monthly_plan ? Math.round(b.mtd_spend / b.monthly_plan * 100) + '%' : '—'}</td>
-    <td class="status ${b.status}">${b.status === 'on_track' ? 'On track' : b.status}</td></tr>`
-  ).join('');
+  if (bp.month_to_date_spend == null && !bp.month) return '';
+  const rows = (bp.by_channel || []).map(b => {
+    const est = b.spend_source === 'estimate' ? ' <span class="spend-estimate">(est.)</span>' : '';
+    const statusLabel = b.status === 'on_track' ? 'On track' : (b.status === 'estimate' ? 'Estimate' : b.status);
+    return `<tr><td>${b.channel}</td><td>${fmt(b.mtd_spend)}${est}</td><td>${fmt(b.monthly_plan)}</td>
+    <td>${b.used_pct != null ? b.used_pct + '%' : (b.monthly_plan ? Math.round(b.mtd_spend / b.monthly_plan * 100) + '%' : '—')}</td>
+    <td class="status ${b.status}">${statusLabel}</td></tr>`;
+  }).join('');
   return `
     <section data-view="detailed performance">
-      <h2>Budget pacing</h2>
+      <h2>Budget pacing · ${bp.month || 'MTD'}</h2>
       <p class="budget-line">Month to date: <strong>${fmt(bp.month_to_date_spend)}</strong> of ${fmt(bp.monthly_plan)} plan · projected ${fmt(bp.projected_month_spend)}</p>
+      ${bp.spend_includes_estimates ? '<p class="net-note">MTD spend includes config estimates where live API pulls failed.</p>' : ''}
+      ${bp.note ? `<p class="sub">${bp.note}</p>` : ''}
       <table class="compact-table">
         <thead><tr><th>Channel</th><th>MTD</th><th>Plan</th><th>Used</th><th>Status</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -2966,11 +2970,14 @@ function render(raw) {
   </tr>`).join('');
 
   const bp = data.budget_pacing || {};
-  const bpRows = (bp.by_channel || []).map(b => `<tr>
-    <td>${b.channel}</td><td>${fmt(b.mtd_spend)}</td><td>${fmt(b.monthly_plan)}</td>
-    <td>${b.monthly_plan ? Math.round(b.mtd_spend / b.monthly_plan * 100) + '%' : '—'}</td>
-    <td class="status ${b.status}">${b.status}</td>
-  </tr>`).join('');
+  const bpRows = (bp.by_channel || []).map(b => {
+    const est = b.spend_source === 'estimate' ? ' <span class="spend-estimate">(est.)</span>' : '';
+    return `<tr>
+    <td>${b.channel}</td><td>${fmt(b.mtd_spend)}${est}</td><td>${fmt(b.monthly_plan)}</td>
+    <td>${b.used_pct != null ? b.used_pct + '%' : (b.monthly_plan ? Math.round(b.mtd_spend / b.monthly_plan * 100) + '%' : '—')}</td>
+    <td class="status ${b.status}">${b.status === 'estimate' ? 'Estimate' : b.status}</td>
+  </tr>`;
+  }).join('');
 
   const cr = data.creative || {};
   const organic = (data.organic_snapshot?.channels || []).map(o => `<tr>
@@ -3024,8 +3031,9 @@ function render(raw) {
         ${renderHealthStrip(data)}
         <div class="two-col" data-view="detailed performance">
           <section>
-            <h2>Budget pacing · MTD</h2>
-            <p class="sub">MTD ~${fmt(bp.month_to_date_spend)} of ${fmt(bp.monthly_plan)} plan · projected ${fmt(bp.projected_month_spend)}</p>
+            <h2>Budget pacing · ${bp.month || 'MTD'}</h2>
+            <p class="sub">MTD ~${fmt(bp.month_to_date_spend)} of ${fmt(bp.monthly_plan)} plan · projected ${fmt(bp.projected_month_spend)}${bp.spend_includes_estimates ? ' · includes estimates' : ''}</p>
+            ${bp.note ? `<p class="sub">${bp.note}</p>` : ''}
             <table>
               <thead><tr><th>Channel</th><th>MTD</th><th>Plan</th><th>Used</th><th>Status</th></tr></thead>
               <tbody>${bpRows}</tbody>

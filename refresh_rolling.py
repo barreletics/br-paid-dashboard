@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parent
 SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
-from pull_common import is_config_estimate, looks_like_live_meta  # noqa: E402
+from pull_common import is_config_estimate, looks_like_live_channel  # noqa: E402
 
 DATA = ROOT / "data"
 AD_SPEND_DIR = DATA / "ad_spend"
@@ -153,7 +153,7 @@ def last_successful_live_end(source_key: str, cfg: dict | None = None) -> str | 
                 best = w_end
             continue
         daily = rates.get(source_key)
-        if float(ch.get("spend") or 0) > 0 and looks_like_live_meta(ch, days, daily):
+        if float(ch.get("spend") or 0) > 0 and looks_like_live_channel(ch, days, daily):
             if best is None or w_end > best:
                 best = w_end
     return best.isoformat() if best else None
@@ -161,7 +161,7 @@ def last_successful_live_end(source_key: str, cfg: dict | None = None) -> str | 
 
 def ad_spend_for_range(
     start: date, end: date, cfg: dict | None = None
-) -> tuple[dict[str, dict], dict[str, dict]]:
+) -> tuple[dict[str, dict], dict[str, dict], dict[str, str]]:
     """Live Meta + Google/Pinterest; cache only prior live pulls; label config fallbacks as estimates."""
     path = cache_path(start, end)
     cached: dict[str, dict] = {}
@@ -285,9 +285,7 @@ def ad_spend_for_range(
         if csp <= 0:
             continue
         daily = rates.get(key)
-        if is_config_estimate(csp, days, daily):
-            continue
-        if key == "Meta" and not looks_like_live_meta(cached[key], days, daily):
+        if not looks_like_live_channel(cached[key], days, daily):
             continue
         channels[key] = copy.deepcopy(cached[key])
         prov = provenance.get(key) or {}
@@ -362,7 +360,160 @@ def ad_spend_for_range(
         elif st == "estimate":
             ch.setdefault("spend_source", "estimate")
 
-    return channels, source_info
+    return channels, source_info, pull_errors
+
+
+def calendar_mtd_range(through: str) -> tuple[date, date]:
+    end_d = today_detroit()
+    if through == "yesterday":
+        end_d -= timedelta(days=1)
+    return end_d.replace(day=1), end_d
+
+
+def build_budget_pacing(
+    cfg: dict,
+    mtd_start: date,
+    mtd_end: date,
+    mtd_channels: dict[str, dict],
+    mtd_status: dict[str, dict],
+) -> dict:
+    plans = cfg.get("monthly_plan") or {}
+    rates = cfg.get("ad_daily_spend") or {}
+    month_key = f"{mtd_end.year}-{mtd_end.month:02d}"
+    if mtd_end.month == 12:
+        first_next = date(mtd_end.year + 1, 1, 1)
+    else:
+        first_next = date(mtd_end.year, mtd_end.month + 1, 1)
+    days_in_month = (first_next - timedelta(days=1)).day
+    mtd_days = (mtd_end - mtd_start).days + 1
+    channel_rows = []
+    total_mtd = 0.0
+    any_estimate = False
+    channel_specs = (
+        ("Meta", "Meta"),
+        ("Google", "Google PMax"),
+        ("Pinterest", "Pinterest"),
+    )
+    for key, plan_name in channel_specs:
+        ch = mtd_channels.get(key) or {}
+        st = mtd_status.get(key) or {}
+        mtd_spend = float(ch.get("spend") or 0)
+        total_mtd += mtd_spend
+        if st.get("status") == "estimate" or ch.get("spend_source") == "estimate":
+            any_estimate = True
+        plan = float(plans.get(plan_name) or 0)
+        used_pct = round(mtd_spend / plan * 100) if plan else None
+        pace = "on_track"
+        if plan and mtd_days > 0:
+            projected = mtd_spend / mtd_days * days_in_month
+            if projected > plan * 1.1:
+                pace = "over"
+            elif projected < plan * 0.85:
+                pace = "under"
+        row_status = pace
+        if st.get("status") == "estimate":
+            row_status = "estimate"
+        elif st.get("status") == "error":
+            row_status = "error"
+        channel_rows.append(
+            {
+                "channel": plan_name if key == "Google" else key,
+                "mtd_spend": round(mtd_spend),
+                "monthly_plan": round(plan),
+                "status": row_status,
+                "spend_source": ch.get("spend_source") or st.get("status"),
+                "used_pct": used_pct,
+            }
+        )
+    total_plan = float(plans.get("total") or 0) or sum(float(plans.get(n) or 0) for _, n in channel_specs)
+    projected = round(total_mtd / mtd_days * days_in_month) if mtd_days else 0
+    note_parts = [f"Calendar MTD {mtd_start.isoformat()}–{mtd_end.isoformat()} ({mtd_days} days)"]
+    if any_estimate:
+        note_parts.append(
+            "includes config.json daily-rate estimates where live API pulls failed — not for audit"
+        )
+    else:
+        note_parts.append("from live platform pulls for this calendar month")
+    return {
+        "month": month_key,
+        "mtd_start": mtd_start.isoformat(),
+        "mtd_end": mtd_end.isoformat(),
+        "month_to_date_spend": round(total_mtd),
+        "monthly_plan": round(total_plan),
+        "projected_month_spend": projected,
+        "pacing_status": "estimate" if any_estimate else ("on_track" if projected <= total_plan * 1.05 else "over"),
+        "spend_includes_estimates": any_estimate,
+        "note": " · ".join(note_parts),
+        "by_channel": channel_rows,
+    }
+
+
+def regenerate_anomalies(snap: dict) -> list[dict]:
+    """Replace stale hand-written anomalies with rolling-window deltas."""
+
+    def pct(cur: float, prev: float) -> int | None:
+        if not prev:
+            return None
+        return round((cur - prev) / prev * 100)
+
+    k = snap.get("kpis") or {}
+    prior_k = (snap.get("prior_period") or {}).get("kpis") or {}
+    w = snap.get("window") or {}
+    prior_label = w.get("prior_label") or "prior period"
+    out: list[dict] = []
+
+    ord_pct = pct(float(k.get("paid_orders") or 0), float(prior_k.get("paid_orders") or 0))
+    if ord_pct is not None and abs(ord_pct) >= 12:
+        out.append(
+            {
+                "metric": "Store orders",
+                "change": f"{ord_pct:+d}%",
+                "vs": prior_label,
+                "cause": "Rolling store order volume vs the same-length prior window.",
+                "response": "Confirm paid vs organic; check Meta/Google UTMs before changing budgets.",
+            }
+        )
+
+    rev_pct = pct(float(k.get("paid_revenue") or 0), float(prior_k.get("paid_revenue") or 0))
+    if rev_pct is not None and abs(rev_pct) >= 12:
+        out.append(
+            {
+                "metric": "Store revenue",
+                "change": f"{rev_pct:+d}%",
+                "vs": prior_label,
+                "cause": "Rolling DTC revenue vs prior window (Shopify REST).",
+                "response": "Use channel compare for attribution; do not react to a single metric alone.",
+            }
+        )
+
+    for c in snap.get("channels") or []:
+        name = c.get("name") or "Channel"
+        roas_now = float(c.get("shopify_roas") or 0)
+        roas_last = float(c.get("shopify_roas_last") or 0)
+        roas_pct = pct(roas_now, roas_last)
+        if roas_pct is not None and abs(roas_pct) >= 15:
+            out.append(
+                {
+                    "metric": f"{name} Shopify ROAS",
+                    "change": f"{roas_pct:+d}%",
+                    "vs": prior_label,
+                    "cause": "UTM-attributed Shopify revenue ÷ spend for this window.",
+                    "response": "Judge on Shopify UTM ROAS; verify spend is live not estimated.",
+                }
+            )
+        if c.get("spend_source") == "estimate":
+            out.append(
+                {
+                    "metric": f"{name} ad spend",
+                    "change": "estimate",
+                    "vs": w.get("label") or "this window",
+                    "cause": "Live platform pull failed; spend is config.json daily rate × days.",
+                    "response": "Renew API tokens in GitHub Actions — do not use for budget decisions.",
+                }
+            )
+            break
+
+    return out[:5]
 
 
 def channel_status(name: str, shopify_orders: int, shopify_roas: float, spend: float, targets: dict) -> str:
@@ -1051,22 +1202,69 @@ def _quality_entry(
     }
 
 
-def build_data_quality(ad_status: dict[str, dict], cfg: dict, window_label: str) -> dict:
+def _ga4_quality(ad_status: dict[str, dict], pull_errors: dict[str, str], window_label: str) -> dict:
+    google = ad_status.get("Google") or {}
+    src = google.get("source")
+    if google.get("status") == "ok" and src == "ga4_ad_cost":
+        return {
+            "status": "ok",
+            "source": "ga4_ad_cost",
+            "note": f"GA4 advertiserAdCost for {window_label}",
+            "pulled_at": google.get("pulled_at"),
+        }
+    if google.get("status") == "ok" and src == "google_ads_api":
+        return {
+            "status": "skip",
+            "source": "ga4_ad_cost",
+            "note": f"Not used — Google Ads API supplied spend for {window_label}",
+        }
+    err = pull_errors.get("Google") or google.get("error")
+    if google.get("status") == "estimate":
+        return {
+            "status": "estimate",
+            "source": "ga4_ad_cost",
+            "note": err or f"GA4 did not return spend for {window_label}",
+        }
+    return {
+        "status": "error",
+        "source": "ga4_ad_cost",
+        "note": err or f"GA4 pull failed for {window_label}",
+    }
+
+
+def build_data_quality(
+    ad_status: dict[str, dict],
+    cfg: dict,
+    window_label: str,
+    pull_errors: dict[str, str] | None = None,
+    shopify_pulled_at: str | None = None,
+) -> dict:
+    pull_errors = pull_errors or {}
     last_meta = last_successful_live_end("Meta", cfg)
     last_google = last_successful_live_end("Google", cfg)
     last_pin = last_successful_live_end("Pinterest", cfg)
     meta = _quality_entry("Meta", ad_status, "meta_graph_api", last_meta, window_label)
-    google = _quality_entry("Google", ad_status, "ga4_ad_cost", last_google, window_label)
+    google = _quality_entry("Google", ad_status, "google_spend", last_google, window_label)
+    if ad_status.get("Google", {}).get("source") == "google_ads_api":
+        google["source"] = "google_ads_api"
+    elif ad_status.get("Google", {}).get("source") == "ga4_ad_cost":
+        google["source"] = "ga4_ad_cost"
     pin = _quality_entry("Pinterest", ad_status, "pinterest_api", last_pin, window_label)
+    ga4 = _ga4_quality(ad_status, pull_errors, window_label)
+    shopify_note = "DTC paid orders + UTM; wholesale separate; excludes cancelled, test, promo, exchanges"
+    if shopify_pulled_at:
+        shopify_note += f" · pulled {shopify_pulled_at}"
     return {
         "shopify": {
             "status": "ok",
             "source": "shopify_rest",
-            "note": "DTC paid orders + UTM; wholesale separate; excludes cancelled, test, promo, exchanges",
+            "note": shopify_note,
+            "pulled_at": shopify_pulled_at,
         },
         "meta": meta,
         "google": google,
         "pinterest": pin,
+        "ga4": ga4,
         "blend_meta": meta,
         "blend_google": google,
         "blend_pinterest": pin,
@@ -1084,9 +1282,9 @@ def build_snapshot(days: int, through: str, channels_base: list[dict], targets: 
     prior = shopify_pull(prior_start, prior_end)
     month = shopify_pull(month_start, month_end)
 
-    cur_ad, ad_source_status = ad_spend_for_range(cur_start, cur_end, cfg)
-    prior_ad, _ = ad_spend_for_range(prior_start, prior_end, cfg)
-    month_ad, _ = ad_spend_for_range(month_start, month_end, cfg)
+    cur_ad, ad_source_status, ad_pull_errors = ad_spend_for_range(cur_start, cur_end, cfg)
+    prior_ad, _, _ = ad_spend_for_range(prior_start, prior_end, cfg)
+    month_ad, _, _ = ad_spend_for_range(month_start, month_end, cfg)
 
     cur_s, prior_s, month_s = cur["summary"], prior["summary"], month["summary"]
     channels = build_channels(cur_s, prior_s, month_s, cur_ad, prior_ad, month_ad, channels_base, targets)
@@ -1132,6 +1330,7 @@ def build_snapshot(days: int, through: str, channels_base: list[dict], targets: 
 
     return {
         "ad_source_status": ad_source_status,
+        "ad_pull_errors": ad_pull_errors,
         "window": {
             "start": cur_start.isoformat(),
             "end": cur_end.isoformat(),
@@ -1273,11 +1472,18 @@ def main() -> None:
         payload["meta_top_ads"] = top_ads
 
     ad_status = default_snap.get("ad_source_status") or {}
+    pull_errors = default_snap.get("ad_pull_errors") or {}
+    generated_at = datetime.now(TZ).isoformat()
     dq = payload.setdefault("data_quality", {})
-    dq.update(build_data_quality(ad_status, cfg, w["label"]))
+    dq.update(build_data_quality(ad_status, cfg, w["label"], pull_errors, generated_at))
+
+    mtd_start, mtd_end = calendar_mtd_range(through)
+    mtd_ch, mtd_st, _ = ad_spend_for_range(mtd_start, mtd_end, cfg)
+    payload["budget_pacing"] = build_budget_pacing(cfg, mtd_start, mtd_end, mtd_ch, mtd_st)
+    payload["anomalies"] = regenerate_anomalies(default_snap)
 
     payload["windows"] = windows
-    payload["generated_at"] = datetime.now(TZ).isoformat()
+    payload["generated_at"] = generated_at
     payload["ad_spend_window"] = {"start": w["start"], "end": w["end"], "label": w["label"]}
 
     history = load_json(HISTORY) if HISTORY.exists() else []

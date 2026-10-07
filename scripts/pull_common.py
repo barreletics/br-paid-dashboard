@@ -53,15 +53,25 @@ def is_config_estimate(spend: float, days: int, daily_rate: float | None) -> boo
     return abs(float(spend) - expected) < 0.02
 
 
-def looks_like_live_meta(channel: dict[str, Any], days: int, daily_rate: float | None) -> bool:
+def looks_like_live_channel(channel: dict[str, Any], days: int, daily_rate: float | None) -> bool:
+    """True when cached channel row is plausibly from a live API pull, not config math."""
     spend = float(channel.get("spend") or 0)
     if spend <= 0:
         return False
-    if channel.get("spend_source") == "estimate":
+    if channel.get("spend_source") in ("estimate",):
+        return False
+    if is_config_estimate(spend, days, daily_rate):
         return False
     purch = int(channel.get("platform_purchases") or 0)
     if purch > 0:
         return True
+    if float(channel.get("platform_revenue") or 0) > 0:
+        return True
     if channel.get("impressions") or channel.get("clicks"):
         return True
-    return not is_config_estimate(spend, days, daily_rate)
+    # Non-round spend vs daily rate (e.g. Blend/API with cents)
+    return True
+
+
+def looks_like_live_meta(channel: dict[str, Any], days: int, daily_rate: float | None) -> bool:
+    return looks_like_live_channel(channel, days, daily_rate)
