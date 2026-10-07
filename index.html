@@ -85,16 +85,16 @@ header {
 }
 .window-banner strong { color: var(--text); }
 .agency-alert {
-  background: var(--bad-bg);
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  border-radius: 8px;
-  padding: 0.65rem 0.85rem;
-  margin-bottom: 1rem;
-  font-size: 0.84rem;
+  background: var(--card);
+  border: none;
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+  padding: 0.35rem 0 0.35rem 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.78rem;
   line-height: 1.45;
 }
-.agency-alert strong { color: #7f1d1d; }
+.agency-alert strong { color: var(--text); font-weight: 600; }
 .agency-section {
   background: var(--card);
   border: 1px solid var(--line);
@@ -118,21 +118,114 @@ header {
   color: var(--muted);
   margin-left: 0.25rem;
 }
-.ceo-board {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 1.25rem 1.35rem 1.35rem;
-  margin-bottom: 1.25rem;
+.tesla-top {
+  margin-bottom: 2rem;
+  padding-bottom: 0.5rem;
 }
-.ceo-period {
-  font-size: 0.82rem;
+.tesla-head {
+  font-size: 0.75rem;
   color: var(--muted);
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
-.ceo-tiles {
-  margin-bottom: 1.25rem;
+.tesla-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem 2rem;
+  margin-bottom: 2.75rem;
 }
+@media (max-width: 800px) {
+  .tesla-kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+.tesla-kpi-val {
+  font-size: clamp(1.85rem, 4.5vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--text);
+}
+.tesla-kpi-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-top: 0.4rem;
+}
+.tesla-delta {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+.tesla-delta.up { color: #16a34a; }
+.tesla-delta.down { color: #dc2626; }
+.tesla-delta.flat { color: var(--muted); font-weight: 400; }
+.tesla-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  margin-bottom: 2rem;
+}
+.tesla-table th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  padding: 0 0.35rem 0.55rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.tesla-table td {
+  padding: 0.7rem 0.5rem 0.7rem 0;
+  border-bottom: 1px solid #ebebeb;
+  vertical-align: top;
+}
+.tesla-table td.tesla-verdict-cell {
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.tesla-story {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+.tesla-halo {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text);
+  margin-bottom: 1.75rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--line);
+}
+.tesla-halo .tesla-halo-method {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin-top: 0.35rem;
+}
+.tesla-verdict {
+  margin-bottom: 1.5rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--line);
+}
+.tesla-verdict-title {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+.tesla-verdict ul {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+.tesla-verdict li { margin-bottom: 0.4rem; }
 .ceo-subhead {
   font-size: 0.72rem;
   font-weight: 700;
@@ -141,56 +234,6 @@ header {
   color: var(--muted);
   margin: 1rem 0 0.5rem;
 }
-.ceo-platform-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.55rem;
-}
-.ceo-platform-tile {
-  background: #fafafa;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0.75rem 0.85rem;
-  text-align: center;
-}
-.ceo-platform-name { font-size: 0.78rem; font-weight: 700; }
-.ceo-platform-val { font-size: 1.25rem; font-weight: 700; margin: 0.2rem 0; }
-.ceo-platform-delta { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
-.ceo-platform-tile.up .ceo-platform-delta { color: var(--good); }
-.ceo-platform-tile.down .ceo-platform-delta { color: var(--bad); }
-.ceo-claim-table { margin-top: 0.35rem; }
-.claim-flag {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--bad);
-  background: var(--bad-bg);
-  padding: 0.15rem 0.45rem;
-  border-radius: 999px;
-}
-.claim-ok {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--good);
-}
-.ceo-verdict {
-  margin-top: 1.15rem;
-  padding: 1rem 1.1rem;
-  background: #111;
-  color: #fff;
-  border-radius: 12px;
-  font-size: 0.88rem;
-  line-height: 1.5;
-}
-.ceo-verdict h3 {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #9ca3af;
-  margin-bottom: 0.35rem;
-}
-.ceo-verdict ul { margin: 0.35rem 0 0.75rem 1.1rem; }
-.ceo-verdict li { margin-bottom: 0.25rem; }
-.ceo-verdict .ceo-verdict-actions { margin-bottom: 0; }
 .agency-fold {
   background: var(--card);
   border: 1px solid var(--line);
@@ -370,8 +413,8 @@ details.key-details summary {
 .quality-note {
   font-size: 0.82rem;
   color: var(--muted);
-  background: var(--warn-bg);
-  border: 1px solid #fcd34d;
+  background: var(--card);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0.55rem 0.85rem;
   margin: -0.35rem 0 0.85rem;
@@ -1215,7 +1258,7 @@ tr:nth-child(even) td { background: #fafafa; }
 .q-item.pending { border-color: #e2e8f0; background: #f8fafc; }
 .q-item.error { border-color: #fecaca; background: #fef2f2; }
 .q-item.skip { opacity: 0.6; }
-.spend-estimate { color: var(--warn); font-size: 0.75rem; font-weight: 600; }
+.spend-estimate { color: var(--muted); font-size: 0.72rem; font-weight: 500; }
 footer {
   margin-top: 2rem;
   padding-top: 1rem;
@@ -3022,127 +3065,154 @@ function priorMer(data, p) {
   return round2(revP / spendP);
 }
 
-function claimGapRow(c) {
-  const platO = Number(c.platform_purchases) || 0;
-  const platR = Number(c.platform_revenue) || 0;
-  const shopO = Number(c.shopify_orders) || 0;
-  const shopR = channelRev(c);
-  const gapO = platO - shopO;
-  const over = platO > shopO + 1 || (platR > shopR * 1.12 && shopR > 0);
-  const flag = over
-    ? '<span class="claim-flag">Over-claim</span>'
-    : (platO && shopO ? '<span class="claim-ok">OK</span>' : '—');
-  const gapTxt = gapO > 0 ? `+${gapO} purch` : '—';
+function teslaDelta(cur, prev, invert) {
+  const ch = pctChange(cur, prev);
+  if (ch.text === '—') return '<span class="tesla-delta flat">— vs prior</span>';
+  let cls = ch.cls === 'pct-up' ? 'up' : ch.cls === 'pct-down' ? 'down' : 'flat';
+  if (invert) cls = cls === 'up' ? 'down' : cls === 'down' ? 'up' : cls;
+  return `<span class="tesla-delta ${cls}">${ch.text} vs prior</span>`;
+}
+
+function teslaKpi(label, value, prev, fmtFn, invert) {
+  const val = fmtFn ? fmtFn(value) : (value ?? '—');
+  const delta = prev != null && prev !== '—' ? teslaDelta(value, prev, invert) : '';
+  return `<div class="tesla-kpi">
+    <div class="tesla-kpi-val">${val}</div>
+    <div class="tesla-kpi-label">${label}</div>
+    ${delta}
+  </div>`;
+}
+
+function channelVerdictWord(c) {
+  const s = c.status || '';
+  if (s === 'good') return 'Scale';
+  if (s === 'pull_back') return 'Cut';
+  return 'Hold';
+}
+
+function teslaChannelRow(c) {
+  const name = channelLabel(c.name);
+  const spend = Number(c.spend) || 0;
+  const shopRev = channelRev(c);
+  const shopOrd = Number(c.shopify_orders) || 0;
+  const shopRoas = channelRoas(c);
+  const platRev = Number(c.platform_revenue) || 0;
+  const platRoas = c.platform_roas;
+  const platPurch = Number(c.platform_purchases) || 0;
+  const over = platPurch > shopOrd + 1;
+  const platCell = `${fmt(platRev)} · ${roas(platRoas)}<span class="tesla-story">${platPurch} platform purch${over ? ' · over-claims vs Shopify' : ''}</span>`;
   return `<tr data-channel="${channelSlug(c.name)}">
-    <td><strong>${channelLabel(c.name)}</strong></td>
-    <td>${spendDisplay(c)}</td>
-    <td>${platO} · ${fmt(platR)}</td>
-    <td>${shopO} · ${fmt(shopR)}</td>
-    <td>${gapTxt}</td>
-    <td>${flag}</td>
+    <td><strong>${name}</strong></td>
+    <td>${spendDisplay(c)}<span class="tesla-story">Spent ${fmt(spend)}</span></td>
+    <td>${fmt(shopRev)}<span class="tesla-story">→ brought in ${fmt(shopRev)}</span></td>
+    <td>${shopOrd}</td>
+    <td>${spend ? roas(shopRoas) : '—'}</td>
+    <td>${platCell}</td>
+    <td class="tesla-verdict-cell">${channelVerdictWord(c)}</td>
   </tr>`;
 }
 
-function buildZakiVerdict(data) {
-  const agency = reportConfig.agency_owner || 'Zaki';
-  const working = [];
-  const waste = [];
-  (data.channels || []).forEach(c => {
-    const name = channelLabel(c.name);
-    const r = channelRoas(c);
-    const s = Number(c.spend) || 0;
-    const shop = Number(c.shopify_orders) || 0;
-    const plat = Number(c.platform_purchases) || 0;
-    if (s >= 50 && r >= 1.8) working.push(`${name}: ${roas(r)} Shopify ROAS · ${fmt(s)} spend · ${shop} orders`);
-    if (plat > shop + 1 && s >= 50) {
-      waste.push(`${name}: platform ${plat} purch vs ${shop} Shopify UTM — do not scale on platform ROAS`);
-    } else if (s >= 150 && r < 1.25 && shop > 0) {
-      waste.push(`${name}: ${roas(r)} on ${fmt(s)} — hold budget`);
-    } else if (s >= 100 && shop === 0) {
-      waste.push(`${name}: ${fmt(s)} · 0 Shopify orders`);
-    }
-  });
-  const rollHead = data.action_rollup?.headline ? `<p class="muted" style="color:#9ca3af;margin-bottom:0.5rem">${shortText(data.action_rollup.headline, 160)}</p>` : '';
-  const workList = working.length
-    ? `<ul>${working.slice(0, 2).map(w => `<li>${w}</li>`).join('')}</ul>`
-    : '<p class="muted" style="color:#9ca3af">No channel cleared 1.8× Shopify ROAS this window.</p>';
-  const wasteList = waste.length
-    ? `<ul>${waste.slice(0, 2).map(w => `<li>${w}</li>`).join('')}</ul>`
-    : '<p class="muted" style="color:#9ca3af">No major waste flags.</p>';
-  const actions = (data.action_rollup?.items || []).slice(0, 3).map(it =>
-    `<li><strong>${it.lane || 'Action'}:</strong> ${shortText(it.action, 110)}</li>`
-  ).join('');
-  return `
-    ${rollHead}
-    <h3>For ${agency} · working</h3>${workList}
-    <h3>Wasting / risky</h3>${wasteList}
-    <h3>Do next (2–3)</h3>
-    <ul class="ceo-verdict-actions">${actions || '<li>See task list below.</li>'}</ul>`;
+function teslaOrganicRow(data) {
+  const k = data.kpis || {};
+  const rev = storeRev(k);
+  const adRev = adAttributedSales(data);
+  const adOrd = adAttributedOrders(data);
+  const shopRev = Math.max(0, rev - adRev);
+  const shopOrd = Math.max(0, (Number(k.paid_orders) || 0) - adOrd);
+  const tl = data.action_rollup?.top_line || {};
+  const de = data.director_economics || {};
+  const haloRev = de.halo_revenue ?? tl.unattributed_revenue ?? shopRev;
+  const haloOrd = de.halo_orders ?? tl.unattributed_orders ?? shopOrd;
+  const os = data.organic_snapshot?.channels || [];
+  const ga4Rev = os.reduce((s, o) => s + (Number(o.revenue) || 0), 0);
+  const ga4Purch = os.reduce((s, o) => s + (Number(o.purchases) || 0), 0);
+  return `<tr>
+    <td><strong>Organic / Direct / Other</strong></td>
+    <td>—<span class="tesla-story">No ad spend</span></td>
+    <td>${fmt(haloRev)}<span class="tesla-story">Shopify not UTM-tagged to paid</span></td>
+    <td>${haloOrd ?? '—'}</td>
+    <td>—</td>
+    <td>${ga4Rev ? `${fmt(ga4Rev)} GA4` : '—'}<span class="tesla-story">${ga4Purch ? ga4Purch + ' GA4 purch · direction only' : 'GA4 snapshot'}</span></td>
+    <td class="tesla-verdict-cell">Hold</td>
+  </tr>`;
 }
 
-function renderCEOBoard(data) {
+function renderTeslaHalo(data) {
+  const de = data.director_economics || {};
+  const tl = data.action_rollup?.top_line || {};
+  const k = data.kpis || {};
+  const rev = storeRev(k);
+  const adRev = adAttributedSales(data);
+  const halo = de.halo_revenue ?? tl.unattributed_revenue ?? Math.max(0, rev - adRev);
+  const haloOrd = de.halo_orders ?? tl.unattributed_orders;
+  const index = de.halo_index;
+  const method = 'Method: Shopify DTC revenue minus UTM-tagged paid-channel revenue for this window (not incrementality-tested).';
+  return `<div class="tesla-halo">
+    <strong>Organic halo (estimate)</strong> ${fmt(halo)}${haloOrd != null ? ` · ${haloOrd} orders` : ''}${index != null ? ` · ${roas(index)} vs total ad spend` : ''}.
+    <span class="tesla-halo-method">${method}</span>
+  </div>`;
+}
+
+function renderZakiVerdict(data) {
+  const agency = reportConfig.agency_owner || 'Zaki';
+  const fromRoll = (data.action_rollup?.items || []).slice(0, 3);
+  let bullets = fromRoll.map(it => `<li>${shortText(it.action, 130)}</li>`).join('');
+  if (!bullets) {
+    (data.channels || []).slice(0, 3).forEach(c => {
+      const name = channelLabel(c.name);
+      bullets += `<li>${name}: ${fmt(c.spend)} spend · ${fmt(channelRev(c))} Shopify · ${channelVerdictWord(c)}</li>`;
+    });
+  }
+  return `<div class="tesla-verdict">
+    <div class="tesla-verdict-title">Verdict · ${agency}</div>
+    <ul>${bullets || '<li>See tasks below.</li>'}</ul>
+  </div>`;
+}
+
+function totalSpendDisplay(data, spend) {
+  const k = data.kpis || {};
+  const hint = k.spend_estimated ? ' <span class="spend-estimate">includes est.</span>' : '';
+  return fmt(spend) + hint;
+}
+
+function renderTeslaTop(data) {
   const k = data.kpis || {};
   const p = priorKpis(data);
   const w = data.window || {};
   const rev = storeRev(k);
   const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
-  const adRev = adAttributedSales(data);
-  const adRevP = adAttributedSalesPrior(data);
   const spend = k.total_ad_spend;
   const spendP = p.total_ad_spend;
+  const mer = storeMerFromKpis(k);
+  const merP = priorMer(data, p);
   const netStore = rev - (Number(spend) || 0);
   const netStoreP = revP - (Number(spendP) || 0);
-  const merStore = storeMerFromKpis(k);
-  const merStoreP = priorMer(data, p);
-  const taggedRoas = adRev && spend ? round2(adRev / spend) : k.blended_mer;
-  const taggedRoasP = adRevP && spendP ? round2(adRevP / spendP) : merStoreP;
-  const adOrd = adAttributedOrders(data);
-  const cpaAd = adOrd && spend ? round2(spend / adOrd) : k.cpa_blended;
-
-  const platformTiles = (data.channels || []).map(c => {
-    const arr = trendArrow(c.spend, c.spend_last);
-    return `<div class="ceo-platform-tile ${arr.cls}" data-channel="${channelSlug(c.name)}">
-      <div class="ceo-platform-name">${channelLabel(c.name)}</div>
-      <div class="ceo-platform-val">${spendDisplay(c)}</div>
-      <div class="ceo-platform-delta">${arr.pct === '—' ? '→ flat' : arr.arrow + ' ' + arr.pct}</div>
-    </div>`;
-  }).join('');
-
-  const claimRows = (data.channels || []).map(claimGapRow).join('');
-  const metaAds = (data.meta_top_ads || []).filter(a => Number(a.spend) >= 50)
-    .sort((a, b) => (Number(b.roas) || 0) - (Number(a.roas) || 0)).slice(0, 3);
-  const metaGlance = metaAds.map(a =>
-    glanceRow(shortText(a.ad, 40), roas(a.roas), `${fmt(a.spend)} · ${a.purch ?? '—'} plat purch`, 'meta')
-  ).join('');
-
-  const unattributed = Math.max(0, rev - adRev);
-  const sharePct = rev ? Math.round(adRev / rev * 100) : null;
+  const channelRows = (data.channels || []).map(teslaChannelRow).join('');
+  const sourceNote = adSpendSourceHint(data);
 
   return `
-    <section class="ceo-board easy-read" data-view="all simple summary performance actions deep">
-      <p class="ceo-period">${w.label || 'Period'} <span class="muted">vs ${w.prior_label || 'prior'}</span> · ${adSpendSourceHint(data)}</p>
-      <div class="stat-grid ceo-tiles">
-        ${statCard('Ad spend', spend, spendP, fmt)}
-        ${statCard('DTC revenue', rev, revP, fmt)}
-        ${statCard('Ad-tagged revenue', adRev, adRevP, fmt)}
-        ${statCard('Rev − spend', netStore, netStoreP, fmt)}
-        ${statCard('Store MER', merStore, merStoreP, roas)}
-        ${statCard('Tagged ROAS', taggedRoas, taggedRoasP, roas)}
-        ${statCard('Cost / ad order', cpaAd, null, fmt)}
-        ${statCard('DTC orders', k.paid_orders, p.paid_orders, v => v ?? '—')}
+    <section class="tesla-top easy-read" data-view="all simple summary performance actions deep">
+      <p class="tesla-head">${w.label || 'Period'} · vs ${w.prior_label || 'prior'} · ${sourceNote}</p>
+      <div class="tesla-kpi-row">
+        ${teslaKpi('Total ad spend', spend, spendP, v => totalSpendDisplay(data, v), true)}
+        ${teslaKpi('Total revenue · Shopify DTC', rev, revP, fmt, false)}
+        ${teslaKpi('Blended MER', mer, merP, roas, false)}
+        ${teslaKpi('Revenue minus ad spend', netStore, netStoreP, fmt, false)}
       </div>
-      <p class="section-hint" style="margin:-0.35rem 0 0">Ad-tagged ${fmt(adRev)}${sharePct != null ? ` (${sharePct}% of DTC)` : ''} · Not tagged ${fmt(unattributed)} (halo / organic / untagged).</p>
-      <p class="ceo-subhead">Spend by platform</p>
-      <div class="ceo-platform-row">${platformTiles}</div>
-      <p class="ceo-subhead">Platform claimed vs Shopify UTM</p>
-      <table class="compact-table ceo-claim-table">
+      <table class="tesla-table">
         <thead><tr>
-          <th>Channel</th><th>Spend</th><th>Platform</th><th>Shopify</th><th>Gap</th><th>Flag</th>
+          <th>Channel</th>
+          <th>Spend</th>
+          <th>Shopify revenue (UTM)</th>
+          <th>Shopify orders</th>
+          <th>ROAS · Shopify</th>
+          <th>Platform claimed</th>
+          <th>Call</th>
         </tr></thead>
-        <tbody>${claimRows || '<tr><td colspan="6">No channel data</td></tr>'}</tbody>
+        <tbody>${channelRows}${teslaOrganicRow(data)}</tbody>
       </table>
-      ${metaGlance ? `<p class="ceo-subhead">Top Meta ads (platform only)</p><div class="glance-list">${metaGlance}</div><p class="section-hint">Per-ad Shopify UTM not in JSON — judge ads on platform rank here, channel on table above.</p>` : ''}
-      <div class="ceo-verdict"><h3 style="color:#fff;font-size:0.85rem;margin:0 0 0.35rem">CEO read → social team</h3>${buildZakiVerdict(data)}</div>
+      ${renderTeslaHalo(data)}
+      ${renderZakiVerdict(data)}
     </section>`;
 }
 
@@ -3324,9 +3394,9 @@ function renderAgencyPage(data, raw) {
     .replace(/^\s*<section[^>]*>/, '')
     .replace(/<\/section>\s*$/, '');
   return `
+    ${renderTeslaTop(data)}
     ${renderAgencyAlert(data)}
     ${renderStoreSlowdownBanner(data)}
-    ${renderCEOBoard(data)}
     ${agencyFold('Budget · MTD', renderBudgetStrip(data, { agency: true }), false)}
     ${agencyFold('Channels · GA4', renderAgencyChannelsContent(data), false)}
     ${agencyFold('30-day revenue', stripSection(renderAgencyTrendChart(raw)), false)}
