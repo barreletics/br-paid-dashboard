@@ -84,6 +84,40 @@ header {
   font-size: 0.8rem;
 }
 .window-banner strong { color: var(--text); }
+.agency-alert {
+  background: var(--bad-bg);
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1rem;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+.agency-alert strong { color: #7f1d1d; }
+.agency-section {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+.agency-section > h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+.agency-section .section-lead {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+.agency-spend-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: 0.25rem;
+}
 .refresh-btn {
   font-family: "DM Sans", system-ui, sans-serif;
   font-size: 0.75rem;
@@ -1294,8 +1328,8 @@ footer {
   <div class="filter-group">
     <span class="filter-label">Layout</span>
     <select id="filter-view" aria-label="Layout">
-      <option value="all" selected>All details</option>
-      <option value="simple">Easy read</option>
+      <option value="all">All details</option>
+      <option value="simple" selected>Agency page</option>
       <option value="performance">Numbers only</option>
       <option value="actions">Actions only</option>
       <option value="deep">Campaigns only</option>
@@ -1769,12 +1803,12 @@ function sectionHint(text) {
 
 const filters = {
   channel: 'all',
-  view: 'all',
+  view: 'simple',
   showCompare: true,
   showTarget: false,
   showMonthCompare: false,
   useNetRevenue: false,
-  periodDays: 30,
+  periodDays: 7,
   periodMode: 'preset',
   customStart: '',
   customEnd: ''
@@ -2322,7 +2356,8 @@ function round2(n) {
   return Math.round(Number(n) * 100) / 100;
 }
 
-function renderSimpleChannels(data) {
+function renderSimpleChannels(data, opts = {}) {
+  const viewAttr = opts.agency ? 'all simple summary performance actions deep' : 'detailed performance';
   const rows = (data.channels || []).map(c => {
     const slug = channelSlug(c.name);
     const roasNow = channelRoas(c);
@@ -2331,17 +2366,19 @@ function renderSimpleChannels(data) {
     const statusLabel = status === 'good' ? 'On track' : status === 'watch' ? 'Watch' : status === 'pull back' ? 'Pull back' : status;
     return `<tr data-channel="${slug}">
       <td><strong>${c.name.replace('Google PMax', 'Google')}</strong></td>
-      <td>${fmt(c.spend)}</td>
+      <td>${spendDisplay(c)}</td>
       <td>${c.shopify_orders}</td>
       <td><strong>${roas(roasNow)}</strong></td>
       <td class="col-prior ${roasCh.cls}">${trendPlain(roasNow, channelRoas(c, 'last'))}</td>
       <td class="status ${c.status}">${statusLabel}</td>
     </tr>`;
   }).join('');
+  const head = opts.agency ? '' : `<h2>By channel · full table</h2>
+      <p class="section-hint">ROAS uses Shopify-attributed orders only (not what Meta or Pinterest claim).</p>`;
+  const wrap = opts.agency ? 'div' : 'section';
   return `
-    <section data-view="detailed performance">
-      <h2>By channel · full table</h2>
-      <p class="section-hint">ROAS uses Shopify-attributed orders only (not what Meta or Pinterest claim).</p>
+    <${wrap} data-view="${viewAttr}">
+      ${head}
       <table>
         <thead><tr>
           <th>Channel</th><th>Spend</th><th>Orders</th><th>ROAS</th>
@@ -2349,7 +2386,7 @@ function renderSimpleChannels(data) {
         </tr></thead>
         <tbody>${rows || '<tr><td colspan="6">No data</td></tr>'}</tbody>
       </table>
-    </section>`;
+    </${wrap}>`;
 }
 
 function renderSimpleActions(data) {
@@ -2593,9 +2630,10 @@ function renderIntlPlan(data) {
     </section>`;
 }
 
-function renderBudgetStrip(data) {
+function renderBudgetStrip(data, opts = {}) {
   const bp = data.budget_pacing || {};
   if (bp.month_to_date_spend == null && !bp.month) return '';
+  const viewAttr = opts.agency ? 'all simple summary performance actions deep' : 'detailed performance';
   const rows = (bp.by_channel || []).map(b => {
     const est = b.spend_source === 'estimate' ? ' <span class="spend-estimate">(est.)</span>' : '';
     const statusLabel = b.status === 'on_track' ? 'On track' : (b.status === 'estimate' ? 'Estimate' : b.status);
@@ -2604,7 +2642,7 @@ function renderBudgetStrip(data) {
     <td class="status ${b.status}">${statusLabel}</td></tr>`;
   }).join('');
   return `
-    <section data-view="detailed performance">
+    <section data-view="${viewAttr}">
       <h2>Budget pacing · ${bp.month || 'MTD'}</h2>
       <p class="budget-line">Month to date: <strong>${fmt(bp.month_to_date_spend)}</strong> of ${fmt(bp.monthly_plan)} plan · projected ${fmt(bp.projected_month_spend)}</p>
       ${bp.spend_includes_estimates ? '<p class="net-note">MTD spend includes config estimates where live API pulls failed.</p>' : ''}
@@ -2864,6 +2902,189 @@ function exportCsv() {
   URL.revokeObjectURL(a.href);
 }
 
+function adSpendSourceHint(data) {
+  const k = data.kpis || {};
+  if (k.spend_estimated) return '<span class="spend-estimate">(includes estimated spend)</span>';
+  const bad = adQualityEntries(data.data_quality || {}).filter(([key, v]) => key !== 'shopify' && (v.status === 'estimate' || v.status === 'error'));
+  if (bad.length) return bad.map(([key]) => qualitySourceName(key)).join(', ') + ' not live';
+  return '<span class="agency-spend-tag">live pulls</span>';
+}
+
+function renderAgencyAlert(data) {
+  const q = qualitySummary(data.data_quality);
+  const k = data.kpis || {};
+  if (q.cls === 'ok' && !k.spend_estimated) return '';
+  const title = q.cls !== 'ok' ? q.text : 'Estimated ad spend in this window';
+  const body = q.note || 'Shopify store totals are still live. Fix connectors before scaling spend.';
+  return `<div class="agency-alert" data-view="all simple summary performance actions deep" role="alert">
+    <strong>${title}</strong> — ${body}
+  </div>`;
+}
+
+function renderAgencyTopLine(data) {
+  const k = data.kpis || {};
+  const p = priorKpis(data);
+  const w = data.window || {};
+  const de = data.director_economics || {};
+  const roll = data.action_rollup?.top_line || {};
+  const rev = storeRev(k);
+  const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
+  const adSales = adAttributedSales(data);
+  const adSalesP = adAttributedSalesPrior(data);
+  const merTagged = adSales && k.total_ad_spend ? round2(adSales / k.total_ad_spend) : k.blended_mer;
+  const merTaggedP = adSalesP && p.total_ad_spend ? round2(adSalesP / p.total_ad_spend) : p.blended_mer;
+  const merNet = de.mer_net ?? roll.total_roas_net ?? (filters.useNetRevenue ? k.blended_mer_net : null) ?? k.blended_mer;
+  const merNetP = de.mer_net_prior ?? roll.total_roas_net_prior ?? merTaggedP;
+  const merAfterEx = de.mer_after_exchange_cost ?? roll.total_roas_after_exchange_cost;
+  const spendHint = adSpendSourceHint(data);
+  return `
+    <section class="agency-section easy-read" data-view="all simple summary performance actions deep">
+      <h2>Top line · ${w.label || 'This period'} vs ${w.prior_label || 'prior period'}</h2>
+      <p class="section-lead">Shopify DTC is truth for revenue and orders. Ad spend: ${spendHint}.</p>
+      <div class="stat-grid">
+        ${statCard('Store revenue', rev, revP, fmt)}
+        ${statCard('Ad spend', k.total_ad_spend, p.total_ad_spend, fmt)}
+        ${statCard('Tagged ad ROAS', merTagged, merTaggedP, roas)}
+        ${statCard('Total ROAS (net)', merNet, merNetP, roas)}
+        ${statCard('Orders', k.paid_orders, p.paid_orders, v => v ?? '—')}
+        ${statCard('Blended CPA', k.cpa_blended, p.cpa_blended, fmt)}
+        ${statCard('AOV', k.aov, p.aov, fmt)}
+      </div>
+      ${merAfterEx != null ? `<p class="section-hint" style="margin-top:0.65rem">Net ROAS after modeled exchange ship: <strong>${roas(merAfterEx)}</strong> (director economics).</p>` : ''}
+    </section>`;
+}
+
+function renderGa4FunnelBlock(data) {
+  const f = data.ga4_funnel || {};
+  if (!f.paid_social_sessions && !f.add_to_carts) return '';
+  const note = f.note ? `<p class="section-hint">${f.note}</p>` : '';
+  return `
+    <div data-view="all simple summary performance actions deep" style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--line)">
+      <h2 style="font-size:1rem;margin-bottom:0.25rem">Site funnel (GA4 direction)</h2>
+      <p class="section-lead">Paid Social path in GA4 — counts can disagree with Shopify; use for trend only.</p>
+      ${note}
+      <table class="compact-table">
+        <thead><tr><th>Sessions</th><th>Add to cart</th><th>Checkout</th><th>Purchase</th><th>ATC → checkout</th></tr></thead>
+        <tbody><tr>
+          <td>${f.paid_social_sessions ?? '—'}</td>
+          <td>${f.add_to_carts ?? '—'}</td>
+          <td>${f.checkouts ?? '—'}</td>
+          <td>${f.purchases ?? '—'}</td>
+          <td>${f.atc_to_checkout_rate != null ? f.atc_to_checkout_rate + '%' : '—'}</td>
+        </tr></tbody>
+      </table>
+    </div>`;
+}
+
+function renderAgencyChannels(data) {
+  return `
+    <section class="agency-section" data-view="all simple summary performance actions deep">
+      <h2>Channels and funnel</h2>
+      <p class="section-lead">Spend shows live, estimated, or pending per connector. ROAS = Shopify UTM revenue ÷ spend.</p>
+      ${renderSimpleChannels(data, { agency: true })}
+      ${renderGa4FunnelBlock(data)}
+    </section>`;
+}
+
+function renderAgencyTrendChart(raw) {
+  const w30 = raw?.windows?.['30']?.kpis || raw?.kpis || {};
+  const revDaily = Object.entries(raw?.daily_revenue || {}).sort();
+  if (revDaily.length < 2) return '';
+  const last30 = revDaily.slice(-30);
+  const max = Math.max(...last30.map(([, v]) => v), 1);
+  const bars = last30.map(([d, v]) => {
+    const pct = Math.round(v / max * 100);
+    return `<div class="bar-row"><span class="bar-label">${d.slice(5).replace('-', '/')}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-val">${fmt(v)}</span></div>`;
+  }).join('');
+  return `
+    <section class="agency-section" data-view="all simple summary performance actions deep">
+      <h2>Last 30 days · store revenue</h2>
+      <p class="section-lead">Daily Shopify DTC revenue (bars). Rolling 30-day ad spend total: <strong>${fmt(w30.total_ad_spend)}</strong> — no daily spend series in feed.</p>
+      <div class="bar-chart">${bars}</div>
+    </section>`;
+}
+
+function renderMetaCreativesRanked(data) {
+  const ads = (data.meta_top_ads || []).filter(a => Number(a.spend) >= 50);
+  if (!ads.length) return '';
+  const byRoas = [...ads].sort((a, b) => (Number(b.roas) || 0) - (Number(a.roas) || 0));
+  const top = byRoas.slice(0, 3);
+  const bottom = [...byRoas].reverse().slice(0, 3);
+  const card = (a, tag) => glanceRow(shortText(a.ad, 42), roas(a.roas), `${fmt(a.spend)} spend · ${a.purch ?? '—'} platform purch · ${shortText(a.campaign, 36)}`, 'meta');
+  return `
+    <section class="agency-section" data-view="all simple summary performance actions deep">
+      <h2>Meta creatives by platform ROAS</h2>
+      <p class="section-lead">Platform purchase counts can overclaim vs Shopify — use for relative creative rank only.</p>
+      <p class="highlights-head">Top 3</p>
+      <div class="glance-list">${top.map(a => card(a)).join('')}</div>
+      <p class="highlights-head" style="margin-top:0.75rem">Bottom 3 (min $50 spend)</p>
+      <div class="glance-list">${bottom.map(a => card(a)).join('')}</div>
+    </section>`;
+}
+
+function renderAgencyNewReturning() {
+  return `
+    <section class="agency-section" data-view="all simple summary performance actions deep">
+      <h2>New vs returning customers</h2>
+      <p class="section-lead muted">Not in <code>latest.json</code> yet — needs a GA4 or Shopify repeat-customer pull. No number shown until the refresh script adds it (backend change).</p>
+    </section>`;
+}
+
+function renderAgencyDoNow(data) {
+  const roll = data.action_rollup;
+  const fromRoll = (roll?.items || []).slice(0, 5);
+  const todos = (data.strategy_todos || []).slice(0, 5);
+  const lines = fromRoll.length
+    ? fromRoll.map(it => `<li><span class="action-lane">${it.lane || 'Do'}</span>${it.action || ''}${it.owner ? ` <span class="muted">· ${it.owner}</span>` : ''}</li>`).join('')
+    : todos.map(t => {
+      const meta = todoAssigneeMeta(t);
+      return `<li><span class="todo-tag ${todoTag(t)}">${todoTagLabel(todoTag(t))}</span>${todoHeadline(t.action)}${meta ? ` <span class="muted">· ${meta}</span>` : ''}</li>`;
+    }).join('');
+  if (!lines) return '';
+  const director = reportConfig.director || 'Andrew';
+  const agency = reportConfig.agency_owner || 'Zaki';
+  return `
+    <section class="agency-section" data-view="all simple summary performance actions deep">
+      <h2>Do now</h2>
+      <p class="section-lead">${director} directs · ${agency} runs agency tasks · 3–5 moves for this week.</p>
+      <ul class="action-banner-actions">${lines}</ul>
+      ${roll?.zaki_confirm ? `<p class="action-banner-zaki">${roll.zaki_confirm}</p>` : ''}
+    </section>`;
+}
+
+function renderAgencyInvestigate(data) {
+  const anomalies = (data.anomalies || []).slice(0, 5);
+  const challenges = (data.challenges || []).slice(0, 3);
+  const extras = exceptionLines(data);
+  const rows = anomalies.map(a => `<tr><td>${a.metric}</td><td><strong>${a.change}</strong> ${a.vs || ''}</td><td>${a.cause}</td></tr>`).join('');
+  const chRows = challenges.map(c => `<li><strong>${c.issue}</strong> — ${c.impact}. Plan: ${c.plan}</li>`).join('');
+  const extraList = extras.length ? `<ul class="exception-list">${extras.map(l => `<li>${l}</li>`).join('')}</ul>` : '';
+  if (!rows && !chRows && !extraList) return '';
+  return `
+    <section class="agency-section" data-view="all simple summary performance actions deep">
+      <h2>Investigate</h2>
+      <p class="section-lead">Open questions tied to numbers in this snapshot.</p>
+      ${extraList}
+      ${rows ? `<table class="compact-table"><thead><tr><th>Metric</th><th>Move</th><th>Likely cause</th></tr></thead><tbody>${rows}</tbody></table>` : ''}
+      ${chRows ? `<ul class="action-banner-hit" style="margin-top:0.75rem">${chRows}</ul>` : ''}
+    </section>`;
+}
+
+function renderAgencyPage(data, raw) {
+  return `
+    ${renderAgencyAlert(data)}
+    ${renderStoreSlowdownBanner(data)}
+    ${renderAgencyTopLine(data)}
+    <div class="agency-section" data-view="all simple summary performance actions deep">${renderBudgetStrip(data, { agency: true })}</div>
+    ${renderAgencyChannels(data)}
+    ${renderAgencyTrendChart(raw)}
+    ${renderMetaCreativesRanked(data)}
+    ${renderAgencyNewReturning()}
+    ${renderAgencyDoNow(data)}
+    ${renderAgencyInvestigate(data)}
+  `;
+}
+
 function initFilters() {
   const bar = document.getElementById('filter-bar');
   bar.style.display = 'flex';
@@ -2976,16 +3197,6 @@ function render(raw) {
     <td>${h.label}</td><td>${h.orders}</td><td>${fmt(h.revenue)}</td><td>${fmt(h.ad_spend)}</td><td>${roas(h.mer)}</td>
   </tr>`).join('');
 
-  const bp = data.budget_pacing || {};
-  const bpRows = (bp.by_channel || []).map(b => {
-    const est = b.spend_source === 'estimate' ? ' <span class="spend-estimate">(est.)</span>' : '';
-    return `<tr>
-    <td>${b.channel}</td><td>${fmt(b.mtd_spend)}${est}</td><td>${fmt(b.monthly_plan)}</td>
-    <td>${b.used_pct != null ? b.used_pct + '%' : (b.monthly_plan ? Math.round(b.mtd_spend / b.monthly_plan * 100) + '%' : '—')}</td>
-    <td class="status ${b.status}">${b.status === 'estimate' ? 'Estimate' : b.status}</td>
-  </tr>`;
-  }).join('');
-
   const cr = data.creative || {};
   const organic = (data.organic_snapshot?.channels || []).map(o => `<tr>
     <td>${o.name}</td><td>${o.sessions}</td><td>${o.purchases}</td><td>${fmt(o.revenue)}</td>
@@ -2995,21 +3206,19 @@ function render(raw) {
     <td>${a.campaign}</td><td>${a.ad}</td><td>${fmt(a.spend)}</td><td>${a.purch}</td><td>${roas(a.roas)}</td>
   </tr>`).join('');
 
-  const f = data.ga4_funnel || {};
-
   document.getElementById('app').innerHTML = `
-    ${renderEasyRead(data)}
+    ${renderAgencyPage(data, raw)}
 
+    <p class="highlights-head" data-view="detailed summary performance actions deep" style="margin-top:0.5rem">Details</p>
     <div class="detail-stack" data-view="detailed summary performance actions deep">
+      ${detailPanel('Returns and director economics', renderDirectorEconomics(data), false)}
       ${detailPanel('Campaigns and ads', renderCampaignTables(data), false)}
-      ${detailPanel('By channel', renderSimpleChannels(data), false)}
-      ${detailPanel('This week', renderWeekTodos(data), true)}
+      ${detailPanel('By channel (full table)', renderSimpleChannels(data), false)}
+      ${detailPanel('This week', renderWeekTodos(data), false)}
       ${detailPanel('Compare to last period', renderWowCompare(data) + renderChannelWow(data), false)}
       ${detailPanel('Flags', renderFlags(data), false)}
-      ${detailPanel('Budget and daily orders', renderBudgetStrip(data) + renderDailySpark(data), false)}
+      ${detailPanel('Daily orders', renderDailySpark(data), false)}
       ${detailPanel('Agency changes', renderAgencyLog(data), false)}
-      ${detailPanel('US vs International', renderIntlPerformance(data), true)}
-      ${detailPanel('International trial plan', renderIntlPlan(data), false)}
       ${detailPanel('Weekly history', renderHistoryTrend(data), false)}
       ${detailPanel('KPI vs target and strategy', `
         <section data-view="detailed performance">
@@ -3036,24 +3245,13 @@ function render(raw) {
         </section>`, false)}
       ${detailPanel('Analyst appendix', `
         ${renderHealthStrip(data)}
-        <div class="two-col" data-view="detailed performance">
-          <section>
-            <h2>Budget pacing · ${bp.month || 'MTD'}</h2>
-            <p class="sub">MTD ~${fmt(bp.month_to_date_spend)} of ${fmt(bp.monthly_plan)} plan · projected ${fmt(bp.projected_month_spend)}${bp.spend_includes_estimates ? ' · includes estimates' : ''}</p>
-            ${bp.note ? `<p class="sub">${bp.note}</p>` : ''}
-            <table>
-              <thead><tr><th>Channel</th><th>MTD</th><th>Plan</th><th>Used</th><th>Status</th></tr></thead>
-              <tbody>${bpRows}</tbody>
-            </table>
-          </section>
-          <section>
-            <h2>Weekly trend</h2>
-            <table>
-              <thead><tr><th>Period</th><th>Orders</th><th>Revenue</th><th>Spend</th><th>MER</th></tr></thead>
-              <tbody>${histRows}</tbody>
-            </table>
-          </section>
-        </div>
+        <section data-view="detailed performance">
+          <h2>Weekly trend</h2>
+          <table>
+            <thead><tr><th>Period</th><th>Orders</th><th>Revenue</th><th>Spend</th><th>MER</th></tr></thead>
+            <tbody>${histRows}</tbody>
+          </table>
+        </section>
         <section data-view="detailed deep">
           <h2>Anomalies · cause and response</h2>
           <table>
