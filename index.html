@@ -1072,7 +1072,10 @@ tr:nth-child(even) td { background: #fafafa; }
 }
 .q-item.ok { border-color: #bbf7d0; }
 .q-item.partial { border-color: #fde68a; }
+.q-item.estimate { border-color: #fed7aa; background: #fff7ed; }
+.q-item.error { border-color: #fecaca; background: #fef2f2; }
 .q-item.skip { opacity: 0.6; }
+.spend-estimate { color: var(--warn); font-size: 0.75rem; font-weight: 600; }
 footer {
   margin-top: 2rem;
   padding-top: 1rem;
@@ -1439,23 +1442,51 @@ function roas(n) {
   return Number(n).toFixed(2) + '×';
 }
 
+function qualitySourceName(k) {
+  const map = { meta: 'Meta', google: 'Google', pinterest: 'Pinterest', shopify: 'Shopify' };
+  if (map[k]) return map[k];
+  return k.replace(/^blend_/, '').replace(/_/g, ' ');
+}
+
+function adQualityEntries(dq) {
+  const d = dq || {};
+  const keys = ['shopify', 'meta', 'google', 'pinterest'];
+  const seen = new Set();
+  const out = [];
+  keys.forEach(k => {
+    if (d[k]) { out.push([k, d[k]]); seen.add(k); }
+  });
+  Object.entries(d).forEach(([k, v]) => {
+    if (seen.has(k) || k.startsWith('blend_')) return;
+    out.push([k, v]);
+  });
+  return out;
+}
+
 function qualitySummary(dq) {
-  const entries = Object.entries(dq || {});
+  const entries = adQualityEntries(dq).filter(([k]) => k !== 'shopify');
   const errors = entries.filter(([, v]) => v.status === 'error');
+  const estimates = entries.filter(([, v]) => v.status === 'estimate');
   const partials = entries.filter(([, v]) => v.status === 'partial');
-  if (errors.length) {
-    const names = errors.map(([k]) => k.replace(/^blend_/, '').replace(/_/g, ' ')).join(', ');
+  if (errors.length || estimates.length) {
+    const bad = [...errors, ...estimates];
+    const names = bad.map(([k]) => qualitySourceName(k)).join(', ');
+    const title = bad.map(([k, v]) => {
+      const last = v.last_live_through ? ` · last live through ${v.last_live_through}` : '';
+      return qualitySourceName(k) + ': ' + (v.note || v.status) + last;
+    }).join('\n');
     return {
       cls: 'partial',
-      text: 'Data gaps — ' + names,
-      title: errors.map(([k, v]) => k + ': ' + (v.note || v.status)).join('\n')
+      text: estimates.length && !errors.length ? 'Estimated ad spend — ' + names : 'Data gaps — ' + names,
+      note: 'Shopify store totals are still live. Ad platform numbers may be config estimates until pulls succeed.',
+      title
     };
   }
   if (partials.length) {
     const detail = partials.map(([k, v]) => {
-      const name = k.replace(/^blend_/, '').replace(/_/g, ' ');
-      const label = name.charAt(0).toUpperCase() + name.slice(1);
-      return label + ': ' + (v.note || 'incomplete');
+      const label = qualitySourceName(k);
+      const last = v.last_live_through ? ` (last live ${v.last_live_through})` : '';
+      return label + ': ' + (v.note || 'incomplete') + last;
     }).join(' · ');
     return {
       cls: 'partial',
@@ -1464,7 +1495,7 @@ function qualitySummary(dq) {
       title: detail
     };
   }
-  return { cls: 'ok', text: 'All sources ok', note: '', title: 'Shopify, Meta, Google, and GA4 feeds look complete.' };
+  return { cls: 'ok', text: 'All sources ok', note: '', title: 'Shopify and ad platform feeds returned live data for this window.' };
 }
 
 function renderActions(actions) {
@@ -1501,9 +1532,19 @@ function renderDaily(daily) {
 }
 
 function renderQuality(dq) {
-  return Object.entries(dq || {}).map(([k, v]) =>
-    `<span class="q-item ${v.status}">${k}: ${v.status}${v.note ? ' — ' + v.note : ''}</span>`
-  ).join('');
+  return adQualityEntries(dq).map(([k, v]) => {
+    const label = qualitySourceName(k);
+    const last = v.last_live_through && v.status !== 'ok'
+      ? ` · last live through ${v.last_live_through}` : '';
+    return `<span class="q-item ${v.status}">${label}: ${v.status}${v.note ? ' — ' + v.note : ''}${last}</span>`;
+  }).join('');
+}
+
+function spendDisplay(c) {
+  const val = fmt(c.spend);
+  if (c.spend_source === 'estimate') return `${val} <span class="spend-estimate">(est.)</span>`;
+  if (c.spend_source === 'cached') return `${val} <span class="spend-estimate">(cached)</span>`;
+  return val;
 }
 
 function pctChange(cur, prev) {
@@ -2628,7 +2669,7 @@ function renderWowCompare(data) {
       </div>
       ${useNet ? `<p class="net-note">Showing <strong>net revenue</strong> (after returns/refunds on order). Returns this period: ${fmt(k.returns_adjusted || 0)}.</p>` : ''}
       ${data.kpis?.custom_partial || data.window?.custom_partial ? `<p class="net-note">Custom range: store orders/revenue from daily totals only — channel ROAS not recalculated.</p>` : ''}
-      ${k.spend_estimated ? `<p class="net-note">Ad spend scaled from weekly rate for ${w.days}-day window (estimate).</p>` : ''}
+      ${k.spend_estimated ? `<p class="net-note"><strong>Ad spend includes estimates.</strong> One or more platforms used config.json daily rates (not live API data) for this ${w.days}-day window. See data quality badge.</p>` : ''}
       ${sectionHint('Side-by-side store and paid totals. Last = prior window of same length. Month = same length ~4 weeks earlier.')}
       <div class="wow-grid">
         ${wowMetric('Store orders', k.paid_orders, p.paid_orders, null, monthOn ? m.paid_orders : null)}
@@ -2663,12 +2704,17 @@ function renderChannelWow(data) {
       ${monthOn ? `<td class="col-month">${c.shopify_orders_month ?? '—'}</td><td class="col-month ${ordMonthCh.cls}">${ordMonthCh.text}</td>` : ''}
       <td>${fmt(rev)}</td><td class="col-prior">${fmt(revLast || 0)}</td><td class="col-prior ${revCh.cls}">${revCh.text}</td>
       ${monthOn ? `<td class="col-month">${fmt(revMonth || 0)}</td><td class="col-month ${revMonthCh.cls}">${revMonthCh.text}</td>` : ''}
-      <td>${fmt(c.spend)}</td><td class="col-prior">${fmt(c.spend_last || 0)}</td><td class="col-prior ${spendCh.cls}">${spendCh.text}</td>
+      <td>${spendDisplay(c)}</td><td class="col-prior">${fmt(c.spend_last || 0)}</td><td class="col-prior ${spendCh.cls}">${spendCh.text}</td>
       <td><strong>${roas(roasNow)}</strong></td><td class="col-prior">${roas(roasLast)}</td><td class="col-prior ${roasCh.cls}">${roasCh.text}</td>
       ${monthOn ? `<td class="col-month">${roas(roasMonth)}</td>` : ''}
       <td class="status ${c.status}">${(c.status || '').replace('_', ' ')}</td>
     </tr>
-    <tr data-channel="${slug}"><td colspan="${monthOn ? 17 : 13}" style="font-size:0.8rem;color:var(--muted)">${c.interpretation || ''}</td></tr>`;
+    <tr data-channel="${slug}"><td colspan="${monthOn ? 17 : 13}" style="font-size:0.8rem;color:var(--muted)">${[
+      c.interpretation || '',
+      (Number(c.impressions) || Number(c.clicks))
+        ? `Platform delivery: ${(c.impressions || 0).toLocaleString()} imp · ${(c.clicks || 0).toLocaleString()} clicks · ${c.platform_purchases || 0} purch · ${roas(c.platform_roas)} platform ROAS`
+        : (c.spend_source === 'estimate' ? 'Spend is a config.json daily-rate estimate — live platform metrics unavailable.' : '')
+    ].filter(Boolean).join(' · ')}</td></tr>`;
   }).join('');
   const cols = monthOn ? 17 : 13;
   return `

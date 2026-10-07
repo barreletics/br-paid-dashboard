@@ -13,49 +13,54 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import urllib.parse
-import urllib.request
 from datetime import date
+
+from pull_common import fetch_url, graph_error_message
 
 
 def _env(name: str, default: str = "") -> str:
     return os.environ.get(name, default).strip()
 
 
-def meta_insights(start: date, end: date) -> dict:
+def meta_insights(start: date, end: date) -> tuple[dict, str | None]:
     token = _env("META_ACCESS_TOKEN")
     acct = _env("META_AD_ACCOUNT_ID", "act_10152741884925238")
     if not token:
-        return {}
+        return {}, "META_ACCESS_TOKEN is not set (GitHub Actions secret META_ACCESS_TOKEN)"
     if not acct.startswith("act_"):
         acct = f"act_{acct}"
     params = urllib.parse.urlencode(
         {
-            "fields": "spend,actions,action_values",
+            "fields": "spend,impressions,clicks,ctr,cpc,actions,action_values",
             "time_range": json.dumps({"since": start.isoformat(), "until": end.isoformat()}),
             "access_token": token,
         }
     )
     url = f"https://graph.facebook.com/v21.0/{acct}/insights?{params}"
-    raw = ""
+    raw, transport_err = fetch_url(url)
+    if transport_err and not raw.strip():
+        return {}, f"Meta request failed: {transport_err}"
     try:
-        import subprocess
-
-        proc = subprocess.run(["curl", "-sS", url], capture_output=True, text=True, check=False)
-        if proc.returncode == 0 and proc.stdout.strip():
-            raw = proc.stdout
-    except Exception:
-        pass
-    if not raw:
-        req = urllib.request.Request(url, method="GET")
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            raw = resp.read().decode()
-    data = json.loads(raw)
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return {}, "Meta returned non-JSON response"
+    api_err = graph_error_message(data)
+    if api_err:
+        hint = ""
+        if "190" in api_err or "OAuth" in api_err or "access token" in api_err.lower():
+            hint = " Renew long-lived token and update GitHub secret META_ACCESS_TOKEN."
+        return {}, api_err + hint
     rows = data.get("data") or []
     if not rows:
-        return {}
+        return {}, "Meta insights returned no rows for this date range"
     row = rows[0]
     spend = float(row.get("spend") or 0)
+    impressions = int(float(row.get("impressions") or 0))
+    clicks = int(float(row.get("clicks") or 0))
+    ctr = float(row.get("ctr") or 0)
+    cpc = float(row.get("cpc") or 0)
     purch = 0
     purch_val = 0.0
     for a in row.get("actions") or []:
@@ -66,10 +71,15 @@ def meta_insights(start: date, end: date) -> dict:
             purch_val = max(purch_val, float(a.get("value") or 0))
     return {
         "spend": round(spend, 2),
+        "impressions": impressions,
+        "clicks": clicks,
+        "ctr": round(ctr, 4),
+        "cpc": round(cpc, 2),
         "platform_purchases": purch,
         "platform_revenue": round(purch_val, 2),
         "platform_roas": round(purch_val / spend, 2) if spend else 0,
-    }
+        "spend_source": "live",
+    }, None
 
 
 def load_override(env_name: str) -> dict:
@@ -84,11 +94,15 @@ def load_override(env_name: str) -> dict:
     return {}
 
 
-def pull_range(start: date, end: date) -> dict[str, dict]:
+def pull_range(start: date, end: date) -> tuple[dict[str, dict], dict[str, str]]:
     out: dict[str, dict] = {}
-    meta = meta_insights(start, end)
+    errors: dict[str, str] = {}
+
+    meta, meta_err = meta_insights(start, end)
     if meta:
         out["Meta"] = meta
+    elif meta_err:
+        errors["Meta"] = meta_err
 
     google = load_override("AD_SPEND_GOOGLE_JSON")
     if google:
@@ -100,6 +114,7 @@ def pull_range(start: date, end: date) -> dict[str, dict]:
             "platform_purchases": round(conv),
             "platform_revenue": round(val, 2),
             "platform_roas": round(val / spend, 2) if spend else 0,
+            "spend_source": "live",
         }
 
     pin = load_override("AD_SPEND_PINTEREST_JSON")
@@ -112,8 +127,9 @@ def pull_range(start: date, end: date) -> dict[str, dict]:
             "platform_purchases": chk,
             "platform_revenue": round(val, 2),
             "platform_roas": round(val / spend, 2) if spend else 0,
+            "spend_source": "live",
         }
-    return out
+    return out, errors
 
 
 def main() -> None:
@@ -123,8 +139,16 @@ def main() -> None:
     args = p.parse_args()
     start = date.fromisoformat(args.start)
     end = date.fromisoformat(args.end)
-    out = pull_range(start, end)
-    print(json.dumps({"start": start.isoformat(), "end": end.isoformat(), "channels": out}, indent=2))
+    channels, errors = pull_range(start, end)
+    payload = {
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+        "channels": channels,
+        "errors": errors,
+    }
+    print(json.dumps(payload, indent=2))
+    if errors.get("Meta") and _env("META_ACCESS_TOKEN"):
+        sys.exit(2)
 
 
 if __name__ == "__main__":
