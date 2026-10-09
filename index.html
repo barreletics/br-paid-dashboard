@@ -83,6 +83,41 @@ header {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+.halo-chart {
+  width: 100%;
+  max-width: 640px;
+  height: 140px;
+  margin: 0.75rem 0 1rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--card);
+}
+.halo-chart svg { width: 100%; height: 100%; display: block; }
+.halo-legend {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+.halo-legend span { margin-right: 1rem; }
+.halo-table-wrap { overflow-x: auto; margin-top: 0.5rem; }
+.halo-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+.halo-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  padding: 0.35rem 0.4rem;
+  white-space: nowrap;
+}
+.halo-table td {
+  padding: 0.35rem 0.4rem;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.halo-meta-good { font-weight: 600; }
+.halo-findings { font-size: 0.82rem; line-height: 1.45; margin: 0 0 0.75rem; padding-left: 1.1rem; }
+.halo-findings li { margin-bottom: 0.35rem; }
 .window-banner {
   width: 100%;
   background: var(--warn-bg);
@@ -139,12 +174,21 @@ header {
 }
 .tesla-kpi-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem 2rem;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1.25rem 1.5rem;
   margin-bottom: 1.25rem;
+}
+@media (max-width: 1100px) {
+  .tesla-kpi-row { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 800px) {
   .tesla-kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+.tesla-kpi-note {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+  line-height: 1.3;
 }
 .tesla-l7 {
   margin-bottom: 2.25rem;
@@ -1573,6 +1617,7 @@ footer {
 </footer>
 <script>
 const DATA_URL = 'data/latest.json';
+const HALO_URL = 'data/meta_halo_trend.json';
 const CONFIG_URL = 'config.json';
 const STALE_DATA_HOURS = 3;
 let reportConfig = { report_window_days: 7, window_ends: 'today' };
@@ -2165,6 +2210,16 @@ function adAttributedSalesPrior(data) {
 
 function adAttributedOrders(data) {
   return (data.channels || []).reduce((s, c) => s + Number(c.shopify_orders || 0), 0);
+}
+
+function adAttributedOrdersPrior(data) {
+  return (data.channels || []).reduce((s, c) => s + Number(c.shopify_orders_last || 0), 0);
+}
+
+function adShopifyRoas(adSales, spend) {
+  const s = Number(spend) || 0;
+  const a = Number(adSales) || 0;
+  return s > 0 ? round2(a / s) : 0;
 }
 
 function trendArrow(cur, prev) {
@@ -3150,12 +3205,13 @@ function teslaDelta(cur, prev, invert) {
   return `<span class="tesla-delta ${cls}">${ch.text} vs prior</span>`;
 }
 
-function teslaKpi(label, value, prev, fmtFn, invert) {
+function teslaKpi(label, value, prev, fmtFn, invert, sub) {
   const val = fmtFn ? fmtFn(value) : (value ?? '—');
   const delta = prev != null && prev !== '—' ? teslaDelta(value, prev, invert) : '';
   return `<div class="tesla-kpi">
     <div class="tesla-kpi-val">${val}</div>
     <div class="tesla-kpi-label">${label}</div>
+    ${sub ? `<div class="tesla-kpi-note">${sub}</div>` : ''}
     ${delta}
   </div>`;
 }
@@ -3321,21 +3377,30 @@ function renderTeslaTop(data) {
   const revP = filters.useNetRevenue ? (p.paid_revenue_net ?? p.paid_revenue) : p.paid_revenue;
   const spend = k.total_ad_spend;
   const spendP = p.total_ad_spend;
-  const mer = storeMerFromKpis(k);
-  const merP = priorMer(data, p);
+  const adSales = adAttributedSales(data);
+  const adSalesP = adAttributedSalesPrior(data);
+  const adOrd = adAttributedOrders(data);
+  const adOrdP = adAttributedOrdersPrior(data);
+  const adRoasVal = adShopifyRoas(adSales, spend);
+  const adRoasPrior = adShopifyRoas(adSalesP, spendP);
+  const organic = Math.max(0, rev - adSales);
+  const organicP = Math.max(0, Number(revP) - adAttributedSalesPrior(data));
   const netStore = rev - (Number(spend) || 0);
   const netStoreP = revP - (Number(spendP) || 0);
   const channelRows = (data.channels || []).map(teslaChannelRow).join('');
   const sourceNote = adSpendSourceHint(data);
   const raw = data._source || dashboardData || data;
+  const adSalesSub = adOrd ? adOrd + ' UTM orders' : '';
 
   return `
     <section class="tesla-top easy-read" data-view="all simple summary performance actions deep">
       <p class="tesla-head">${w.label || 'Period'} · vs ${w.prior_label || 'prior'} · ${sourceNote}</p>
       <div class="tesla-kpi-row">
-        ${teslaKpi('Total ad spend', spend, spendP, v => totalSpendDisplay(data, v), true)}
-        ${teslaKpi('Total revenue · Shopify DTC', rev, revP, fmt, false)}
-        ${teslaKpi('Blended MER', mer, merP, roas, false)}
+        ${teslaKpi('Ad spend', spend, spendP, v => totalSpendDisplay(data, v), true)}
+        ${teslaKpi('Ad sales', adSales, adSalesP, fmt, false, adSalesSub)}
+        ${teslaKpi('Ad ROAS', adRoasVal, adRoasPrior, roas, false)}
+        ${teslaKpi('Organic sales', organic, organicP, fmt, false, 'may include ad halo')}
+        ${teslaKpi('Total sales', rev, revP, fmt, false)}
         ${teslaKpi('Revenue minus ad spend', netStore, netStoreP, fmt, false)}
       </div>
       ${renderLast7DaysStrip(raw)}
@@ -3407,6 +3472,7 @@ function renderAgencyTopLine(data) {
         ${statCard('Store revenue', rev, revP, fmt)}
         ${statCard('Ad spend', k.total_ad_spend, p.total_ad_spend, fmt)}
         ${statCard('Tagged ad ROAS', merTagged, merTaggedP, roas)}
+        ${statCard('Blended MER', k.blended_mer, p.blended_mer, roas)}
         ${statCard('Total ROAS (net)', merNet, merNetP, roas)}
         ${statCard('Orders', k.paid_orders, p.paid_orders, v => v ?? '—')}
         ${statCard('Blended CPA', k.cpa_blended, p.cpa_blended, fmt)}
@@ -3529,14 +3595,75 @@ function renderAgencyInvestigate(data) {
     </section>`;
 }
 
+function renderMetaHaloTrendBody(halo) {
+  if (!halo?.weeks?.length) {
+    return '<p class="section-hint">Weekly halo trend not loaded — run refresh or add data/meta_halo_trend.json.</p>';
+  }
+  const weeks = halo.weeks;
+  const w = 620;
+  const h = 120;
+  const pad = 26;
+  const maxY = Math.max(
+    1,
+    ...weeks.map(row => Math.max(Number(row.meta_revenue) || 0, Number(row.organic_halo_revenue) || 0))
+  );
+  const n = weeks.length;
+  const xAt = i => pad + (i / Math.max(n - 1, 1)) * (w - pad * 2);
+  const yAt = v => h - pad - (v / maxY) * (h - pad * 2);
+  const pathFor = key =>
+    weeks.map((row, i) => `${i ? 'L' : 'M'}${xAt(i).toFixed(1)},${yAt(Number(row[key]) || 0).toFixed(1)}`).join(' ');
+  const findings = (halo.findings || []).map(f => `<li>${f}</li>`).join('');
+  const st = halo.stats || {};
+  const lead =
+    `Since ${halo.start || 'Jun 2026'} · ${weeks.length} weeks · ` +
+    `spend↔organic halo r=${st.corr_meta_spend_organic_halo_lag0 ?? '—'} (lag-0), ` +
+    `r=${st.corr_meta_spend_organic_halo_lag1 ?? '—'} (lag-1).`;
+  const rows = weeks.map(row => `<tr>
+    <td>${row.label}</td>
+    <td>${fmt(row.meta_spend)}</td>
+    <td>${row.meta_orders} · ${fmt(row.meta_revenue)}</td>
+    <td>${roas(row.meta_roas)}</td>
+    <td class="halo-meta-${row.meta_week === 'good' ? 'good' : 'bad'}">${row.meta_week === 'good' ? 'Good' : 'Bad'}</td>
+    <td>${row.google_paid_orders} · ${fmt(row.google_paid_revenue)}</td>
+    <td>${row.organic_search_orders} · ${fmt(row.organic_search_revenue)}</td>
+    <td>${row.direct_orders} · ${fmt(row.direct_revenue)}</td>
+    <td>${row.organic_social_orders} · ${fmt(row.organic_social_revenue)}</td>
+    <td>${row.email_orders} · ${fmt(row.email_revenue)}</td>
+    <td>${row.other_orders} · ${fmt(row.other_revenue)}</td>
+    <td>${row.organic_halo_orders} · ${fmt(row.organic_halo_revenue)}</td>
+  </tr>`).join('');
+  return `
+    <p class="section-lead">${lead}</p>
+    ${findings ? `<ul class="halo-findings">${findings}</ul>` : ''}
+    <div class="halo-legend"><span>— Meta Shopify UTM sales</span><span>··· Organic halo sales</span></div>
+    <div class="halo-chart" aria-hidden="true">
+      <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+        <path d="${pathFor('meta_revenue')}" fill="none" stroke="#111" stroke-width="2"/>
+        <path d="${pathFor('organic_halo_revenue')}" fill="none" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3"/>
+      </svg>
+    </div>
+    <div class="halo-table-wrap">
+      <table class="halo-table">
+        <thead><tr>
+          <th>Week</th><th>Meta spend</th><th>Meta ord · $</th><th>Meta ROAS</th><th>Meta</th>
+          <th>Google</th><th>Org search</th><th>Direct</th><th>Org social</th><th>Email</th><th>Other</th><th>Organic halo</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <p class="section-hint">Organic halo = all Shopify DTC minus Meta UTM paid. Meta good/bad = vs median ROAS and orders/day (weeks with spend).</p>`;
+}
+
 function renderAgencyPage(data, raw) {
   const stripSection = (html) => String(html || '')
     .replace(/^\s*<section[^>]*>/, '')
     .replace(/<\/section>\s*$/, '');
+  const halo = raw?.meta_halo_trend || data.meta_halo_trend;
   return `
     ${renderTeslaTop(data)}
     ${renderAgencyAlert(data)}
     ${renderStoreSlowdownBanner(data)}
+    ${agencyFold('Meta halo trend', renderMetaHaloTrendBody(halo), false)}
     ${agencyFold('Budget · MTD', renderBudgetStrip(data, { agency: true }), false)}
     ${agencyFold('Channels · GA4', renderAgencyChannelsContent(data), false)}
     ${agencyFold('30-day revenue', stripSection(renderAgencyTrendChart(raw)), false)}
@@ -3775,9 +3902,19 @@ function boot() {
   document.getElementById('timestamp-bar').style.display = 'flex';
   document.getElementById('data-period').textContent = expected.label + ' (rolling ' + expected.days + 'd)';
 
-  fetch(DATA_URL + '?t=' + Date.now())
-    .then(r => { if (!r.ok) throw new Error('Could not load ' + DATA_URL); return r.json(); })
-    .then(render)
+  Promise.all([
+    fetch(DATA_URL + '?t=' + Date.now()).then(r => {
+      if (!r.ok) throw new Error('Could not load ' + DATA_URL);
+      return r.json();
+    }),
+    fetch(HALO_URL + '?t=' + Date.now())
+      .then(r => (r.ok ? r.json() : null))
+      .catch(() => null)
+  ])
+    .then(([d, halo]) => {
+      if (halo && !d.meta_halo_trend) d.meta_halo_trend = halo;
+      render(d);
+    })
     .catch(err => {
       document.getElementById('error').style.display = 'block';
       document.getElementById('error').textContent =
