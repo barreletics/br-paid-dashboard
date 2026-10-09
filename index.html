@@ -73,6 +73,11 @@ header {
 .auto-refresh-info .muted { color: #166534; font-size: 0.78rem; margin-top: 0.25rem; }
 .timestamp-live.fresh { color: var(--good); }
 .timestamp-live.stale { color: var(--warn); }
+.stale-monochrome {
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
 .window-banner {
   width: 100%;
   background: var(--warn-bg);
@@ -1496,8 +1501,8 @@ footer {
 </header>
 <p id="quality-note" class="quality-note" hidden></p>
 <div id="auto-refresh-info" class="auto-refresh-info" style="display:none">
-  <strong>Live data.</strong> Auto-refreshes <strong>twice daily</strong> at
-  <strong>8:00 AM</strong> and <strong>8:00 PM Eastern (Detroit)</strong> —
+  <strong>Live data.</strong>   Auto-refreshes <strong>twice daily</strong> (target
+  <strong>~8 AM</strong> and <strong>~8 PM Eastern</strong>, staggered off the hour) —
   Shopify orders, Meta, Google, and Pinterest spend on the <strong>same date window</strong>.
   Last pull: <strong id="auto-refresh-last">—</strong>.
   <div class="muted" id="auto-refresh-note">Reload data only re-reads this page; the scheduled job pulls fresh numbers from the platforms.</div>
@@ -1844,7 +1849,17 @@ function setAutoRefreshBanner(data, raw) {
   if (!el) return;
   el.style.display = 'block';
   const iso = raw?.generated_at || data.generated_at;
-  last.textContent = iso ? formatEdt(iso) + ' ET' : '—';
+  if (!iso) {
+    last.textContent = '—';
+    return;
+  }
+  const hrs = ageHours(iso);
+  const when = formatEdt(iso) + ' ET';
+  if (hrs >= 14) {
+    last.innerHTML = '<span class="stale-monochrome">Stale</span> · ' + when + ' (' + Math.round(hrs) + 'h ago)';
+  } else {
+    last.textContent = when;
+  }
 }
 
 function setTimestamp(data, raw) {
