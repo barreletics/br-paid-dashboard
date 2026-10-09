@@ -2,9 +2,8 @@ name: Refresh rolling dashboard
 
 on:
   schedule:
-    # Off the hour — GitHub often skips/delays :00 cron. Target ~8 AM ET (11–12 UTC) and ~8 PM ET (23–00 UTC).
-    - cron: '17 11,12,23 * * *'
-    - cron: '47 0 * * *'
+    # Off the hour — GitHub often skips/delays :00 cron.
+    - cron: '23 * * * *'
   workflow_dispatch:
 
 concurrency:
