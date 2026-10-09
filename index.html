@@ -3357,7 +3357,11 @@ function renderMetaShopifyAttribution(data) {
   if (!attr || !(attr.campaigns || []).length) return '';
   const w = attr.window || {};
   const head = `Meta · Shopify last-touch (${w.label || 'last 7 days'}) · utm_campaign on last visit · same basis as Shopify Sales Attribution`;
-  const campRows = (attr.campaigns || []).map(c => {
+  const paidCamps = (attr.campaigns || []).filter(c => {
+    const lab = (c.campaign_label || c.shopify_utm_campaign || '').toLowerCase();
+    return c.shopify_utm_campaign && lab !== '(no campaign)' && (c.meta_spend || c.shopify_orders);
+  });
+  const campRows = paidCamps.map(c => {
     const label = c.campaign_label || c.shopify_utm_campaign || c.meta_campaign_name || '—';
     const roasVal = c.shopify_roas != null ? roas(c.shopify_roas) : (c.meta_spend ? roas(0) : '—');
     const orders = `${c.shopify_orders || 0}${c.order_names?.length ? ' · ' + c.order_names.join(', ') : ''}`;
