@@ -78,6 +78,11 @@ header {
   font-weight: 600;
   letter-spacing: 0.04em;
 }
+.data-age-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
 .window-banner {
   width: 100%;
   background: var(--warn-bg);
@@ -1501,19 +1506,19 @@ footer {
 </header>
 <p id="quality-note" class="quality-note" hidden></p>
 <div id="auto-refresh-info" class="auto-refresh-info" style="display:none">
-  <strong>Live data.</strong>   Auto-refreshes <strong>twice daily</strong> (target
-  <strong>~8 AM</strong> and <strong>~8 PM Eastern</strong>, staggered off the hour) —
+  <strong>Live data.</strong> Auto-refreshes <strong>hourly</strong> (GitHub Actions, off the hour) —
   Shopify orders, Meta, Google, and Pinterest spend on the <strong>same date window</strong>.
   Last pull: <strong id="auto-refresh-last">—</strong>.
-  <div class="muted" id="auto-refresh-note">Reload data only re-reads this page; the scheduled job pulls fresh numbers from the platforms.</div>
+  <div class="muted" id="auto-refresh-note">Check for new data re-reads latest.json only; the hourly job pulls fresh numbers from the platforms.</div>
 </div>
 <div id="error" class="error" style="display:none"></div>
 <div id="window-banner" class="window-banner" style="display:none"></div>
 <div id="timestamp-bar" class="timestamp-bar" style="display:none">
   <span>Data as of <strong id="data-as-of">—</strong> · Period <strong id="data-period">—</strong></span>
-  <span style="display:flex;align-items:center;gap:0.65rem">
-    <span id="refresh-status" class="timestamp-live">—</span>
-    <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()">Reload data</button>
+  <span style="display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap">
+    <span id="data-age-hint" class="data-age-hint">—</span>
+    <button type="button" id="refresh-btn" class="refresh-btn" onclick="refreshData()">Check for new data</button>
+    <span id="refresh-status" class="timestamp-live" hidden aria-hidden="true">—</span>
   </span>
 </div>
 <div id="filter-bar" class="filter-bar" style="display:none">
@@ -1564,11 +1569,12 @@ footer {
 </div>
 <div id="app"></div>
 <footer>
-  Auto-updated twice daily (8 AM and 8 PM Eastern, Detroit) · Shopify orders = truth for ROAS · Campaign notes in All details may lag until refreshed manually.
+  Auto-updated hourly (GitHub Actions) · Shopify orders = truth for ROAS · Campaign notes in All details may lag until refreshed manually.
 </footer>
 <script>
 const DATA_URL = 'data/latest.json';
 const CONFIG_URL = 'config.json';
+const STALE_DATA_HOURS = 3;
 let reportConfig = { report_window_days: 7, window_ends: 'today' };
 
 function detroitYMD(d = new Date()) {
@@ -1646,25 +1652,21 @@ function expectedWindow() {
 
 function refreshData() {
   const btn = document.getElementById('refresh-btn');
-  const status = document.getElementById('refresh-status');
+  const hint = document.getElementById('data-age-hint');
   btn.disabled = true;
-  btn.textContent = 'Refreshing…';
-  status.textContent = 'Pulling latest data…';
-  status.className = 'timestamp-live';
+  btn.textContent = 'Checking…';
+  if (hint) hint.textContent = 'Checking for new data…';
   fetch(DATA_URL + '?t=' + Date.now())
     .then(r => { if (!r.ok) throw new Error('Could not load data'); return r.json(); })
     .then(d => {
       render(d);
-      status.textContent = 'Updated just now';
-      status.className = 'timestamp-live fresh';
     })
     .catch(() => {
-      status.textContent = 'Refresh failed — use server or re-run build';
-      status.className = 'timestamp-live stale';
+      if (hint) hint.textContent = 'Could not load latest.json';
     })
     .finally(() => {
       btn.disabled = false;
-      btn.textContent = 'Reload data';
+      btn.textContent = 'Check for new data';
     });
 }
 
@@ -1834,6 +1836,22 @@ function ageHours(iso) {
   return (Date.now() - new Date(iso).getTime()) / 3600000;
 }
 
+function ageMinutes(iso) {
+  if (!iso) return null;
+  return Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+}
+
+function setDataAgeHint(iso) {
+  const el = document.getElementById('data-age-hint');
+  if (!el) return;
+  const mins = ageMinutes(iso);
+  if (mins == null) {
+    el.textContent = 'Updated — · refreshes hourly';
+    return;
+  }
+  el.textContent = 'Updated ' + mins + ' min ago · refreshes hourly';
+}
+
 function refreshScheduleText(cfg) {
   const s = cfg?.refresh_schedule || {};
   const label = s.timezone_label || 'Eastern (Detroit)';
@@ -1855,7 +1873,7 @@ function setAutoRefreshBanner(data, raw) {
   }
   const hrs = ageHours(iso);
   const when = formatEdt(iso) + ' ET';
-  if (hrs >= 14) {
+  if (hrs >= STALE_DATA_HOURS) {
     last.innerHTML = '<span class="stale-monochrome">Stale</span> · ' + when + ' (' + Math.round(hrs) + 'h ago)';
   } else {
     last.textContent = when;
@@ -1892,19 +1910,15 @@ function setTimestamp(data, raw) {
     banner.style.display = 'none';
   }
 
-  const hrs = ageHours(data.generated_at);
-  if (inSync && hrs < 14) {
-    status.textContent = 'Fresh · next auto-pull ~8 AM or ~8 PM Eastern';
-    status.className = 'timestamp-live fresh';
-  } else if (inSync && hrs < 24) {
-    status.textContent = Math.round(hrs) + 'h old · rolling window ' + expected.label;
-    status.className = 'timestamp-live';
-  } else if (!inSync) {
-    status.textContent = 'Window moved — run data refresh for ' + expected.label;
-    status.className = 'timestamp-live stale';
+  const iso = raw?.generated_at || data.generated_at;
+  setDataAgeHint(iso);
+  const hrs = ageHours(iso);
+  if (!inSync) {
+    status.textContent = 'Window moved — scheduled refresh will catch up';
+  } else if (hrs >= STALE_DATA_HOURS) {
+    status.textContent = 'Stale data';
   } else {
-    status.textContent = Math.round(hrs) + 'h old · stale — run refresh';
-    status.className = 'timestamp-live stale';
+    status.textContent = '';
   }
 }
 
@@ -3777,11 +3791,9 @@ fetch(CONFIG_URL + '?t=' + Date.now())
     if (cfg) {
       reportConfig = { ...reportConfig, ...cfg };
       const note = document.getElementById('auto-refresh-note');
-      if (note && cfg.refresh_schedule) {
-        const times = (cfg.refresh_schedule.times_local || ['8:00 AM', '8:00 PM']).join(' and ');
+      if (note) {
         note.textContent =
-          'Scheduled pull at ' + times + ' ' + (cfg.refresh_schedule.timezone_label || 'Eastern (Detroit)') +
-          '. Reload data only re-reads this page; it does not run a new platform pull.';
+          'Scheduled pull hourly (GitHub Actions). Check for new data only re-reads latest.json; it does not run a new platform pull.';
       }
     }
     boot();
