@@ -3390,8 +3390,9 @@ function renderLast30DaysStrip(raw) {
   const head = `Last 30 days · ${w.label || 'rolling 30d'} vs ${w.prior_label || 'prior 30 days'} · ad-attributed Shopify only (Meta + Google + Pinterest UTM)`;
   const ordRev = `${ord} orders · ${fmt(rev)}`;
   const ordRevP = ordP || revP ? `${ordP} · ${fmt(revP)}` : null;
-  const roasVal = partialPin ? 'n/a (partial spend)' : (spend ? roas(adShopifyRoas(rev, spend)) : '—');
-  const roasPrior = partialPin || !spendP ? '—' : roas(adShopifyRoas(revP, spendP));
+  const roasNow = spend ? adShopifyRoas(rev, spend) : 0;
+  const roasPriorVal = spendP ? adShopifyRoas(revP, spendP) : 0;
+  const pinNote = partialPin ? '<p class="tesla-story" style="margin:0.35rem 0 0">Pinterest spend partial (Sep 25 on)</p>' : '';
   return `<div class="tesla-l7" style="margin-top:0.75rem">
     <div class="tesla-l7-head">${head}</div>
     <div class="tesla-l7-row">
@@ -3400,8 +3401,9 @@ function renderLast30DaysStrip(raw) {
         <div class="tesla-l7-metrics">
           <div class="tesla-l7-line"><span class="tesla-l7-k">Ad spend</span><span class="tesla-l7-v">${fmt(spend)}</span>${teslaDelta(spend, spendP, true)}</div>
           <div class="tesla-l7-line"><span class="tesla-l7-k">Ad sales</span><span class="tesla-l7-v">${ordRev}</span>${ordRevP != null ? teslaDelta(ord, ordP, false) : ''}</div>
-          <div class="tesla-l7-line"><span class="tesla-l7-k">Ad ROAS</span><span class="tesla-l7-v">${roasVal}</span>${spendP && !partialPin ? teslaDelta(adShopifyRoas(rev, spend), adShopifyRoas(revP, spendP), false) : ''}</div>
+          <div class="tesla-l7-line"><span class="tesla-l7-k">Ad ROAS</span><span class="tesla-l7-v">${spend ? roas(roasNow) : '—'}</span>${spendP ? teslaDelta(roasNow, roasPriorVal, false) : ''}</div>
         </div>
+        ${pinNote}
       </div>
     </div>
   </div>`;
