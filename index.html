@@ -2104,12 +2104,24 @@ function channelRevPrior(c, field) {
 }
 
 function channelRoas(c, revField) {
+  if (revField === 'last' && c.shopify_roas_last == null && Number(c.spend_last) === 0) return null;
   const r = filters.useNetRevenue
     ? (c.shopify_roas_net ?? c.shopify_roas)
     : c.shopify_roas;
   if (revField === 'last') return filters.useNetRevenue ? roas(channelRevPrior(c, 'shopify_revenue_last'), c.spend_last) : c.shopify_roas_last;
   if (revField === 'month') return c.shopify_roas_month ?? roas(channelRevPrior(c, 'shopify_revenue_month'), c.spend);
   return r;
+}
+
+function channelRoasDisplay(c, revField) {
+  if (c.shopify_roas_partial || c.shopify_roas_label) {
+    if (revField === 'last') return c.spend_last ? roas(channelRoas(c, 'last')) : '—';
+    return c.shopify_roas_label || 'n/a (partial spend)';
+  }
+  const spend = revField === 'last' ? Number(c.spend_last) : Number(c.spend);
+  const val = channelRoas(c, revField);
+  if (val == null || !spend) return spend ? '—' : '—';
+  return roas(val);
 }
 
 function activeData(raw) {
@@ -3240,7 +3252,7 @@ function teslaChannelRow(c) {
     <td>${spendDisplay(c)}<span class="tesla-story">Spent ${fmt(spend)}</span></td>
     <td>${fmt(shopRev)}<span class="tesla-story">→ brought in ${fmt(shopRev)}</span></td>
     <td>${shopOrd}</td>
-    <td>${spend ? roas(shopRoas) : '—'}</td>
+    <td>${channelRoasDisplay(c)}</td>
     <td>${platCell}</td>
     <td class="tesla-verdict-cell">${channelVerdictWord(c)}</td>
   </tr>`;
@@ -3347,6 +3359,56 @@ function renderLast7DaysStrip(raw) {
       ${block('Google PMax', channelForLast7(channels, 'google'))}
     </div>
   </div>`;
+}
+
+function sumPaidChannels(channels, prior) {
+  const list = channels || [];
+  let spend = 0;
+  let spendP = 0;
+  let rev = 0;
+  let revP = 0;
+  let ord = 0;
+  let ordP = 0;
+  let partialPin = false;
+  for (const c of list) {
+    spend += Number(c.spend) || 0;
+    spendP += Number(c.spend_last) || 0;
+    rev += Number(channelRev(c)) || 0;
+    revP += Number(channelRevPrior(c, 'shopify_revenue_last')) || 0;
+    ord += Number(c.shopify_orders) || 0;
+    ordP += Number(c.shopify_orders_last) || 0;
+    if (c.shopify_roas_partial) partialPin = true;
+  }
+  return { spend, spendP, rev, revP, ord, ordP, partialPin };
+}
+
+function renderLast30DaysStrip(raw) {
+  const snap = raw?.windows?.['30'];
+  if (!snap) return '';
+  const w = snap.window || {};
+  const { spend, spendP, rev, revP, ord, ordP, partialPin } = sumPaidChannels(snap.channels);
+  const head = `Last 30 days · ${w.label || 'rolling 30d'} vs ${w.prior_label || 'prior 30 days'} · ad-attributed Shopify only (Meta + Google + Pinterest UTM)`;
+  const ordRev = `${ord} orders · ${fmt(rev)}`;
+  const ordRevP = ordP || revP ? `${ordP} · ${fmt(revP)}` : null;
+  const roasVal = partialPin ? 'n/a (partial spend)' : (spend ? roas(adShopifyRoas(rev, spend)) : '—');
+  const roasPrior = partialPin || !spendP ? '—' : roas(adShopifyRoas(revP, spendP));
+  return `<div class="tesla-l7" style="margin-top:0.75rem">
+    <div class="tesla-l7-head">${head}</div>
+    <div class="tesla-l7-row">
+      <div class="tesla-l7-block">
+        <div class="tesla-l7-title">All paid channels</div>
+        <div class="tesla-l7-metrics">
+          <div class="tesla-l7-line"><span class="tesla-l7-k">Ad spend</span><span class="tesla-l7-v">${fmt(spend)}</span>${teslaDelta(spend, spendP, true)}</div>
+          <div class="tesla-l7-line"><span class="tesla-l7-k">Ad sales</span><span class="tesla-l7-v">${ordRev}</span>${ordRevP != null ? teslaDelta(ord, ordP, false) : ''}</div>
+          <div class="tesla-l7-line"><span class="tesla-l7-k">Ad ROAS</span><span class="tesla-l7-v">${roasVal}</span>${spendP && !partialPin ? teslaDelta(adShopifyRoas(rev, spend), adShopifyRoas(revP, spendP), false) : ''}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderRollingPeriodStrips(raw) {
+  return `${renderLast7DaysStrip(raw)}${renderLast30DaysStrip(raw)}`;
 }
 
 function metaAttr7d(data) {
@@ -3499,7 +3561,7 @@ function renderTeslaTop(data) {
         ${teslaKpi('Total sales', rev, revP, fmt, false)}
         ${teslaKpi('Revenue minus ad spend', netStore, netStoreP, fmt, false)}
       </div>
-      ${renderLast7DaysStrip(raw)}
+      ${renderRollingPeriodStrips(raw)}
       ${renderMetaShopifyAttribution(raw)}
       ${renderMetaAdsByCreative(raw)}
       <table class="tesla-table">

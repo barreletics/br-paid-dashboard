@@ -55,6 +55,72 @@ def _pinterest_not_connected(err: str | None) -> bool:
     return "authentication failed" in low or "not set" in low or "pending" in low
 
 
+def _pinterest_blend_dates(manual: dict) -> tuple[date | None, date | None]:
+    if manual.get("spend_start") and manual.get("spend_end"):
+        try:
+            return (
+                date.fromisoformat(str(manual["spend_start"])),
+                date.fromisoformat(str(manual["spend_end"])),
+            )
+        except ValueError:
+            pass
+    raw = (manual.get("blend_window") or "").replace("–", "-")
+    if " to " in raw:
+        a, b = raw.split(" to ", 1)
+        try:
+            return date.fromisoformat(a.strip()), date.fromisoformat(b.strip())
+        except ValueError:
+            pass
+    return None, None
+
+
+def pinterest_manual_spend_for_range(start: date, end: date, manual: dict) -> tuple[float, bool]:
+    """Prorate Blend total to overlap with spend_start..spend_end. partial=True if window ≠ spend coverage."""
+    total = float(manual.get("spend") or 0)
+    bs, be = _pinterest_blend_dates(manual)
+    if not bs or not be or total <= 0:
+        return 0.0, False
+    overlap_start = max(start, bs)
+    overlap_end = min(end, be)
+    if overlap_start > overlap_end:
+        return 0.0, False
+    blend_days = (be - bs).days + 1
+    overlap_days = (overlap_end - overlap_start).days + 1
+    spend = round(total * overlap_days / blend_days, 2)
+    window_covers_blend = start <= bs and end >= be
+    partial = not window_covers_blend or overlap_days < (end - start).days + 1
+    return spend, partial
+
+
+def _pinterest_manual_channel(
+    start: date, end: date, cfg: dict | None, err: str | None
+) -> tuple[dict[str, dict] | None, dict[str, dict] | None]:
+    if not _pinterest_not_connected(err):
+        return None, None
+    manual = (cfg or {}).get("pinterest_blend_manual") or {}
+    spend, partial = pinterest_manual_spend_for_range(start, end, manual)
+    if spend <= 0:
+        return None, None
+    note = manual.get("note") or "manual, via Blend"
+    bs, be = _pinterest_blend_dates(manual)
+    window_note = f"{note} · spend covers {bs.isoformat() if bs else '?'}–{be.isoformat() if be else '?'}"
+    ch = {
+        "spend": spend,
+        "platform_purchases": 0,
+        "platform_revenue": 0,
+        "platform_roas": 0,
+        "spend_source": "manual",
+        "spend_partial_coverage": partial,
+    }
+    info = {
+        "status": "ok",
+        "source": "blend_manual",
+        "window_end": end.isoformat(),
+        "note": window_note,
+    }
+    return ch, info
+
+
 def save_json(path: Path, data: Any) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n")
 
@@ -314,23 +380,10 @@ def ad_spend_for_range(
             continue
         err = pull_errors.get(key)
         if key == "Pinterest" and _pinterest_not_connected(err):
-            manual = (cfg or {}).get("pinterest_blend_manual") or {}
-            manual_spend = float(manual.get("spend") or 0)
-            if manual_spend > 0:
-                note = manual.get("note") or "manual, via Blend"
-                source_info["Pinterest"] = {
-                    "status": "ok",
-                    "source": "blend_manual",
-                    "window_end": end.isoformat(),
-                    "note": note,
-                }
-                channels["Pinterest"] = {
-                    "spend": round(manual_spend, 2),
-                    "platform_purchases": 0,
-                    "platform_revenue": 0,
-                    "platform_roas": 0,
-                    "spend_source": "manual",
-                }
+            pin_ch, pin_info = _pinterest_manual_channel(start, end, cfg, err)
+            if pin_ch and pin_info:
+                channels["Pinterest"] = pin_ch
+                source_info["Pinterest"] = pin_info
             else:
                 source_info["Pinterest"] = {
                     "status": "pending",
@@ -382,9 +435,33 @@ def ad_spend_for_range(
                 "window_end": end.isoformat(),
             }
 
+    pin_err = pull_errors.get("Pinterest")
+    if _pinterest_not_connected(pin_err):
+        pin_ch, pin_info = _pinterest_manual_channel(start, end, cfg, pin_err)
+        if pin_ch and pin_info:
+            channels["Pinterest"] = pin_ch
+            source_info["Pinterest"] = pin_info
+        else:
+            source_info["Pinterest"] = {
+                "status": "pending",
+                "source": "pinterest_api",
+                "window_end": end.isoformat(),
+                "note": "No Blend spend in this date window",
+                "error": pin_err,
+            }
+            channels["Pinterest"] = {
+                "spend": 0,
+                "platform_purchases": 0,
+                "platform_revenue": 0,
+                "platform_roas": 0,
+                "spend_source": "pending",
+            }
+
     live_write: dict[str, dict] = {}
     live_prov: dict[str, dict] = {}
     for key, ch in channels.items():
+        if key == "Pinterest" and ch.get("spend_source") == "manual":
+            continue
         if source_info.get(key, {}).get("status") == "ok":
             live_write[key] = ch
             live_prov[key] = source_info[key]
@@ -600,7 +677,19 @@ def build_channels(
         spend_month = float(ma.get("spend") or spend)
 
         shopify_roas = roas(r, spend)
-        status = channel_status(name, o, shopify_roas, spend, targets)
+        pin_partial = key == "Pinterest" and ca.get("spend_partial_coverage")
+        pin_manual = key == "Pinterest" and ca.get("spend_source") == "manual"
+        roas_last_val = roas(rl, spend_last) if spend_last else None
+        if pin_manual and spend_last <= 0 and ol > 0:
+            roas_last_val = None
+        if pin_partial and spend > 0:
+            shopify_roas = None
+        status = channel_status(name, o, shopify_roas if shopify_roas is not None else 0, spend, targets)
+        row_extra: dict[str, Any] = {}
+        if pin_partial and spend > 0:
+            row_extra["shopify_roas_partial"] = True
+            row_extra["shopify_roas_label"] = "n/a (partial spend)"
+            row_extra["shopify_roas_net"] = None
         rows.append(
             {
                 **copy.deepcopy(base),
@@ -618,9 +707,10 @@ def build_channels(
                 "shopify_revenue_net_last": round(rnl),
                 "shopify_revenue_net_month": round(rnm),
                 "shopify_roas": shopify_roas,
-                "shopify_roas_last": roas(rl, spend_last),
+                "shopify_roas_last": roas_last_val,
                 "shopify_roas_month": roas(rm, spend_month),
-                "shopify_roas_net": roas(rn, spend),
+                "shopify_roas_net": None if pin_partial else roas(rn, spend),
+                **row_extra,
                 "shopify_cpa": round(spend / o, 2) if o else None,
         "platform_purchases": ca.get("platform_purchases", base.get("platform_purchases")),
         "platform_revenue": ca.get("platform_revenue", base.get("platform_revenue")),
