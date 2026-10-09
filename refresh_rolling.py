@@ -1639,6 +1639,15 @@ def main() -> None:
         payload["meta_ads_by_creative"] = build_meta_ads_by_creative()
     except Exception as exc:
         print(f"meta_ads_by_creative skipped: {exc}", file=sys.stderr)
+    try:
+        from channel_mix import build_channel_mix
+
+        w30_ch = windows.get("30", {}).get("channels") or []
+        mix = build_channel_mix(w30_ch)
+        payload["channel_mix"] = mix
+        save_json(DATA / "channel_mix.json", mix)
+    except Exception as exc:
+        print(f"channel_mix skipped: {exc}", file=sys.stderr)
     payload["generated_at"] = generated_at
     payload["ad_spend_window"] = {"start": w["start"], "end": w["end"], "label": w["label"]}
 

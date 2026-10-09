@@ -3508,6 +3508,53 @@ function renderMetaAdsByCreative(data) {
   </div>`;
 }
 
+function renderChannelMixDiversify(data) {
+  const mix = data?.channel_mix || data?._source?.channel_mix;
+  if (!mix) return '';
+  const l30 = mix.last_30d || {};
+  const shareRow = (label, pct, rev) =>
+    `<tr><td>${label}</td><td>${pct != null ? pct + '%' : '—'}</td><td>${fmt(rev)}</td></tr>`;
+  const l30Table = `<table class="tesla-table">
+    <thead><tr><th>Channel</th><th>Share of ad sales</th><th>Shopify UTM $</th></tr></thead>
+    <tbody>
+      ${shareRow('Meta', l30.meta_share_pct, l30.meta_revenue)}
+      ${shareRow('Google PMax', l30.google_share_pct, l30.google_revenue)}
+      ${shareRow('Pinterest', l30.pinterest_share_pct, l30.pinterest_revenue)}
+    </tbody>
+  </table>`;
+  const monthRows = (mix.monthly || []).map(m => `<tr>
+    <td>${m.month}</td>
+    <td>${m.meta_share_pct != null ? m.meta_share_pct + '%' : '—'}</td>
+    <td>${m.google_share_pct != null ? m.google_share_pct + '%' : '—'}</td>
+    <td>${m.pinterest_share_pct != null ? m.pinterest_share_pct + '%' : '—'}</td>
+    <td>${fmt(m.total_ad_revenue)}</td>
+  </tr>`).join('');
+  const pin = mix.pinterest || {};
+  const plan = pin.current_plan || {};
+  const pinShop = (pin.shopify_utm_by_month || []).map(r =>
+    `${r.month}: ${r.orders} ord · ${fmt(r.revenue)}`
+  ).join(' · ') || '—';
+  const winners = (pin.platform_winners || []).slice(0, 3).map(w =>
+    `${w.ad || w.campaign}: ${w.platform_roas != null ? w.platform_roas + '× platform' : ''}`
+  ).join(' · ');
+  const tt = mix.tiktok || {};
+  return `<div class="tesla-l7" style="margin-top:1rem">
+    <div class="tesla-l7-head">Channel mix: don't depend on Meta · Shopify UTM ad sales · ${mix.shopify_attribution || ''}</div>
+    <p class="tesla-story"><strong>Last 30 days</strong> (paid UTM only)</p>
+    ${l30Table}
+    <p class="tesla-story" style="margin-top:0.75rem"><strong>By month</strong> (Jun 2026 → · share of Meta / Google / Pinterest ad sales)</p>
+    <table class="tesla-table">
+      <thead><tr><th>Month</th><th>Meta %</th><th>Google %</th><th>Pinterest %</th><th>Total ad $</th></tr></thead>
+      <tbody>${monthRows}</tbody>
+    </table>
+    <p class="tesla-story" style="margin-top:0.75rem"><strong>Pinterest</strong> · ${plan.reinstating || ''}</p>
+    <p class="tesla-story">Now running: ${(plan.campaigns || []).join(' · ')} · Creatives: ${(plan.creatives || []).join(' · ')}</p>
+    <p class="tesla-story">Shopify utm_source=pinterest: ${pinShop}</p>
+    <p class="tesla-story">Platform history (${pin.platform_analysis_note || 'Pinterest'}): ${winners}</p>
+    <p class="tesla-story" style="margin-top:0.5rem"><strong>${tt.headline || 'TikTok'}</strong> · ${tt.plan || ''}</p>
+  </div>`;
+}
+
 function renderZakiVerdict(data) {
   return `<div class="tesla-verdict">
     <div class="tesla-verdict-title">Action items to consider</div>
@@ -3566,6 +3613,7 @@ function renderTeslaTop(data) {
       ${renderRollingPeriodStrips(raw)}
       ${renderMetaShopifyAttribution(raw)}
       ${renderMetaAdsByCreative(raw)}
+      ${renderChannelMixDiversify(raw)}
       <table class="tesla-table">
         <thead><tr>
           <th>Channel</th>
