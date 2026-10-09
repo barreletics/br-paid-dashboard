@@ -1514,6 +1514,7 @@ def main() -> None:
     payload["anomalies"] = regenerate_anomalies(default_snap)
 
     payload["windows"] = windows
+    # index.html "Last 7 days" strip reads windows["7"] (Shopify UTM + live Meta/Google spend vs prior 7d).
     payload["generated_at"] = generated_at
     payload["ad_spend_window"] = {"start": w["start"], "end": w["end"], "label": w["label"]}
 
@@ -1544,6 +1545,16 @@ def main() -> None:
         history = history[-12:]
     save_json(HISTORY, history)
     payload["history_weekly"] = history
+
+    try:
+        sys.path.insert(0, str(SCRIPTS))
+        from halo_trend import build_meta_halo_trend
+
+        halo = build_meta_halo_trend()
+        payload["meta_halo_trend"] = halo
+        save_json(DATA / "meta_halo_trend.json", halo)
+    except Exception as exc:
+        print(f"halo_trend skipped: {exc}", file=sys.stderr)
 
     save_json(LATEST, payload)
     print(
