@@ -39,17 +39,26 @@ def classify_order(o: dict) -> str:
     qs = urllib.parse.parse_qs(urllib.parse.urlparse(land).query)
     src = (qs.get("utm_source") or [""])[0].lower().strip()
     med = (qs.get("utm_medium") or [""])[0].lower().strip()
-    if med in ("paid_social", "paid") and src in ("fb", "ig", "facebook", "instagram", "meta", ""):
-        return "meta_paid"
-    if src in ("fb", "ig", "facebook", "instagram", "meta") and med in (
+    camp = (qs.get("utm_campaign") or [""])[0].strip()
+    looks_meta = med in ("paid_social", "paid") and src in (
+        "fb",
+        "ig",
+        "facebook",
+        "instagram",
+        "meta",
+        "",
+    )
+    if not looks_meta and src in ("fb", "ig", "facebook", "instagram", "meta") and med in (
         "paid_social",
         "paid",
         "cpc",
         "social",
     ):
-        return "meta_paid"
-    if med == "paid_social":
-        return "meta_paid"
+        looks_meta = True
+    if med == "paid_social" and src not in ("google",):
+        looks_meta = True
+    if looks_meta:
+        return "meta_paid" if camp else "organic_social"
     if src == "google" or med in ("cpc", "ppc", "pmax") and "google" in src + med:
         return "google_paid"
     if src == "google":
