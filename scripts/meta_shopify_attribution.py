@@ -118,6 +118,9 @@ def parse_tags(tags: list[str] | str) -> set[str]:
 
 
 def is_meta_paid_last_touch(utm: dict[str, Any], landing_page: str) -> bool:
+    camp = (utm.get("campaign") or "").strip()
+    if not camp:
+        return False
     src = (utm.get("source") or "").lower()
     med = (utm.get("medium") or "").lower()
     if med in ("paid_social", "paid", "cpc", "social") and src in (
