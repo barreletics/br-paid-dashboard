@@ -1515,6 +1515,16 @@ def main() -> None:
 
     payload["windows"] = windows
     # index.html "Last 7 days" strip reads windows["7"] (Shopify UTM + live Meta/Google spend vs prior 7d).
+    try:
+        from meta_shopify_attribution import build_meta_shopify_attribution
+
+        w7 = windows["7"]["window"]
+        payload["meta_shopify_attribution_7d"] = build_meta_shopify_attribution(
+            start=date.fromisoformat(w7["start"]),
+            end=date.fromisoformat(w7["end"]),
+        )
+    except Exception as exc:
+        print(f"meta_shopify_attribution skipped: {exc}", file=sys.stderr)
     payload["generated_at"] = generated_at
     payload["ad_spend_window"] = {"start": w["start"], "end": w["end"], "label": w["label"]}
 
