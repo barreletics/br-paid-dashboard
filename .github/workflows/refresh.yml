@@ -2,9 +2,20 @@ name: Refresh rolling dashboard
 
 on:
   schedule:
-    # Off the hour — GitHub often skips/delays :00 cron.
+    # GitHub often skips single hourly crons — four staggered attempts per hour (ET ~:08,:23,:38,:53).
+    - cron: '8 * * * *'
     - cron: '23 * * * *'
+    - cron: '38 * * * *'
+    - cron: '53 * * * *'
   workflow_dispatch:
+    inputs:
+      force:
+        description: Refresh even if latest.json is fresh (<50m)
+        required: false
+        default: 'false'
+        type: boolean
+  repository_dispatch:
+    types: [refresh-dashboard]
 
 concurrency:
   group: dashboard-refresh
@@ -22,8 +33,20 @@ jobs:
           python-version: '3.12'
       - name: Install Python deps
         run: pip install -r requirements.txt
+      - name: Skip if data is still fresh (scheduled runs only)
+        id: guard
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if python3 scripts/refresh_if_stale.py; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Skipping — latest.json is fresh enough"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Refresh Shopify rolling window
         id: refresh
+        if: steps.guard.outputs.skip != 'true'
         continue-on-error: true
         env:
           SHOPIFY_DOMAIN: ${{ secrets.SHOPIFY_DOMAIN }}
@@ -37,8 +60,10 @@ jobs:
           GA_PROPERTY_ID: '300437005'
         run: python3 refresh_rolling.py
       - name: Rebuild standalone report
+        if: steps.guard.outputs.skip != 'true'
         run: python3 build_standalone.py
       - name: Commit and push if changed
+        if: steps.guard.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -46,7 +71,7 @@ jobs:
           git diff --staged --quiet || git commit -m "Refresh rolling window data"
           git push
       - name: Fail job if required ad sources failed
-        if: always()
+        if: always() && steps.guard.outputs.skip != 'true'
         run: |
           if [ -f data/refresh_status.json ]; then
             python3 -c "import json,sys; s=json.load(open('data/refresh_status.json')); sys.exit(0 if s.get('ok') else 1)"
