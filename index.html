@@ -1550,7 +1550,7 @@ footer {
 </header>
 <p id="quality-note" class="quality-note" hidden></p>
 <div id="auto-refresh-info" class="auto-refresh-info" style="display:none">
-  <strong>Live data.</strong> Auto-refreshes <strong>hourly</strong> (GitHub Actions, off the hour) —
+  <strong>Live data.</strong> Auto-refreshes about <strong>hourly</strong> (GitHub Actions, 4×/hr staggered + stale catch-up) —
   Shopify orders, Meta, Google, and Pinterest spend on the <strong>same date window</strong>.
   Last pull: <strong id="auto-refresh-last">—</strong>.
   <div class="muted" id="auto-refresh-note">Check for new data re-reads latest.json only; the hourly job pulls fresh numbers from the platforms.</div>
@@ -1613,7 +1613,7 @@ footer {
 </div>
 <div id="app"></div>
 <footer>
-  Auto-updated hourly (GitHub Actions) · Shopify orders = truth for ROAS · Campaign notes in All details may lag until refreshed manually.
+  Auto-updated ~hourly (GitHub Actions, staggered schedule) · Shopify orders = truth for ROAS · Campaign notes in All details may lag until refreshed manually.
 </footer>
 <script>
 const DATA_URL = 'data/latest.json';
