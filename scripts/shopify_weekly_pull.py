@@ -288,18 +288,21 @@ def channel(o: dict[str, Any]) -> str:
     qs = urllib.parse.parse_qs(urllib.parse.urlparse(land).query)
     src = (qs.get("utm_source") or [""])[0].lower()
     med = (qs.get("utm_medium") or [""])[0].lower()
-    camp = (qs.get("utm_campaign") or [""])[0]
+    camp = (qs.get("utm_campaign") or [""])[0].strip()
     if camp in (
         "626758797715",
         "626758433774",
         "626759617021",
     ) or "pinterest" in src:
         return "Pinterest"
-    if med in ("paid_social", "paid") or (
+    looks_meta = med in ("paid_social", "paid") or (
         src in ("ig", "fb", "facebook", "instagram", "meta")
         and med in ("paid_social", "paid", "cpc", "social")
-    ):
-        return "Meta"
+    )
+    if looks_meta:
+        if camp:
+            return "Meta"
+        return "Organic_social"
     if src == "google" or "pmax" in med or med in ("cpc", "ppc"):
         return "Google"
     ref = (o.get("referring_site") or "").lower()
