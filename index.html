@@ -3348,17 +3348,89 @@ function renderLast7DaysStrip(raw) {
   </div>`;
 }
 
+function metaAttr7d(data) {
+  return data?.meta_shopify_attribution_7d || data?._source?.meta_shopify_attribution_7d || null;
+}
+
+function renderMetaShopifyAttribution(data) {
+  const attr = metaAttr7d(data);
+  if (!attr || !(attr.campaigns || []).length) return '';
+  const w = attr.window || {};
+  const head = `Meta · Shopify last-touch (${w.label || 'last 7 days'}) · utm_campaign on last visit · same basis as Shopify Sales Attribution`;
+  const campRows = (attr.campaigns || []).map(c => {
+    const label = c.campaign_label || c.shopify_utm_campaign || c.meta_campaign_name || '—';
+    const roasVal = c.shopify_roas != null ? roas(c.shopify_roas) : (c.meta_spend ? roas(0) : '—');
+    const orders = `${c.shopify_orders || 0}${c.order_names?.length ? ' · ' + c.order_names.join(', ') : ''}`;
+    return `<tr>
+      <td>${shortText(label, 36)}</td>
+      <td>${fmt(c.meta_spend)}</td>
+      <td>${orders}</td>
+      <td>${fmt(c.shopify_revenue)}</td>
+      <td>${roasVal}</td>
+    </tr>`;
+  }).join('');
+  const adRows = (attr.ads || []).filter(a => (a.shopify_orders || 0) > 0).map(a => {
+    const roasVal = a.shopify_roas != null ? roas(a.shopify_roas) : '—';
+    return `<tr>
+      <td>${shortText(a.campaign_label || campaignShort(a.shopify_utm_campaign), 28)}</td>
+      <td>${shortText(a.shopify_utm_content || a.meta_ad_name || '—', 44)}</td>
+      <td>${fmt(a.meta_spend)}</td>
+      <td>${a.shopify_orders || 0}</td>
+      <td>${fmt(a.shopify_revenue)}</td>
+      <td>${roasVal}</td>
+    </tr>`;
+  }).join('');
+  const tot = attr.totals || {};
+  const foot = tot.shopify_roas != null
+    ? `<p class="tesla-story">Meta total · ${fmt(tot.meta_spend)} spend · ${tot.shopify_orders || 0} Shopify orders · ${fmt(tot.shopify_revenue)} · ${roas(tot.shopify_roas)} Shopify ROAS</p>`
+    : '';
+  return `<div class="tesla-l7" style="margin-top:1rem">
+    <div class="tesla-l7-head">${head}</div>
+    <table class="tesla-table">
+      <thead><tr>
+        <th>Campaign</th><th>Meta spend</th><th>Shopify orders</th><th>Shopify revenue</th><th>Shopify ROAS</th>
+      </tr></thead>
+      <tbody>${campRows}</tbody>
+    </table>
+    ${adRows ? `<p class="tesla-story" style="margin:0.75rem 0 0.35rem">By ad (utm_content last-touch)</p>
+    <table class="tesla-table">
+      <thead><tr>
+        <th>Campaign</th><th>Ad / utm_content</th><th>Meta spend</th><th>Orders</th><th>Revenue</th><th>ROAS</th>
+      </tr></thead>
+      <tbody>${adRows}</tbody>
+    </table>` : ''}
+    ${foot}
+  </div>`;
+}
+
+function campaignShort(name) {
+  if (!name) return '—';
+  const parts = String(name).split('|').map(s => s.trim()).filter(Boolean);
+  return parts.length >= 2 ? parts[1] : name;
+}
+
 function renderZakiVerdict(data) {
   const agency = reportConfig.agency_owner || 'Zaki';
   const asOf = data?.generated_at ? formatEdt(data.generated_at) : '';
-  const stamp = asOf ? `<p class="tesla-story">Meta stall read · ${asOf} · judge on Shopify UTM $ only</p>` : '';
+  const attr = metaAttr7d(data);
+  const totRoas = attr?.totals?.shopify_roas;
+  const roasTxt = totRoas != null ? roas(totRoas) : '~0.5×';
+  const creative = (attr?.campaigns || []).find(c => /creative test/i.test(c.campaign_label || ''));
+  const prospect = (attr?.campaigns || []).find(c => /prospecting/i.test(c.campaign_label || ''));
+  const crN = creative?.shopify_orders || 0;
+  const crRev = creative ? fmt(creative.shopify_revenue) : '—';
+  const crQuiet = creative?.last_shopify_order_date
+    ? `last Shopify order ${creative.last_shopify_order_date}`
+    : 'no Shopify orders in window';
+  const prN = prospect?.shopify_orders || 0;
+  const stamp = asOf ? `<p class="tesla-story">Shopify last-touch UTM · ${asOf}</p>` : '';
   return `<div class="tesla-verdict">
     <div class="tesla-verdict-title">Verdict · ${agency}</div>
     ${stamp}
     <ul>
-      <li><strong>Cap or pause Creative Test</strong> ad set Broad M+W 18-65+ — LEARNING with ~0 Shopify sales while taking most budget.</li>
-      <li><strong>Shift spend to Prospecting / Hear The Grip</strong> — still the lane with real Shopify UTM orders.</li>
-      <li><strong>Turn off zero-sale Oct reels;</strong> re-enable proven winners (Video #01, Pilates evolved, Sock Era). Blocked ad: <em>No Socks Just Grip</em> (Meta security).</li>
+      <li><strong>Meta overall ${roasTxt} on Shopify</strong> (last 7d · spend vs last-touch UTM revenue) — platform conversion counts can disagree; trust Shopify.</li>
+      <li><strong>Creative Test:</strong> ${crN} Shopify orders (${crRev}) · ${crQuiet}; Prospecting / Hear The Grip: ${prN} orders including the most recent wins.</li>
+      <li><strong>Agreed plan:</strong> hold budgets 48–72h, rank campaigns on Shopify ROAS (table above), then shift toward the winner; keep Google PMax stable.</li>
     </ul>
   </div>`;
 }
@@ -3404,6 +3476,7 @@ function renderTeslaTop(data) {
         ${teslaKpi('Revenue minus ad spend', netStore, netStoreP, fmt, false)}
       </div>
       ${renderLast7DaysStrip(raw)}
+      ${renderMetaShopifyAttribution(raw)}
       <table class="tesla-table">
         <thead><tr>
           <th>Channel</th>
