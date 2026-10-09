@@ -314,20 +314,38 @@ def ad_spend_for_range(
             continue
         err = pull_errors.get(key)
         if key == "Pinterest" and _pinterest_not_connected(err):
-            source_info["Pinterest"] = {
-                "status": "pending",
-                "source": "pinterest_api",
-                "window_end": end.isoformat(),
-                "note": "Not connected — Pinterest app pending approval (no live spend)",
-                "error": err,
-            }
-            channels["Pinterest"] = {
-                "spend": 0,
-                "platform_purchases": 0,
-                "platform_revenue": 0,
-                "platform_roas": 0,
-                "spend_source": "pending",
-            }
+            manual = (cfg or {}).get("pinterest_blend_manual") or {}
+            manual_spend = float(manual.get("spend") or 0)
+            if manual_spend > 0:
+                note = manual.get("note") or "manual, via Blend"
+                source_info["Pinterest"] = {
+                    "status": "ok",
+                    "source": "blend_manual",
+                    "window_end": end.isoformat(),
+                    "note": note,
+                }
+                channels["Pinterest"] = {
+                    "spend": round(manual_spend, 2),
+                    "platform_purchases": 0,
+                    "platform_revenue": 0,
+                    "platform_roas": 0,
+                    "spend_source": "manual",
+                }
+            else:
+                source_info["Pinterest"] = {
+                    "status": "pending",
+                    "source": "pinterest_api",
+                    "window_end": end.isoformat(),
+                    "note": "Not connected — Pinterest app pending approval (no live spend)",
+                    "error": err,
+                }
+                channels["Pinterest"] = {
+                    "spend": 0,
+                    "platform_purchases": 0,
+                    "platform_revenue": 0,
+                    "platform_roas": 0,
+                    "spend_source": "pending",
+                }
             continue
         if daily:
             spend = round(float(daily) * days, 2)
@@ -587,9 +605,9 @@ def build_channels(
             {
                 **copy.deepcopy(base),
                 "name": name,
-                "spend": round(spend),
-                "spend_last": round(spend_last),
-                "spend_month": round(spend_month),
+                "spend": round(spend, 2),
+                "spend_last": round(spend_last, 2),
+                "spend_month": round(spend_month, 2),
                 "shopify_orders": o,
                 "shopify_orders_last": ol,
                 "shopify_orders_month": om,
@@ -1525,6 +1543,12 @@ def main() -> None:
         )
     except Exception as exc:
         print(f"meta_shopify_attribution skipped: {exc}", file=sys.stderr)
+    try:
+        from meta_ads_by_creative import build_meta_ads_by_creative
+
+        payload["meta_ads_by_creative"] = build_meta_ads_by_creative()
+    except Exception as exc:
+        print(f"meta_ads_by_creative skipped: {exc}", file=sys.stderr)
     payload["generated_at"] = generated_at
     payload["ad_spend_window"] = {"start": w["start"], "end": w["end"], "label": w["label"]}
 

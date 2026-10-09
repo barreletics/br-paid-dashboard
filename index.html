@@ -1831,6 +1831,7 @@ function renderQuality(dq) {
 function spendDisplay(c) {
   const val = fmt(c.spend);
   if (c.spend_source === 'estimate') return `${val} <span class="spend-estimate">(est.)</span>`;
+  if (c.spend_source === 'manual') return `${val} <span class="spend-estimate">(manual, via Blend, Oct 9)</span>`;
   if (c.spend_source === 'pending') return `${val} <span class="spend-estimate">(not connected)</span>`;
   if (c.spend_source === 'cached') return `${val} <span class="spend-estimate">(cached)</span>`;
   return val;
@@ -3413,28 +3414,47 @@ function campaignShort(name) {
   return parts.length >= 2 ? parts[1] : name;
 }
 
+function renderMetaAdsByCreative(data) {
+  const block = data?.meta_ads_by_creative || data?._source?.meta_ads_by_creative;
+  if (!block || !(block.rows || []).length) return '';
+  const w = block.window || {};
+  const note = block.source_note ? ` · ${block.source_note}` : '';
+  const rows = block.rows.map(r => {
+    const shop = r.shopify_orders
+      ? `${r.shopify_orders}, ${fmt(r.shopify_revenue)}`
+      : '0';
+    const roasVal = r.shopify_roas != null ? roas(r.shopify_roas) : (r.meta_spend ? roas(0) : '—');
+    return `<tr>
+      <td>${shortText(r.ad, 48)}</td>
+      <td>${shortText(r.ad_set, 20)}</td>
+      <td>${fmt(r.meta_spend)}</td>
+      <td>${r.meta_claims_purch ?? '—'}</td>
+      <td>${shop}</td>
+      <td>${roasVal}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="tesla-l7" style="margin-top:1rem">
+    <div class="tesla-l7-head">Meta ads by creative (${w.label || 'Oct 2 – Oct 8, 2026'})${note}</div>
+    <table class="tesla-table">
+      <thead><tr>
+        <th>Ad</th><th>Ad set</th><th>Spend</th><th>Meta claims</th><th>Shopify orders / $</th><th>Shopify ROAS</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
 function renderZakiVerdict(data) {
-  const agency = reportConfig.agency_owner || 'Zaki';
-  const asOf = data?.generated_at ? formatEdt(data.generated_at) : '';
-  const attr = metaAttr7d(data);
-  const totRoas = attr?.totals?.shopify_roas;
-  const roasTxt = totRoas != null ? roas(totRoas) : '~0.5×';
-  const creative = (attr?.campaigns || []).find(c => /creative test/i.test(c.campaign_label || ''));
-  const prospect = (attr?.campaigns || []).find(c => /prospecting/i.test(c.campaign_label || ''));
-  const crN = creative?.shopify_orders || 0;
-  const crRev = creative ? fmt(creative.shopify_revenue) : '—';
-  const crQuiet = creative?.last_shopify_order_date
-    ? `last Shopify order ${creative.last_shopify_order_date}`
-    : 'no Shopify orders in window';
-  const prN = prospect?.shopify_orders || 0;
-  const stamp = asOf ? `<p class="tesla-story">Shopify last-touch UTM · ${asOf}</p>` : '';
   return `<div class="tesla-verdict">
-    <div class="tesla-verdict-title">Verdict · ${agency}</div>
-    ${stamp}
+    <div class="tesla-verdict-title">Action items to consider</div>
+    <p class="tesla-story">Ideas for ${reportConfig.agency_owner || 'Zaki'} — not directives.</p>
     <ul>
-      <li><strong>Meta overall ${roasTxt} on Shopify</strong> (last 7d · spend vs last-touch UTM revenue) — platform conversion counts can disagree; trust Shopify.</li>
-      <li><strong>Creative Test:</strong> ${crN} Shopify orders (${crRev}) · ${crQuiet}; Prospecting / Hear The Grip: ${prN} orders including the most recent wins.</li>
-      <li><strong>Agreed plan:</strong> hold budgets 48–72h, rank campaigns on Shopify ROAS (table above), then shift toward the winner; keep Google PMax stable.</li>
+      <li>Hear The Grip drove 9 of 10 Meta Shopify sales; other Meta ads spent $718 for 1 sale. Consider shifting budget to Hear The Grip and new cuts of it.</li>
+      <li>Consider pausing zero-sale ads: Grip Socks Weren't Built to Last, Pilates has evolved, the two small Oct reels, Sock Era in Prospecting. Keep Sock Era in Creative Test.</li>
+      <li>Video #01 spent $178 with no Shopify sale; consider a short pause.</li>
+      <li>Spain: $50, no sales; consider holding until US is profitable.</li>
+      <li>Best ad is ~1.0 to 1.4× and Meta claims ~2× Shopify; new Hear The Grip-style creative is needed, not just budget moves.</li>
+      <li>Pinterest: let it run 7 days, judge on Shopify orders.</li>
     </ul>
   </div>`;
 }
@@ -3481,6 +3501,7 @@ function renderTeslaTop(data) {
       </div>
       ${renderLast7DaysStrip(raw)}
       ${renderMetaShopifyAttribution(raw)}
+      ${renderMetaAdsByCreative(raw)}
       <table class="tesla-table">
         <thead><tr>
           <th>Channel</th>
