@@ -131,10 +131,58 @@ header {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem 2rem;
-  margin-bottom: 2.75rem;
+  margin-bottom: 1.25rem;
 }
 @media (max-width: 800px) {
   .tesla-kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+.tesla-l7 {
+  margin-bottom: 2.25rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.tesla-l7-head {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 0.85rem;
+}
+.tesla-l7-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem 2.5rem;
+}
+@media (max-width: 700px) {
+  .tesla-l7-row { grid-template-columns: 1fr; }
+}
+.tesla-l7-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 0.55rem;
+  color: var(--text);
+}
+.tesla-l7-metrics {
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+}
+.tesla-l7-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.65rem;
+}
+.tesla-l7-k {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  min-width: 4.5rem;
+}
+.tesla-l7-v {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 .tesla-kpi-val {
   font-size: clamp(1.85rem, 4.5vw, 2.5rem);
@@ -3153,19 +3201,80 @@ function renderTeslaHalo(data) {
   </div>`;
 }
 
+function channelForLast7(channels, kind) {
+  const list = channels || [];
+  if (kind === 'meta') return list.find(c => /^Meta/i.test(c.name || ''));
+  if (kind === 'google') return list.find(c => /Google/i.test(c.name || ''));
+  return null;
+}
+
+function dataForLast7Strip(raw) {
+  const snap = raw?.windows?.['7'];
+  if (snap) {
+    return {
+      live: true,
+      channels: snap.channels || [],
+      window: snap.window || {},
+    };
+  }
+  return {
+    live: false,
+    channels: raw?.channels || [],
+    window: raw?.window || {},
+  };
+}
+
+function renderLast7DaysStrip(raw) {
+  const { live, channels, window: w } = dataForLast7Strip(raw || {});
+  const head = live
+    ? `Last 7 days · ${w.label || 'rolling 7d'} vs ${w.prior_label || 'prior 7 days'} · Shopify UTM orders (ex gift card and test)`
+    : `Last 7 days · snapshot only · run GitHub refresh for live 7d vs prior${raw?.generated_at ? ' · as of ' + formatEdt(raw.generated_at) : ''}`;
+
+  function block(title, c) {
+    if (!c) {
+      return `<div class="tesla-l7-block"><div class="tesla-l7-title">${title}</div><p class="tesla-story">No channel data</p></div>`;
+    }
+    const spend = Number(c.spend) || 0;
+    const spendP = Number(c.spend_last) || 0;
+    const ord = Number(c.shopify_orders) || 0;
+    const ordP = Number(c.shopify_orders_last) || 0;
+    const rev = channelRev(c);
+    const revP = channelRevPrior(c, 'shopify_revenue_last');
+    const shopRoas = channelRoas(c);
+    const shopRoasP = Number(c.shopify_roas_last) || 0;
+    const ordRev = `${ord} orders · ${fmt(rev)}`;
+    const ordRevP = ordP || revP ? `${ordP} · ${fmt(revP)}` : null;
+    return `<div class="tesla-l7-block">
+      <div class="tesla-l7-title">${title}</div>
+      <div class="tesla-l7-metrics">
+        <div class="tesla-l7-line"><span class="tesla-l7-k">Spend</span><span class="tesla-l7-v">${fmt(spend)}</span>${teslaDelta(spend, spendP, true)}</div>
+        <div class="tesla-l7-line"><span class="tesla-l7-k">Shopify</span><span class="tesla-l7-v">${ordRev}</span>${ordRevP != null ? teslaDelta(ord, ordP, false) : ''}</div>
+        <div class="tesla-l7-line"><span class="tesla-l7-k">ROAS</span><span class="tesla-l7-v">${spend ? roas(shopRoas) : '—'}</span>${spendP ? teslaDelta(shopRoas, shopRoasP, false) : ''}</div>
+      </div>
+    </div>`;
+  }
+
+  return `<div class="tesla-l7">
+    <div class="tesla-l7-head">${head}</div>
+    <div class="tesla-l7-row">
+      ${block('Meta', channelForLast7(channels, 'meta'))}
+      ${block('Google PMax', channelForLast7(channels, 'google'))}
+    </div>
+  </div>`;
+}
+
 function renderZakiVerdict(data) {
   const agency = reportConfig.agency_owner || 'Zaki';
-  const fromRoll = (data.action_rollup?.items || []).slice(0, 3);
-  let bullets = fromRoll.map(it => `<li>${shortText(it.action, 130)}</li>`).join('');
-  if (!bullets) {
-    (data.channels || []).slice(0, 3).forEach(c => {
-      const name = channelLabel(c.name);
-      bullets += `<li>${name}: ${fmt(c.spend)} spend · ${fmt(channelRev(c))} Shopify · ${channelVerdictWord(c)}</li>`;
-    });
-  }
+  const asOf = data?.generated_at ? formatEdt(data.generated_at) : '';
+  const stamp = asOf ? `<p class="tesla-story">Meta stall read · ${asOf} · judge on Shopify UTM $ only</p>` : '';
   return `<div class="tesla-verdict">
     <div class="tesla-verdict-title">Verdict · ${agency}</div>
-    <ul>${bullets || '<li>See tasks below.</li>'}</ul>
+    ${stamp}
+    <ul>
+      <li><strong>Cap or pause Creative Test</strong> ad set Broad M+W 18-65+ — LEARNING with ~0 Shopify sales while taking most budget.</li>
+      <li><strong>Shift spend to Prospecting / Hear The Grip</strong> — still the lane with real Shopify UTM orders.</li>
+      <li><strong>Turn off zero-sale Oct reels;</strong> re-enable proven winners (Video #01, Pilates evolved, Sock Era). Blocked ad: <em>No Socks Just Grip</em> (Meta security).</li>
+    </ul>
   </div>`;
 }
 
@@ -3189,6 +3298,7 @@ function renderTeslaTop(data) {
   const netStoreP = revP - (Number(spendP) || 0);
   const channelRows = (data.channels || []).map(teslaChannelRow).join('');
   const sourceNote = adSpendSourceHint(data);
+  const raw = data._source || dashboardData || data;
 
   return `
     <section class="tesla-top easy-read" data-view="all simple summary performance actions deep">
@@ -3199,6 +3309,7 @@ function renderTeslaTop(data) {
         ${teslaKpi('Blended MER', mer, merP, roas, false)}
         ${teslaKpi('Revenue minus ad spend', netStore, netStoreP, fmt, false)}
       </div>
+      ${renderLast7DaysStrip(raw)}
       <table class="tesla-table">
         <thead><tr>
           <th>Channel</th>
