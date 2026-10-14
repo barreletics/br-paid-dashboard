@@ -78,6 +78,11 @@ def pinterest_manual_spend_for_range(start: date, end: date, manual: dict) -> tu
     """Prorate Blend total to overlap with spend_start..spend_end. partial=True if window ≠ spend coverage."""
     total = float(manual.get("spend") or 0)
     bs, be = _pinterest_blend_dates(manual)
+    daily = manual.get("daily") or {}
+    if daily and bs and be:
+        spend = round(sum(float(v) for k, v in daily.items() if start.isoformat() <= k <= end.isoformat()), 2)
+        partial = start < bs or end > be
+        return spend, partial
     if not bs or not be or total <= 0:
         return 0.0, False
     overlap_start = max(start, bs)
@@ -376,9 +381,11 @@ def ad_spend_for_range(
         channels[key]["spend_source"] = "cached"
 
     for key, daily in rates.items():
-        if key in channels and float(channels[key].get("spend") or 0) > 0:
-            continue
         err = pull_errors.get(key)
+        if key in channels and float(channels[key].get("spend") or 0) > 0 and not (
+            key == "Pinterest" and _pinterest_not_connected(err)
+        ):
+            continue
         if key == "Pinterest" and _pinterest_not_connected(err):
             pin_ch, pin_info = _pinterest_manual_channel(start, end, cfg, err)
             if pin_ch and pin_info:
