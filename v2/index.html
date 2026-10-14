@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Barreletics · Paid Ads v2</title>
+<title>Paid Ads</title>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#111827"><meta name="apple-mobile-web-app-capable" content="yes">
 <style>
@@ -28,7 +28,7 @@ details{background:var(--card);border:1px solid var(--bd);border-radius:12px;mar
 .note{font-size:12px;padding:8px;border-radius:8px;background:var(--ab);color:var(--a);margin:6px 0}.na{color:var(--mu);font-style:italic}.pin{background:var(--bb)}
 .src{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--bd);padding:6px 0;font-size:13px}.err{color:var(--r);padding:20px}
 </style></head><body>
-<header><div class="row"><h1>Barreletics · Paid Ads</h1>
+<header><div class="row"><h1>Paid Ads</h1>
 <div class="seg" id="win"><button data-w="7">7d</button><button data-w="14">14d</button><button data-w="30">30d</button></div>
 <button id="reload" title="Reload">⟳</button><button id="theme" title="Dark mode">◐</button></div>
 <div class="asof" id="asof">Loading…</div></header>
@@ -72,7 +72,7 @@ function render(){
  ${tile('Blended MER',x(k.blended_mer),chip(k.blended_mer,pk.blended_mer,'up',cl),B('s'),'store rev ÷ all spend')}
  ${tile('Cost / store order',usd(cpo,2),chip(cpo,pcpo,'down',cl),B('s'),'spend ÷ store paid orders')}
  ${tile('Pinterest+TikTok share',num(divNow)?divNow.toFixed(1)+'%':NA,chip(divNow,divL,'up',cl),B('p'),'of spend · target TBD')}
- </div><div class="sub" style="margin:6px 0 10px">Chips compare to ${esc(plab)} (same length window).</div>`);
+ </div><div class="sub" style="margin:6px 0 10px">Chips compare ${esc(plab)} (same length window).</div>`);
  // alerts + todos
  const todos=[];
  chans.forEach(c=>{const t=/meta/i.test(c.name)?th.meta_shopify_roas_target:/google/i.test(c.name)?th.google_shopify_roas_target:null;if(t&&num(c.shopify_roas)&&c.shopify_roas<t)todos.push(['red',`${c.name} store ROAS ${c.shopify_roas.toFixed(2)} < ${t}`,'#chan'])});
