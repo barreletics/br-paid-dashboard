@@ -1,0 +1,156 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Barreletics · Paid Ads v2</title>
+<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#111827"><meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#111827;--mu:#6b7280;--bd:#e5e7eb;--g:#047857;--gb:#d1fae5;--r:#b91c1c;--rb:#fee2e2;--a:#92400e;--ab:#fef3c7;--b:#1d4ed8;--bb:#dbeafe}
+[data-theme=dark]{--bg:#0b0f17;--card:#151b26;--tx:#e5e7eb;--mu:#9ca3af;--bd:#273042;--g:#34d399;--gb:#06281d;--r:#f87171;--rb:#3a1414;--a:#fbbf24;--ab:#33260a;--b:#93c5fd;--bb:#10223f}
+*{box-sizing:border-box}body{margin:0;font:14px/1.4 -apple-system,system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+a{color:var(--b);text-decoration:none}header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--bd);padding:10px 12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}h1{font-size:16px;margin:0;flex:1}
+button,.seg button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:6px 10px;font-size:13px}
+.seg{display:flex}.seg button{border-radius:0}.seg button:first-child{border-radius:8px 0 0 8px}.seg button:last-child{border-radius:0 8px 8px 0}.seg button.on{background:var(--tx);color:var(--card)}
+.asof{font-size:12px;color:var(--mu);margin-top:4px}main{padding:12px;max-width:900px;margin:auto}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}@media(min-width:700px){.tiles{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}.tile{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px}
+.tl{font-size:12px;color:var(--mu)}.tv{font-size:22px;font-weight:700;margin:2px 0}.chip{display:inline-block;font-size:11px;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.up{background:var(--gb);color:var(--g)}.dn{background:var(--rb);color:var(--r)}.nt{background:var(--bd);color:var(--mu)}.am{background:var(--ab);color:var(--a)}.bl{background:var(--bb);color:var(--b)}
+.badge{font-size:10px;text-transform:uppercase;letter-spacing:.03em;padding:1px 5px;border-radius:4px;margin-left:4px}.store{background:var(--gb);color:var(--g)}.plat{background:var(--ab);color:var(--a)}
+.todos{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}.todos a{flex:0 0 auto;scroll-snap-align:start;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+.todos a.red{border-color:var(--r);color:var(--r)}.todos a.amb{border-color:var(--a);color:var(--a)}
+h2{font-size:15px;margin:0 0 8px}.sub{font-size:12px;color:var(--mu);margin:-4px 0 8px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:right;vertical-align:top}th:first-child,td:first-child{text-align:left}th{font-size:11px;color:var(--mu);font-weight:600}
+.scroll{overflow-x:auto}.ch{border-top:1px solid var(--bd);padding:10px 0}.ch:first-of-type{border-top:0}.chh{display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}.kv div{font-size:12px;color:var(--mu)}.kv b{display:block;font-size:15px;color:var(--tx)}
+.bar{height:10px;background:var(--bd);border-radius:6px;overflow:hidden;position:relative;margin:4px 0}.bar i{display:block;height:100%;background:var(--b)}.bar i.over{background:var(--r)}.bar s{position:absolute;top:0;bottom:0;width:2px;background:var(--tx)}
+details{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-bottom:10px}summary{padding:12px;font-weight:600;cursor:pointer}details>div{padding:0 12px 12px}
+.note{font-size:12px;padding:8px;border-radius:8px;background:var(--ab);color:var(--a);margin:6px 0}.na{color:var(--mu);font-style:italic}.pin{background:var(--bb)}
+.src{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--bd);padding:6px 0;font-size:13px}.err{color:var(--r);padding:20px}
+</style></head><body>
+<header><div class="row"><h1>Barreletics · Paid Ads</h1>
+<div class="seg" id="win"><button data-w="7">7d</button><button data-w="14">14d</button><button data-w="30">30d</button></div>
+<button id="reload" title="Reload">⟳</button><button id="theme" title="Dark mode">◐</button></div>
+<div class="asof" id="asof">Loading…</div></header>
+<main id="app"></main>
+<script>
+const ACT='10152741884925238',SHOP='barreletics';
+const L={meta:`https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=${ACT}`,metaAds:`https://adsmanager.facebook.com/adsmanager/manage/ads?act=${ACT}`,google:'https://ads.google.com/aw/campaigns',pin:'https://ads.pinterest.com/',tiktok:'https://ads.tiktok.com/',shop:`https://admin.shopify.com/store/${SHOP}/orders`,ga:'https://analytics.google.com/analytics/web/',old:'../'};
+const order=n=>`https://admin.shopify.com/store/${SHOP}/orders?query=${encodeURIComponent(String(n).replace('#',''))}`;
+const chLink=n=>/meta/i.test(n)?L.meta:/google/i.test(n)?L.google:/pinterest/i.test(n)?L.pin:/tiktok/i.test(n)?L.tiktok:L.shop;
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=v=>typeof v==='number'&&isFinite(v);
+const NA='<span class="na">not available</span>';
+const usd=(v,d=0)=>num(v)?'$'+v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}):NA;
+const x=v=>num(v)?v.toFixed(2)+'×':NA,n0=v=>num(v)?v.toLocaleString('en-US'):NA;
+const B=t=>t==='s'?'<span class="badge store">store</span>':'<span class="badge plat">platform</span>';
+const fmtT=s=>{if(!s)return null;const d=new Date(s);return isNaN(d)?s:d.toLocaleString('en-US',{timeZone:'America/Detroit',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' ET'};
+const daysAgo=ds=>{if(!ds)return null;return Math.floor((Date.now()-new Date(ds+'T12:00:00-04:00'))/864e5)};
+function chip(cur,prev,good='up',label){if(!num(cur)||!num(prev)||prev===0)return '<span class="chip nt">no prior</span>';const p=(cur-prev)/Math.abs(prev)*100;const better=good==='up'?p>=0:p<=0;return `<span class="chip ${Math.abs(p)<1?'nt':better?'up':'dn'}">${p>=0?'▲':'▼'} ${Math.abs(p).toFixed(0)}% ${label}</span>`}
+let D=null,W=localStorage.getItem('v2win')||'7';
+const th=localStorage.getItem('v2theme');if(th==='dark')document.documentElement.dataset.theme='dark';
+$('#theme').onclick=()=>{const d=document.documentElement;const dark=d.dataset.theme!=='dark';if(dark)d.dataset.theme='dark';else delete d.dataset.theme;localStorage.setItem('v2theme',dark?'dark':'light')};
+$('#reload').onclick=()=>load(true);
+document.querySelectorAll('#win button').forEach(b=>b.onclick=()=>{W=b.dataset.w;localStorage.setItem('v2win',W);render()});
+async function load(){try{const r=await fetch('../data/latest.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);D=await r.json();render()}catch(e){$('#app').innerHTML=`<div class="err">Could not load data/latest.json: ${esc(e.message)}</div>`}}
+function sec(id,title,html,open){return `<details id="${id}"${open?' open':''}><summary>${title}</summary><div>${html}</div></details>`}
+function render(){
+ document.querySelectorAll('#win button').forEach(b=>b.classList.toggle('on',b.dataset.w===W));
+ const w=(D.windows||{})[W]||{};const win=w.window||D.window||{};const k=w.kpis||{};const pk=(w.prior_period||{}).kpis||{};const chans=w.channels||[];
+ const plab=`vs ${(w.prior_period||{}).window?.label||win.prior_label||'prior'}`;const cl=`vs prior ${win.days||W}d`;
+ $('#asof').innerHTML=`${esc(win.label||'')} · ${win.days||W}d rolling · data as of ${fmtT(D.generated_at)||'unknown'} · <a href="${L.old}">old page</a>`;
+ const th=D.thresholds||{};const out=[];
+ // tiles
+ const cpo=num(k.total_ad_spend)&&k.paid_orders?k.total_ad_spend/k.paid_orders:null;const pcpo=num(pk.total_ad_spend)&&pk.paid_orders?pk.total_ad_spend/pk.paid_orders:null;
+ const sp=c=>chans.filter(ch=>c.test(ch.name)).reduce((a,ch)=>a+(ch.spend||0),0);const tot=chans.reduce((a,c)=>a+(c.spend||0),0);
+ const divNow=tot?(sp(/pinterest|tiktok/i))/tot*100:null;const totL=chans.reduce((a,c)=>a+(c.spend_last||0),0);const divL=totL?chans.filter(c=>/pinterest|tiktok/i.test(c.name)).reduce((a,c)=>a+(c.spend_last||0),0)/totL*100:null;
+ const tile=(l,v,c,b,sub='')=>`<div class="tile"><div class="tl">${l}${b}</div><div class="tv">${v}</div>${c}${sub?`<div class="tl">${sub}</div>`:''}</div>`;
+ out.push(`<div class="tiles">
+ ${tile('Paid orders',n0(k.paid_orders),chip(k.paid_orders,pk.paid_orders,'up',cl),B('s'),'Shopify last-touch UTM, real orders')}
+ ${tile('Paid revenue',usd(k.paid_revenue),chip(k.paid_revenue,pk.paid_revenue,'up',cl),B('s'),'net '+usd(k.paid_revenue_net))}
+ ${tile('Ad spend',usd(k.total_ad_spend),chip(k.total_ad_spend,pk.total_ad_spend,'down',cl),B('p'),'platform-reported spend')}
+ ${tile('Blended MER',x(k.blended_mer),chip(k.blended_mer,pk.blended_mer,'up',cl),B('s'),'store rev ÷ all spend')}
+ ${tile('Cost / store order',usd(cpo,2),chip(cpo,pcpo,'down',cl),B('s'),'spend ÷ store paid orders')}
+ ${tile('Pinterest+TikTok share',num(divNow)?divNow.toFixed(1)+'%':NA,chip(divNow,divL,'up',cl),B('p'),'of spend · target TBD')}
+ </div><div class="sub" style="margin:6px 0 10px">Chips compare to ${esc(plab)} (same length window).</div>`);
+ // alerts + todos
+ const todos=[];
+ chans.forEach(c=>{const t=/meta/i.test(c.name)?th.meta_shopify_roas_target:/google/i.test(c.name)?th.google_shopify_roas_target:null;if(t&&num(c.shopify_roas)&&c.shopify_roas<t)todos.push(['red',`${c.name} store ROAS ${c.shopify_roas.toFixed(2)} < ${t}`,'#chan'])});
+ const zero=[];const lim=th.pinterest_max_spend_no_orders;
+ chans.forEach(c=>{if((c.spend||0)>0&&!c.shopify_orders){const l=/pinterest/i.test(c.name)?lim:null;zero.push({name:c.name,spend:c.spend,lim:l,over:l?c.spend>=l:true,lvl:'channel'})}});
+ const mc=D.meta_ads_by_creative||{};(mc.rows||[]).forEach(r=>{if((r.meta_spend||0)>=100&&!r.shopify_orders)zero.push({name:`${r.ad} · ${r.ad_set}`,spend:r.meta_spend,lim:null,over:true,lvl:'Meta ad ('+(mc.window||{}).label+')'})});
+ zero.forEach(z=>todos.push(['red',`Spent ${usd(z.spend)}, 0 store orders: ${z.name}`,'#alerts']));
+ const srcs=sources();srcs.filter(s=>s.stale&&!/creative/i.test(s.name)).forEach(s=>todos.push(['amb',`${s.name} data stale`,'#sources']));
+ const mcd=daysAgo((mc.window||{}).end);if(mcd>2)todos.push(['amb',`Meta creatives data ends ${mc.window.label}`,'#creatives']);
+ (D.strategy_todos||[]).forEach(t=>todos.push([t.status==='open'?'':'amb',`${t.owner}: ${t.action}`,'#todo']));
+ out.push(`<div class="todos">${todos.map(t=>`<a class="${t[0]}" href="${t[2]}">${esc(t[1]).replace(/&lt;/g,'&lt;')}</a>`).join('')||'<span class="na">no to-dos</span>'}</div>`);
+ // channels
+ out.push(`<div class="card" id="chan"><h2>Channels · ${esc(win.label)}</h2><div class="sub">Store = Shopify last-touch UTM orders/revenue. Platform = what the ad platform claims. Gap = platform purchases − store orders.</div>`+
+ chans.map(c=>{const g=num(c.platform_purchases)&&num(c.shopify_orders)?c.platform_purchases-c.shopify_orders:null;const gp=g!=null&&c.shopify_orders?` (${(c.platform_purchases/c.shopify_orders).toFixed(1)}× store)`:'';
+ const st=(D.actions?.spend_more||[]).some(a=>a.channel===c.name)?['up','spend more']:(D.actions?.pull_back||[]).some(a=>a.channel===c.name)?['dn','pull back']:['am','hold'];
+ return `<div class="ch"><div class="chh"><a href="${chLink(c.name)}" target="_blank">${esc(c.name)} ↗</a><span class="chip ${st[0]}">${st[1]}</span></div>
+ <div class="kv"><div>Spend${B('p')}<b>${usd(c.spend)}</b>${chip(c.spend,c.spend_last,'down','')}</div><div>Store orders${B('s')}<b>${n0(c.shopify_orders)}</b>${chip(c.shopify_orders,c.shopify_orders_last,'up','')}</div><div>Cost/store order<b>${usd(c.shopify_cpa,2)}</b></div>
+ <div>Store ROAS${B('s')}<b>${x(c.shopify_roas)}</b></div><div>Platform ROAS${B('p')}<b>${x(c.platform_roas)}</b></div><div>Gap (purch)<b>${g==null?NA:(g>0?'+':'')+g}</b>${gp}</div></div>
+ <div class="tl">Store rev ${usd(c.shopify_revenue)} · platform claims ${n0(c.platform_purchases)} purch / ${usd(c.platform_revenue)} · spend source: ${esc(c.spend_source||'n/a')}</div></div>`}).join('')+
+ `<div class="tl" style="margin-top:6px">Recommendation pill from the agency actions list (same for all windows). <a href="${L.shop}" target="_blank">Shopify orders ↗</a></div>
+ <div class="note">Google check: the summary line "ROAS 2.87× on $6,479" uses $6,479 = Google's 30-day <b>store revenue</b>, not spend. 30-day Google <b>spend</b> is $2,258 (GA4 advertiserAdCost). 2.87× = 6,479 ÷ 2,258. Both numbers are right; the summary wording is misleading.</div></div>`);
+ // pacing
+ const bp=D.budget_pacing||{};const pct=bp.monthly_plan?bp.month_to_date_spend/bp.monthly_plan*100:null;
+ const md=new Date(bp.mtd_end+'T12:00:00');const dim=new Date(md.getFullYear(),md.getMonth()+1,0).getDate();const exp=md.getDate()/dim*100;
+ const pbar=(sp,pl,s)=>{const p=pl?Math.min(sp/pl*100,100):0;return `<div class="bar"><i class="${sp>pl*exp/100*1.1?'over':''}" style="width:${p}%"></i><s style="left:${exp}%"></s></div>`};
+ out.push(`<div class="card" id="pacing"><h2>Spend pacing · ${esc(bp.month||'')}</h2><div class="sub">${esc(bp.mtd_start)}–${esc(bp.mtd_end)} · line = where spend should be today (${exp.toFixed(0)}%)</div>
+ <div class="chh"><span>Total ${usd(bp.month_to_date_spend)} of ${usd(bp.monthly_plan)}</span><span class="chip ${bp.pacing_status==='on_track'?'up':'am'}">${esc(bp.pacing_status||'n/a')}</span></div>${pbar(bp.month_to_date_spend,bp.monthly_plan)}
+ <div class="tl">Projected month: ${usd(bp.projected_month_spend)}</div>`+
+ (bp.by_channel||[]).map(c=>`<div style="margin-top:8px"><div class="chh" style="font-weight:400"><a href="${chLink(c.channel)}" target="_blank">${esc(c.channel)}</a><span>${usd(c.mtd_spend)} / ${usd(c.monthly_plan)} <span class="chip ${c.status==='over'?'dn':c.status==='under'?'am':'up'}">${esc(c.status)}</span></span></div>${pbar(c.mtd_spend,c.monthly_plan)}<div class="tl">source: ${esc(c.spend_source)}</div></div>`).join('')+`</div>`);
+ // creatives
+ const rows=(mc.rows||[]).slice().sort((a,b)=>b.meta_spend-a.meta_spend);const pinned=rows.filter(r=>/hear the grip/i.test(r.ad));const rest=rows.filter(r=>!/hear the grip/i.test(r.ad));
+ const mtot=rows.reduce((a,r)=>a+(r.shopify_orders||0),0);const htg=pinned.reduce((a,r)=>a+(r.shopify_orders||0),0);
+ const crow=(r,p)=>`<tr class="${p?'pin':''}"><td><a href="${L.metaAds}" target="_blank">${p?'📌 ':''}${esc(r.ad)}</a><div class="tl">${esc(r.ad_set)}</div></td><td>${usd(r.meta_spend)}</td><td>${n0(r.meta_claims_purch)}</td><td>${r.shopify_orders?`<a href="${order(r.order_names[0])}" target="_blank">${r.shopify_orders}</a>`:'0'}</td><td>${x(r.shopify_roas)}</td></tr>`;
+ const head='<tr><th>Ad</th><th>Spend</th><th>Meta claims</th><th>Store orders</th><th>Store ROAS</th></tr>';
+ out.push(`<div class="card" id="creatives"><h2>Meta creatives · top 5</h2><div class="sub">Actual range: <b>${esc((mc.window||{}).label||'unknown')}</b> (fixed, does not follow the 7/14/30 picker)${mcd>2?` · <span class="chip am">${mcd} days old</span>`:''}. ${esc(mc.source_note||'')}</div>
+ ${rows.length?`<div class="tl">Hear The Grip: ${htg} of ${mtot} store orders from listed ads (${mtot?(htg/mtot*100).toFixed(0):0}%)</div><div class="scroll"><table>${head}${pinned.map(r=>crow(r,1)).join('')}${rest.slice(0,5).map(r=>crow(r)).join('')}</table></div>
+ ${rest.length>5?`<details style="margin-top:8px"><summary>${rest.length-5} more ads</summary><div class="scroll"><table>${head}${rest.slice(5).map(r=>crow(r)).join('')}</table></div></details>`:''}`:NA}
+ <div class="tl">Frequency / CTR (fatigue): ${NA} in latest.json.</div></div>`);
+ // diversification
+ const cm=(D.channel_mix||{}).monthly||[];
+ out.push(`<div class="card" id="div"><h2>Diversification off Meta</h2><div class="sub">Pinterest+TikTok share of spend this window: <b>${num(divNow)?divNow.toFixed(1)+'%':'n/a'}</b> · target <b>TBD</b></div>
+ <div class="scroll"><table><tr><th>Month</th><th>Meta</th><th>Google</th><th>Pinterest</th><th>TikTok</th></tr>${cm.map(m=>`<tr><td>${esc(m.month)}</td><td>${m.meta_share_pct}%</td><td>${m.google_share_pct}%</td><td>${m.pinterest_share_pct}%</td><td class="na">—</td></tr>`).join('')}</table></div>
+ <div class="tl">Monthly = share of store (UTM) ad-attributed revenue${B('s')}. Shares of spend by month: ${NA}.</div>
+ <div class="ch" style="margin-top:8px"><div class="chh"><a href="${L.tiktok}" target="_blank">TikTok test ↗</a><span class="chip nt">not started</span></div><div class="tl">No TikTok spend or orders in data. Budget and pass/fail cost per store order: TBD.</div></div></div>`);
+ // alerts
+ out.push(sec('alerts',`Spent $X, 0 store orders (${zero.length})`,zero.length?`<table><tr><th>Where</th><th>Spend</th><th>Threshold</th></tr>${zero.map(z=>`<tr><td>${esc(z.name)}<div class="tl">${esc(z.lvl)}</div></td><td>${usd(z.spend)}</td><td>${z.lim?usd(z.lim)+' (config)':'$100 default'}</td></tr>`).join('')}</table>`:'No channel or ad over threshold with zero store orders.',zero.length>0));
+ // sources
+ out.push(sec('sources','Data sources & freshness',srcs.map(s=>`<div class="src"><span>${s.stale?'🔴':s.manual?'🟡':'🟢'} <b>${esc(s.name)}</b><div class="tl">${esc(s.src)} · ${esc(s.note)}</div></span><span class="tl" style="text-align:right">${esc(s.when)}</span></div>`).join('')+`<div class="src"><span>⚪ <b>TikTok</b><div class="tl">not connected</div></span></div><div class="tl">🔴 stale = data ends &gt;2 days before today · 🟡 manual entry (not a live API). Pinterest manual spend covers only its stated dates; windows starting earlier undercount Pinterest spend. Pinterest API: ${esc(((w.ad_pull_errors||{}).Pinterest)||'no error')}.</div>`,srcs.some(s=>s.stale)));
+ // to-do
+ const ac=D.actions||{};out.push(sec('todo','Full to-do list & actions',`<table><tr><th>Item</th><th>Owner</th><th>Due</th></tr>${(D.strategy_todos||[]).map(t=>`<tr><td>${esc(t.action)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}${(D.next_week_priorities||[]).map(t=>`<tr><td>P${t.priority}: ${esc(t.action)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}${(ac.watch||[]).map(t=>`<tr><td>Watch ${esc(t.channel)}: ${esc(t.item)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}</table>`));
+ // daily
+ const dor=w.daily_orders||{},drv=w.daily_revenue||{};const mx=Math.max(1,...Object.values(dor));
+ out.push(sec('daily','Daily store orders'+'',`<table><tr><th>Day</th><th>Orders${B('s')}</th><th>Revenue</th><th></th></tr>${Object.keys(dor).sort().reverse().map(d=>`<tr><td>${d}</td><td>${dor[d]}</td><td>${usd(drv[d])}</td><td style="width:35%"><div class="bar"><i style="width:${dor[d]/mx*100}%"></i></div></td></tr>`).join('')}</table>`));
+ // weekly history
+ out.push(sec('hist','History (rolling snapshots)',`<div class="scroll"><table><tr><th>Window</th><th>Orders</th><th>Revenue</th><th>Spend</th><th>MER</th></tr>${(D.history_weekly||[]).slice().reverse().map(h=>`<tr><td>${esc(h.label)}</td><td>${n0(h.orders)}</td><td>${usd(h.revenue)}</td><td>${usd(h.ad_spend)}</td><td>${x(h.mer)}</td></tr>`).join('')}</table></div>`));
+ // campaigns
+ out.push(sec('camps','Campaign status',`<table>${(D.campaign_status||[]).map(c=>`<tr><td><a href="${chLink(c.channel)}" target="_blank">${esc(c.channel)} · ${esc(c.campaign)}</a><div class="tl">${esc(c.key_metric)} · ${esc(c.next_milestone)}</div></td><td>${esc(c.status)}<div class="tl">${usd(c.spend_period)}</div></td></tr>`).join('')}</table>`+
+  ((D.meta_shopify_attribution_7d||{}).campaigns?`<h2 style="margin-top:10px">Meta campaigns vs store · ${esc(D.meta_shopify_attribution_7d.window.label)}</h2><table><tr><th>Campaign</th><th>Spend</th><th>Store orders</th><th>Store ROAS</th></tr>${D.meta_shopify_attribution_7d.campaigns.map(c=>`<tr><td>${esc(c.campaign_label)}</td><td>${usd(c.meta_spend)}</td><td>${n0(c.shopify_orders)}</td><td>${x(c.shopify_roas)}</td></tr>`).join('')}</table>`:'')));
+ out.push(sec('agency','Agency changes log',`<table>${(D.agency_activity||[]).slice().reverse().map(a=>`<tr><td>${esc(a.date)}</td><td style="text-align:left">${esc(a.owner)}: ${esc(a.action)}</td></tr>`).join('')}</table>`));
+ // conversion split
+ const os=D.organic_snapshot||{},gf=D.ga4_funnel||{};
+ out.push(sec('conv','Paid vs organic (GA4, direction only)',`<div class="sub">GA4 numbers ≠ Shopify. Window: main 30-day window.</div><table><tr><th>Channel</th><th>Sessions</th><th>Purch</th><th>Rev</th></tr>${(os.channels||[]).map(c=>`<tr><td>${esc(c.name)}</td><td>${n0(c.sessions)}</td><td>${n0(c.purchases)}</td><td>${usd(c.revenue)}</td></tr>`).join('')}<tr><td>Paid social</td><td>${n0(gf.paid_social_sessions)}</td><td>${n0(gf.purchases)}</td><td>${NA}</td></tr></table><div class="tl">Paid-social funnel: ${n0(gf.add_to_carts)} ATC → ${n0(gf.checkouts)} checkouts → ${n0(gf.purchases)} purch. Overall conversion rate: ${NA}. <a href="${L.ga}" target="_blank">GA4 ↗</a></div>`));
+ // returns
+ const r2=(w.director_economics||{}).returns_rollup||k.returns_rollup||{};const ue=k.unit_economics||{};
+ out.push(sec('returns','Returns & unit economics',`<table><tr><td>Refund returns</td><td>${n0(r2.refund_return_orders)}</td></tr><tr><td>Exchanges</td><td>${n0(r2.exchange_orders)}</td></tr><tr><td>Refund cash out</td><td>${usd(r2.refunds_cash_out)}</td></tr><tr><td>Returns cash cost</td><td>${usd(r2.returns_cash_cost)}</td></tr><tr><td>AOV (store)</td><td>${usd(k.aov,2)}</td></tr><tr><td>Discounts</td><td>${usd(ue.discounts)}</td></tr><tr><td>Intl ship-to orders</td><td>${n0(ue.intl_ship_to_orders)}</td></tr><tr><td>Excluded orders (test/cancelled/etc.)</td><td>${n0((w.excluded||{}).orders)}</td></tr><tr><td>Wholesale (not in totals)</td><td>${n0(k.wholesale_orders)} · ${usd(k.wholesale_revenue)}</td></tr></table><div class="tl">New vs returning customers: ${NA}.</div>`));
+ const ip=D.intl_performance||{};out.push(sec('intl','International',ip.shopify?`<div class="sub">${esc(ip.label)} vs ${esc(ip.prior_label)}</div><table>${Object.entries(ip.shopify).filter(([a,v])=>num(v)).map(([a,v])=>`<tr><td>${esc(a.replace(/_/g,' '))}</td><td>${/revenue/.test(a)?usd(v):n0(v)}</td></tr>`).join('')}</table>`:NA));
+ out.push(sec('gloss','Glossary',`<table>${Object.entries(D.glossary||{}).map(([a,b])=>`<tr><td><b>${esc(a)}</b></td><td style="text-align:left">${esc(b)}</td></tr>`).join('')}</table>`));
+ $('#app').innerHTML=out.join('');
+}
+function sources(){const dq=D.data_quality||{},w=(D.windows||{})[W]||{},as=w.ad_source_status||{};const today=D.window?.end;const res=[];
+ const add=(name,src,note,end,pulled)=>{const age=daysAgo(end);res.push({name,src,manual:/manual/i.test(src||''),note:note||'',stale:age==null?true:age>2,when:`data through ${end||'unknown'}${pulled?' · pulled '+fmtT(pulled):''}`})};
+ add('Shopify (store truth)',dq.shopify?.source,dq.shopify?.note,today,dq.shopify?.pulled_at);
+ add('Meta (platform)',dq.meta?.source,'',dq.meta?.last_live_through,dq.meta?.pulled_at);
+ add('Google via GA4 (platform)',dq.google?.source,'',dq.google?.last_live_through,dq.google?.pulled_at);
+ const pn=as.Pinterest?.note||'';const m=pn.match(/(\d{4}-\d{2}-\d{2})\s*$/)||pn.match(/–(\d{4}-\d{2}-\d{2})/);
+ add('Pinterest (platform, manual Blend)',as.Pinterest?.source||dq.pinterest?.source,`${pn} · API token dead · data_quality says last live ${dq.pinterest?.last_live_through}`,m?m[1]:dq.pinterest?.last_live_through,null);
+ add('GA4 (direction only)',dq.ga4?.source,'',dq.ga4?.pulled_at?.slice(0,10),dq.ga4?.pulled_at);
+ const mc=D.meta_ads_by_creative?.window;add('Meta ads by creative',D.meta_ads_by_creative?.source_note,'fixed window',mc?.end,null);
+ return res}
+load();setInterval(load,15*60*1000);
+</script></body></html>
