@@ -71,7 +71,7 @@ function render(){
  const noCost='<div class="tl">needs real COGS + fulfillment cost (Xero/3PL); data has only a modeled '+(num(de.modeled_cogs_pct)?Math.round(de.modeled_cogs_pct*100)+'%':'')+' COGS assumption</div>';
  out.push(`<div class="tiles">
  ${tile('Paid ROAS',x(de.shopify_roas_blended),chip(de.shopify_roas_blended,proasL,'up',cl),B('s'),'UTM-tagged store rev '+usd(tagNow)+' ÷ spend')}
- ${tile('Halo ROAS',x(de.halo_index),chip(de.halo_index,haloL,'up',cl),B('s'),'untagged store rev '+usd(de.halo_revenue)+' ('+n0(de.halo_orders)+' orders) ÷ spend')}
+ ${tile('Halo ROAS',x(num(k.paid_revenue)&&k.total_ad_spend?k.paid_revenue/k.total_ad_spend:null),chip(num(k.paid_revenue)&&k.total_ad_spend?k.paid_revenue/k.total_ad_spend:null,num(pk.paid_revenue)&&pk.total_ad_spend?pk.paid_revenue/pk.total_ad_spend:null,'up',cl),B('s'),'all store sales incl. organic ÷ ad spend')}
  ${tile('Ad profit',NA,noCost,B('s'),'')}
  ${tile('Total profit',NA,noCost,B('s'),'')}
  ${tile('Total ad spend',usd(k.total_ad_spend),chip(k.total_ad_spend,pk.total_ad_spend,'down',cl),B('p'),'platform-reported spend')}
@@ -79,7 +79,7 @@ function render(){
  ${tile('Store orders',n0(k.paid_orders),chip(k.paid_orders,pk.paid_orders,'up',cl),B('s'),'all DTC orders (tagged + halo)')}
  ${tile('Store revenue',usd(k.paid_revenue),chip(k.paid_revenue,pk.paid_revenue,'up',cl),B('s'),'net '+usd(k.paid_revenue_net))}
  ${tile('Pinterest+TikTok share',num(divNow)?divNow.toFixed(1)+'%':NA,chip(divNow,divL,'up',cl),B('p'),'of spend · target TBD')}
- ${tile('Blended MER',x(k.blended_mer),chip(k.blended_mer,pk.blended_mer,'up',cl),B('s'),'store rev ÷ all spend')}
+ ${tile('Organic/untagged revenue',usd(num(k.paid_revenue)?k.paid_revenue-tagNow:null),chip(num(k.paid_revenue)?k.paid_revenue-tagNow:null,num(pk.paid_revenue)?pk.paid_revenue-tagL:null,'up',cl),B('s'),(k.paid_revenue?((k.paid_revenue-tagNow)/k.paid_revenue*100).toFixed(0)+'% of store revenue':'')+' · not UTM-tagged to paid')}
  </div><div class="sub" style="margin:6px 0 10px">Chips compare ${esc(plab)} (same length window).</div>`);
  // alerts + todos
  const todos=[];
