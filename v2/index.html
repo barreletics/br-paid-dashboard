@@ -17,7 +17,7 @@ button,.seg button{border:1px solid var(--bd);background:var(--card);color:var(-
 .tl{font-size:12px;color:var(--mu)}.tv{font-size:22px;font-weight:700;margin:2px 0}.chip{display:inline-block;font-size:11px;padding:2px 7px;border-radius:999px;white-space:nowrap}
 .up{background:var(--gb);color:var(--g)}.dn{background:var(--rb);color:var(--r)}.nt{background:var(--bd);color:var(--mu)}.am{background:var(--ab);color:var(--a)}.bl{background:var(--bb);color:var(--b)}
 .badge{font-size:10px;text-transform:uppercase;letter-spacing:.03em;padding:1px 5px;border-radius:4px;margin-left:4px}.store{background:var(--gb);color:var(--g)}.plat{background:var(--ab);color:var(--a)}
-.todos{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}.todos a{flex:0 0 auto;scroll-snap-align:start;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+.todos{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 10px}.todos a{flex:0 1 auto;max-width:100%;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
 .todos a.red{border-color:var(--r);color:var(--r)}.todos a.amb{border-color:var(--a);color:var(--a)}
 h2{font-size:15px;margin:0 0 8px}.sub{font-size:12px;color:var(--mu);margin:-4px 0 8px}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:right;vertical-align:top}th:first-child,td:first-child{text-align:left}th{font-size:11px;color:var(--mu);font-weight:600}
@@ -83,6 +83,7 @@ function render(){
  const srcs=sources();srcs.filter(s=>s.stale&&!/creative/i.test(s.name)).forEach(s=>todos.push(['amb',`${s.name} data stale`,'#sources']));
  const mcd=daysAgo((mc.window||{}).end);if(mcd>2)todos.push(['amb',`Meta creatives data ends ${mc.window.label}`,'#creatives']);
  (D.strategy_todos||[]).forEach(t=>todos.push([t.status==='open'?'':'amb',`${t.owner}: ${t.action}`,'#todo']));
+ const pr=t=>/^Spent |stale|data ends/.test(t[1])?0:/ROAS .* < /.test(t[1])?1:2;todos.sort((a,b)=>pr(a)-pr(b));
  out.push(`<div class="todos">${todos.map(t=>`<a class="${t[0]}" href="${t[2]}">${esc(t[1]).replace(/&lt;/g,'&lt;')}</a>`).join('')||'<span class="na">no to-dos</span>'}</div>`);
  // channels
  out.push(`<div class="card" id="chan"><h2>Channels · ${esc(win.label)}</h2><div class="sub">Store = Shopify last-touch UTM orders/revenue. Platform = what the ad platform claims. Gap = platform purchases − store orders.</div>`+
