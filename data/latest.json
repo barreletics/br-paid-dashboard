@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T05:48:59.812343-04:00",
+  "generated_at": "2026-10-15T06:20:53.722258-04:00",
   "window": {
     "start": "2026-09-16",
     "end": "2026-10-15",
@@ -18,7 +18,7 @@
     "DTC store 192 orders \u00b7 $20,930 (-14% vs Aug 17 \u2013 Sep 15, 2026). Wholesale 1 orders \u00b7 $0 \u2014 not in DTC totals.",
     "Google PMax \u00b7 Shopify ROAS 2.91\u00d7 on $6,479 \u2014 best paid channel.",
     "Meta \u00b7 70 Shopify UTM orders \u00b7 ROAS 0.99\u00d7 (platform claims 120 purch).",
-    "Pinterest \u00b7 2 Shopify orders \u00b7 $323 spend.",
+    "Pinterest \u00b7 2 Shopify orders \u00b7 $342 spend.",
     "Hold Meta budget until Shopify UTM ROAS \u22651.5\u00d7 for 7 days \u00b7 keep Google running."
   ],
   "kpi_vs_target": [
@@ -40,7 +40,7 @@
     },
     {
       "kpi": "Blended MER",
-      "this_period": 2.08,
+      "this_period": 2.07,
       "last_period": 2.35,
       "target": 3.0,
       "unit": "\u00d7",
@@ -75,16 +75,16 @@
     "month": "2026-10",
     "mtd_start": "2026-10-01",
     "mtd_end": "2026-10-15",
-    "month_to_date_spend": 4475,
+    "month_to_date_spend": 4495,
     "monthly_plan": 9800,
-    "projected_month_spend": 9248,
+    "projected_month_spend": 9289,
     "pacing_status": "on_track",
     "spend_includes_estimates": false,
     "note": "Calendar MTD 2026-10-01\u20132026-10-15 (15 days) \u00b7 from live platform pulls for this calendar month",
     "by_channel": [
       {
         "channel": "Meta",
-        "mtd_spend": 3264,
+        "mtd_spend": 3265,
         "monthly_plan": 7500,
         "status": "on_track",
         "spend_source": "live",
@@ -100,11 +100,11 @@
       },
       {
         "channel": "Pinterest",
-        "mtd_spend": 264,
+        "mtd_spend": 283,
         "monthly_plan": 800,
         "status": "under",
         "spend_source": "manual",
-        "used_pct": 33
+        "used_pct": 35
       }
     ]
   },
@@ -112,22 +112,22 @@
     "shopify": {
       "status": "ok",
       "source": "shopify_rest",
-      "note": "DTC paid orders + UTM; wholesale separate; excludes cancelled, test, promo, exchanges \u00b7 pulled 2026-10-15T05:48:59.812343-04:00",
-      "pulled_at": "2026-10-15T05:48:59.812343-04:00"
+      "note": "DTC paid orders + UTM; wholesale separate; excludes cancelled, test, promo, exchanges \u00b7 pulled 2026-10-15T06:20:53.722258-04:00",
+      "pulled_at": "2026-10-15T06:20:53.722258-04:00"
     },
     "blend_meta": {
       "status": "ok",
       "source": "meta_graph_api",
       "note": "Live pull for Sep 16 \u2013 Oct 15, 2026",
       "last_live_through": "2026-10-15",
-      "pulled_at": "2026-10-15T05:48:50.151160-04:00"
+      "pulled_at": "2026-10-15T06:20:45.685767-04:00"
     },
     "blend_google": {
       "status": "ok",
       "source": "ga4_ad_cost",
       "note": "Live pull for Sep 16 \u2013 Oct 15, 2026",
       "last_live_through": "2026-10-15",
-      "pulled_at": "2026-10-15T05:48:50.151160-04:00"
+      "pulled_at": "2026-10-15T06:20:45.685767-04:00"
     },
     "blend_pinterest": {
       "status": "ok",
@@ -140,7 +140,7 @@
       "status": "ok",
       "source": "ga4_ad_cost",
       "note": "GA4 advertiserAdCost for Sep 16 \u2013 Oct 15, 2026",
-      "pulled_at": "2026-10-15T05:48:50.151160-04:00"
+      "pulled_at": "2026-10-15T06:20:45.685767-04:00"
     },
     "shopify_mcp": {
       "status": "skip",
@@ -157,14 +157,14 @@
       "source": "meta_graph_api",
       "note": "Live pull for Sep 16 \u2013 Oct 15, 2026",
       "last_live_through": "2026-10-15",
-      "pulled_at": "2026-10-15T05:48:50.151160-04:00"
+      "pulled_at": "2026-10-15T06:20:45.685767-04:00"
     },
     "google": {
       "status": "ok",
       "source": "ga4_ad_cost",
       "note": "Live pull for Sep 16 \u2013 Oct 15, 2026",
       "last_live_through": "2026-10-15",
-      "pulled_at": "2026-10-15T05:48:50.151160-04:00"
+      "pulled_at": "2026-10-15T06:20:45.685767-04:00"
     },
     "pinterest": {
       "status": "ok",
@@ -182,10 +182,10 @@
     "wholesale_orders": 1,
     "wholesale_revenue": 0.0,
     "wholesale_revenue_net": 0.0,
-    "total_ad_spend": 10075,
-    "blended_mer": 2.08,
+    "total_ad_spend": 10095,
+    "blended_mer": 2.07,
     "blended_mer_net": 2.01,
-    "cpa_blended": 52.47,
+    "cpa_blended": 52.58,
     "aov": 109.01,
     "aov_net": 105.66,
     "spend_estimated": false,
@@ -218,7 +218,7 @@
   "channels": [
     {
       "name": "Meta",
-      "spend": 7525.55,
+      "spend": 7526.29,
       "spend_last": 8294.44,
       "shopify_orders": 70,
       "shopify_orders_last": 86,
@@ -226,7 +226,7 @@
       "shopify_revenue_last": 8477,
       "shopify_roas": 0.99,
       "shopify_roas_last": 1.02,
-      "shopify_cpa": 107.51,
+      "shopify_cpa": 107.52,
       "platform_purchases": 120,
       "platform_revenue": 11471.36,
       "platform_roas": 1.52,
@@ -241,9 +241,9 @@
       "shopify_roas_month": 1.01,
       "shopify_roas_net": 0.94,
       "spend_source": "live",
-      "impressions": 225740,
-      "clicks": 9052,
-      "ctr": 4.0099,
+      "impressions": 225770,
+      "clicks": 9054,
+      "ctr": 4.0103,
       "cpc": 0.83
     },
     {
@@ -278,7 +278,7 @@
     },
     {
       "name": "Pinterest",
-      "spend": 322.65,
+      "spend": 341.71,
       "spend_last": 0.0,
       "shopify_orders": 2,
       "shopify_orders_last": 5,
@@ -286,13 +286,13 @@
       "shopify_revenue_last": 679,
       "shopify_roas": null,
       "shopify_roas_last": null,
-      "shopify_cpa": 161.32,
+      "shopify_cpa": 170.85,
       "platform_purchases": 0,
       "platform_revenue": 0,
       "platform_roas": 0,
       "status": "watch",
       "interpretation": "",
-      "spend_month": 322.65,
+      "spend_month": 341.71,
       "shopify_orders_month": 0,
       "shopify_revenue_month": 0,
       "shopify_revenue_net": 168,
@@ -624,7 +624,7 @@
       "ad": "IG Reel | Hear The Grip | Prospecting | Sep 2026",
       "spend": 1170,
       "purch": 22,
-      "roas": 2.25
+      "roas": 2.24
     },
     {
       "campaign": "BAR | Creative Test | Broad | US",
@@ -956,8 +956,8 @@
       "orders": 192,
       "revenue": 20930,
       "revenue_net": 20286,
-      "ad_spend": 10075,
-      "mer": 2.08,
+      "ad_spend": 10095,
+      "mer": 2.07,
       "channels": {
         "Meta": {
           "orders": 70,
@@ -1087,7 +1087,7 @@
       "paid_revenue_net": 22966.0,
       "wholesale_orders": 1,
       "wholesale_revenue": 1578.0,
-      "total_ad_spend": 10075,
+      "total_ad_spend": 10095,
       "blended_mer": 2.48,
       "blended_mer_net": 2.28
     },
@@ -1114,20 +1114,20 @@
         "Meta": {
           "status": "ok",
           "source": "meta_graph_api",
-          "pulled_at": "2026-10-15T05:48:32.152545-04:00",
+          "pulled_at": "2026-10-15T06:20:29.426243-04:00",
           "window_end": "2026-10-15"
         },
         "Google": {
           "status": "ok",
           "source": "ga4_ad_cost",
-          "pulled_at": "2026-10-15T05:48:32.152545-04:00",
+          "pulled_at": "2026-10-15T06:20:29.426243-04:00",
           "window_end": "2026-10-15"
         },
         "Pinterest": {
           "status": "ok",
           "source": "blend_manual",
           "window_end": "2026-10-15",
-          "note": "manual, via Blend, Oct 14 \u00b7 spend covers 2026-09-25\u20132026-10-13"
+          "note": "manual, via Blend, Oct 15 \u00b7 spend covers 2026-09-25\u20132026-10-14"
         }
       },
       "ad_pull_errors": {
@@ -1155,10 +1155,10 @@
         "wholesale_orders": 0,
         "wholesale_revenue": 0.0,
         "wholesale_revenue_net": 0.0,
-        "total_ad_spend": 1795,
-        "blended_mer": 2.16,
-        "blended_mer_net": 2.16,
-        "cpa_blended": 48.51,
+        "total_ad_spend": 1815,
+        "blended_mer": 2.14,
+        "blended_mer_net": 2.14,
+        "cpa_blended": 49.04,
         "aov": 104.74,
         "aov_net": 104.74,
         "spend_estimated": false,
@@ -1191,7 +1191,7 @@
       "channels": [
         {
           "name": "Meta",
-          "spend": 1239.02,
+          "spend": 1239.76,
           "spend_last": 1760.65,
           "shopify_orders": 14,
           "shopify_orders_last": 9,
@@ -1199,7 +1199,7 @@
           "shopify_revenue_last": 1032,
           "shopify_roas": 1.18,
           "shopify_roas_last": 0.59,
-          "shopify_cpa": 88.5,
+          "shopify_cpa": 88.55,
           "platform_purchases": 19,
           "platform_revenue": 1881.45,
           "platform_roas": 1.52,
@@ -1214,9 +1214,9 @@
           "shopify_roas_month": 1.26,
           "shopify_roas_net": 1.18,
           "spend_source": "live",
-          "impressions": 38635,
-          "clicks": 1070,
-          "ctr": 2.7695,
+          "impressions": 38665,
+          "clicks": 1072,
+          "ctr": 2.7725,
           "cpc": 1.16
         },
         {
@@ -1251,7 +1251,7 @@
         },
         {
           "name": "Pinterest",
-          "spend": 152.34,
+          "spend": 171.4,
           "spend_last": 101.13,
           "shopify_orders": 1,
           "shopify_orders_last": 0,
@@ -1259,13 +1259,13 @@
           "shopify_revenue_last": 0,
           "shopify_roas": null,
           "shopify_roas_last": 0.0,
-          "shopify_cpa": 152.34,
+          "shopify_cpa": 171.4,
           "platform_purchases": 0,
           "platform_revenue": 0,
           "platform_roas": 0,
           "status": "watch",
           "interpretation": "",
-          "spend_month": 152.34,
+          "spend_month": 171.4,
           "shopify_orders_month": 0,
           "shopify_revenue_month": 0,
           "shopify_revenue_net": 84,
@@ -1442,9 +1442,9 @@
           "paid_revenue_net": 5594.74,
           "wholesale_orders": 2,
           "wholesale_revenue": 413.0,
-          "total_ad_spend": 1795,
-          "blended_mer": 3.35,
-          "blended_mer_net": 3.12
+          "total_ad_spend": 1815,
+          "blended_mer": 3.32,
+          "blended_mer_net": 3.08
         },
         "wholesale": {
           "orders": 2,
@@ -1479,15 +1479,15 @@
           "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
           "shopify_returns_samples": []
         },
-        "mer_gross": 2.16,
-        "mer_net": 2.16,
-        "mer_after_exchange_cost": 2.14,
+        "mer_gross": 2.14,
+        "mer_net": 2.14,
+        "mer_after_exchange_cost": 2.12,
         "store_after_exchange_cost": 3848.5,
-        "shopify_roas_blended": 1.61,
+        "shopify_roas_blended": 1.59,
         "halo_revenue": 994.5,
         "halo_orders": 8,
         "halo_index": 0.55,
-        "ad_spend": 1795,
+        "ad_spend": 1815,
         "store_revenue_gross": 3875.5,
         "store_revenue_net": 3875.5,
         "refunds_and_adjustments": 0.0,
@@ -1501,13 +1501,13 @@
         "fulfilled_pct": 100,
         "modeled_cogs_pct": 0.38,
         "modeled_fulfillment_per_order": 9.0,
-        "estimated_contribution": 274.81,
-        "contribution_mer": 0.15,
+        "estimated_contribution": 254.81,
+        "contribution_mer": 0.14,
         "model_disclaimer": "Modeled contribution only \u2014 replace with Xero COGS + actual 3PL when available",
         "strategy_lines": [
-          "MER 2.16\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
+          "MER 2.14\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
           "Halo ~$994 (8 orders) not ad-tagged \u2014 likely organic/direct/email; MER includes this.",
-          "Tagged Shopify ROAS 1.61\u00d7 \u2014 measurable ads at/above gate."
+          "Tagged Shopify ROAS 1.59\u00d7 \u2014 measurable ads at/above gate."
         ]
       }
     },
@@ -1516,20 +1516,20 @@
         "Meta": {
           "status": "ok",
           "source": "meta_graph_api",
-          "pulled_at": "2026-10-15T05:48:41.411333-04:00",
+          "pulled_at": "2026-10-15T06:20:37.280019-04:00",
           "window_end": "2026-10-15"
         },
         "Google": {
           "status": "ok",
           "source": "ga4_ad_cost",
-          "pulled_at": "2026-10-15T05:48:41.411333-04:00",
+          "pulled_at": "2026-10-15T06:20:37.280019-04:00",
           "window_end": "2026-10-15"
         },
         "Pinterest": {
           "status": "ok",
           "source": "blend_manual",
           "window_end": "2026-10-15",
-          "note": "manual, via Blend, Oct 14 \u00b7 spend covers 2026-09-25\u20132026-10-13"
+          "note": "manual, via Blend, Oct 15 \u00b7 spend covers 2026-09-25\u20132026-10-14"
         }
       },
       "ad_pull_errors": {
@@ -1557,10 +1557,10 @@
         "wholesale_orders": 0,
         "wholesale_revenue": 0.0,
         "wholesale_revenue_net": 0.0,
-        "total_ad_spend": 4136,
-        "blended_mer": 2.0,
-        "blended_mer_net": 2.0,
-        "cpa_blended": 55.15,
+        "total_ad_spend": 4156,
+        "blended_mer": 1.99,
+        "blended_mer_net": 1.99,
+        "cpa_blended": 55.42,
         "aov": 110.18,
         "aov_net": 110.18,
         "spend_estimated": false,
@@ -1593,7 +1593,7 @@
       "channels": [
         {
           "name": "Meta",
-          "spend": 2999.67,
+          "spend": 3000.41,
           "spend_last": 3950.42,
           "shopify_orders": 23,
           "shopify_orders_last": 43,
@@ -1601,7 +1601,7 @@
           "shopify_revenue_last": 4487,
           "shopify_roas": 0.83,
           "shopify_roas_last": 1.14,
-          "shopify_cpa": 130.42,
+          "shopify_cpa": 130.45,
           "platform_purchases": 37,
           "platform_revenue": 4165.79,
           "platform_roas": 1.39,
@@ -1616,9 +1616,9 @@
           "shopify_roas_month": 1.16,
           "shopify_roas_net": 0.83,
           "spend_source": "live",
-          "impressions": 85168,
-          "clicks": 2656,
-          "ctr": 3.1185,
+          "impressions": 85198,
+          "clicks": 2658,
+          "ctr": 3.1198,
           "cpc": 1.13
         },
         {
@@ -1653,7 +1653,7 @@
         },
         {
           "name": "Pinterest",
-          "spend": 253.47,
+          "spend": 272.53,
           "spend_last": 69.18,
           "shopify_orders": 1,
           "shopify_orders_last": 1,
@@ -1661,19 +1661,19 @@
           "shopify_revenue_last": 84,
           "shopify_roas": null,
           "shopify_roas_last": 1.21,
-          "shopify_cpa": 253.47,
+          "shopify_cpa": 272.53,
           "platform_purchases": 0,
           "platform_revenue": 0,
           "platform_roas": 0,
           "status": "watch",
           "interpretation": "",
-          "spend_month": 253.47,
+          "spend_month": 272.53,
           "shopify_orders_month": 4,
           "shopify_revenue_month": 558,
           "shopify_revenue_net": 84,
           "shopify_revenue_net_last": 84,
           "shopify_revenue_net_month": 558,
-          "shopify_roas_month": 2.2,
+          "shopify_roas_month": 2.05,
           "shopify_roas_net": null,
           "spend_source": "manual",
           "impressions": null,
@@ -1866,9 +1866,9 @@
           "paid_revenue_net": 12926.64,
           "wholesale_orders": 1,
           "wholesale_revenue": 3700.0,
-          "total_ad_spend": 4136,
-          "blended_mer": 3.29,
-          "blended_mer_net": 3.13
+          "total_ad_spend": 4156,
+          "blended_mer": 3.28,
+          "blended_mer_net": 3.11
         },
         "wholesale": {
           "orders": 1,
@@ -1903,15 +1903,15 @@
           "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
           "shopify_returns_samples": []
         },
-        "mer_gross": 2.0,
-        "mer_net": 2.0,
+        "mer_gross": 1.99,
+        "mer_net": 1.99,
         "mer_after_exchange_cost": 1.98,
         "store_after_exchange_cost": 8209.54,
         "shopify_roas_blended": 1.35,
         "halo_revenue": 2667.54,
         "halo_orders": 21,
         "halo_index": 0.64,
-        "ad_spend": 4136,
+        "ad_spend": 4156,
         "store_revenue_gross": 8263.54,
         "store_revenue_net": 8263.54,
         "refunds_and_adjustments": 0.0,
@@ -1925,11 +1925,11 @@
         "fulfilled_pct": 100,
         "modeled_cogs_pct": 0.38,
         "modeled_fulfillment_per_order": 9.0,
-        "estimated_contribution": 312.39,
-        "contribution_mer": 0.08,
+        "estimated_contribution": 292.39,
+        "contribution_mer": 0.07,
         "model_disclaimer": "Modeled contribution only \u2014 replace with Xero COGS + actual 3PL when available",
         "strategy_lines": [
-          "MER 2.0\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
+          "MER 1.99\u00d7 \u2014 total store not covering spend enough; hold scale.",
           "Halo ~$2,668 (21 orders) not ad-tagged \u2014 likely organic/direct/email; MER includes this.",
           "Tagged Shopify ROAS 1.35\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
         ]
@@ -1940,20 +1940,20 @@
         "Meta": {
           "status": "ok",
           "source": "meta_graph_api",
-          "pulled_at": "2026-10-15T05:48:50.151160-04:00",
+          "pulled_at": "2026-10-15T06:20:45.685767-04:00",
           "window_end": "2026-10-15"
         },
         "Google": {
           "status": "ok",
           "source": "ga4_ad_cost",
-          "pulled_at": "2026-10-15T05:48:50.151160-04:00",
+          "pulled_at": "2026-10-15T06:20:45.685767-04:00",
           "window_end": "2026-10-15"
         },
         "Pinterest": {
           "status": "ok",
           "source": "blend_manual",
           "window_end": "2026-10-15",
-          "note": "manual, via Blend, Oct 14 \u00b7 spend covers 2026-09-25\u20132026-10-13"
+          "note": "manual, via Blend, Oct 15 \u00b7 spend covers 2026-09-25\u20132026-10-14"
         }
       },
       "ad_pull_errors": {
@@ -1981,10 +1981,10 @@
         "wholesale_orders": 1,
         "wholesale_revenue": 0.0,
         "wholesale_revenue_net": 0.0,
-        "total_ad_spend": 10075,
-        "blended_mer": 2.08,
+        "total_ad_spend": 10095,
+        "blended_mer": 2.07,
         "blended_mer_net": 2.01,
-        "cpa_blended": 52.47,
+        "cpa_blended": 52.58,
         "aov": 109.01,
         "aov_net": 105.66,
         "spend_estimated": false,
@@ -2017,7 +2017,7 @@
       "channels": [
         {
           "name": "Meta",
-          "spend": 7525.55,
+          "spend": 7526.29,
           "spend_last": 8294.44,
           "shopify_orders": 70,
           "shopify_orders_last": 86,
@@ -2025,7 +2025,7 @@
           "shopify_revenue_last": 8477,
           "shopify_roas": 0.99,
           "shopify_roas_last": 1.02,
-          "shopify_cpa": 107.51,
+          "shopify_cpa": 107.52,
           "platform_purchases": 120,
           "platform_revenue": 11471.36,
           "platform_roas": 1.52,
@@ -2040,9 +2040,9 @@
           "shopify_roas_month": 1.01,
           "shopify_roas_net": 0.94,
           "spend_source": "live",
-          "impressions": 225740,
-          "clicks": 9052,
-          "ctr": 4.0099,
+          "impressions": 225770,
+          "clicks": 9054,
+          "ctr": 4.0103,
           "cpc": 0.83
         },
         {
@@ -2077,7 +2077,7 @@
         },
         {
           "name": "Pinterest",
-          "spend": 322.65,
+          "spend": 341.71,
           "spend_last": 0.0,
           "shopify_orders": 2,
           "shopify_orders_last": 5,
@@ -2085,13 +2085,13 @@
           "shopify_revenue_last": 679,
           "shopify_roas": null,
           "shopify_roas_last": null,
-          "shopify_cpa": 161.32,
+          "shopify_cpa": 170.85,
           "platform_purchases": 0,
           "platform_revenue": 0,
           "platform_roas": 0,
           "status": "watch",
           "interpretation": "",
-          "spend_month": 322.65,
+          "spend_month": 341.71,
           "shopify_orders_month": 0,
           "shopify_revenue_month": 0,
           "shopify_revenue_net": 168,
@@ -2337,7 +2337,7 @@
           "paid_revenue_net": 22966.0,
           "wholesale_orders": 1,
           "wholesale_revenue": 1578.0,
-          "total_ad_spend": 10075,
+          "total_ad_spend": 10095,
           "blended_mer": 2.48,
           "blended_mer_net": 2.28
         },
@@ -2374,15 +2374,15 @@
           "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
           "shopify_returns_samples": []
         },
-        "mer_gross": 2.08,
+        "mer_gross": 2.07,
         "mer_net": 2.01,
-        "mer_after_exchange_cost": 2.01,
+        "mer_after_exchange_cost": 2.0,
         "store_after_exchange_cost": 20232.44,
-        "shopify_roas_blended": 1.4,
+        "shopify_roas_blended": 1.39,
         "halo_revenue": 6864.24,
         "halo_orders": 57,
         "halo_index": 0.68,
-        "ad_spend": 10075,
+        "ad_spend": 10095,
         "store_revenue_gross": 20930.24,
         "store_revenue_net": 20286.44,
         "refunds_and_adjustments": 643.8,
@@ -2396,13 +2396,13 @@
         "fulfilled_pct": 100,
         "modeled_cogs_pct": 0.38,
         "modeled_fulfillment_per_order": 9.0,
-        "estimated_contribution": 774.59,
-        "contribution_mer": 0.08,
+        "estimated_contribution": 754.59,
+        "contribution_mer": 0.07,
         "model_disclaimer": "Modeled contribution only \u2014 replace with Xero COGS + actual 3PL when available",
         "strategy_lines": [
-          "MER 2.08\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
+          "MER 2.07\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
           "Halo ~$6,864 (57 orders) not ad-tagged \u2014 likely organic/direct/email; MER includes this.",
-          "Tagged Shopify ROAS 1.4\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
+          "Tagged Shopify ROAS 1.39\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
         ]
       }
     }
@@ -2591,20 +2591,20 @@
       "DTC store 192 orders \u00b7 $20,930 (-14% vs Aug 17 \u2013 Sep 15, 2026). Wholesale 1 orders \u00b7 $0 \u2014 not in DTC totals.",
       "Google PMax \u00b7 Shopify ROAS 2.91\u00d7 on $6,479 \u2014 best paid channel.",
       "Meta \u00b7 70 Shopify UTM orders \u00b7 ROAS 0.99\u00d7 (platform claims 120 purch).",
-      "Pinterest \u00b7 2 Shopify orders \u00b7 $323 spend."
+      "Pinterest \u00b7 2 Shopify orders \u00b7 $342 spend."
     ],
     "intl_test_rules": "International test: about 14 days per country (default). Pause at $100 spend or day 14 with zero Shopify orders to that country \u2014 unless signals are clearly weak earlier (pause sooner) or clearly strong (keep or scale before day 14). Judge on Shopify orders only, not what Meta reports. International budget is extra only \u2014 do not cut United States spend.",
     "top_line": {
       "ad_revenue": 14066,
-      "ad_spend": 10075,
+      "ad_spend": 10095,
       "ad_revenue_delta_pct": -9,
       "ad_spend_delta_pct": -3,
-      "net": 3991,
+      "net": 3971,
       "net_delta_pct": -23,
-      "ad_roas": 1.4,
-      "total_roas": 2.08,
+      "ad_roas": 1.39,
+      "total_roas": 2.07,
       "total_roas_net": 2.01,
-      "total_roas_after_exchange_cost": 2.01,
+      "total_roas_after_exchange_cost": 2.0,
       "returns": {
         "refund_return_orders": 19,
         "refund_returns_cash_completed": 19,
@@ -2701,15 +2701,15 @@
       "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
       "shopify_returns_samples": []
     },
-    "mer_gross": 2.08,
+    "mer_gross": 2.07,
     "mer_net": 2.01,
-    "mer_after_exchange_cost": 2.01,
+    "mer_after_exchange_cost": 2.0,
     "store_after_exchange_cost": 20232.44,
-    "shopify_roas_blended": 1.4,
+    "shopify_roas_blended": 1.39,
     "halo_revenue": 6864.24,
     "halo_orders": 57,
     "halo_index": 0.68,
-    "ad_spend": 10075,
+    "ad_spend": 10095,
     "store_revenue_gross": 20930.24,
     "store_revenue_net": 20286.44,
     "refunds_and_adjustments": 643.8,
@@ -2723,17 +2723,17 @@
     "fulfilled_pct": 100,
     "modeled_cogs_pct": 0.38,
     "modeled_fulfillment_per_order": 9.0,
-    "estimated_contribution": 774.59,
-    "contribution_mer": 0.08,
+    "estimated_contribution": 754.59,
+    "contribution_mer": 0.07,
     "model_disclaimer": "Modeled contribution only \u2014 replace with Xero COGS + actual 3PL when available",
     "strategy_lines": [
-      "MER 2.08\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
+      "MER 2.07\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
       "Halo ~$6,864 (57 orders) not ad-tagged \u2014 likely organic/direct/email; MER includes this.",
-      "Tagged Shopify ROAS 1.4\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
+      "Tagged Shopify ROAS 1.39\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
     ]
   },
   "meta_halo_trend": {
-    "generated_at": "2026-10-15T05:49:20.961628-04:00",
+    "generated_at": "2026-10-15T06:21:09.779859-04:00",
     "start": "2026-06-01",
     "end": "2026-10-15",
     "weeks": [
@@ -3216,7 +3216,7 @@
         "week_start": "2026-10-12",
         "week_end": "2026-10-18",
         "label": "Oct 12\u201318, 2026",
-        "meta_spend": 580.86,
+        "meta_spend": 581.6,
         "meta_orders": 5,
         "meta_revenue": 501.75,
         "meta_roas": 0.86,
@@ -3270,7 +3270,7 @@
         "shopify_utm_campaign": "Barreletix | Prospecting | CBO | US | May",
         "campaign_label": "Prospecting",
         "meta_campaign_name": "Barreletix | Prospecting | CBO | US | May",
-        "meta_spend": 823.69,
+        "meta_spend": 824.19,
         "shopify_orders": 10,
         "shopify_revenue": 1043.9,
         "shopify_roas": 1.27,
@@ -3293,7 +3293,7 @@
         "shopify_utm_campaign": "BAR | Creative Test | Broad | US",
         "campaign_label": "Creative Test",
         "meta_campaign_name": "BAR | Creative Test | Broad | US",
-        "meta_spend": 415.33,
+        "meta_spend": 415.57,
         "shopify_orders": 2,
         "shopify_revenue": 171.9,
         "shopify_roas": 0.41,
@@ -3325,7 +3325,7 @@
         "shopify_utm_content": "IG Reel | Hear The Grip | Prospecting | Sep 2026",
         "meta_campaign_name": "Barreletix | Prospecting | CBO | US | May",
         "meta_ad_name": "IG Reel | Hear The Grip | Prospecting | Sep 2026",
-        "meta_spend": 823.69,
+        "meta_spend": 824.19,
         "shopify_orders": 10,
         "shopify_revenue": 1043.9,
         "shopify_roas": 1.27,
@@ -3347,7 +3347,7 @@
         "shopify_utm_content": "IG Reel | Upgrade Your Grip | Feb 2026",
         "meta_campaign_name": "BAR | Creative Test | Broad | US",
         "meta_ad_name": "IG Reel | Upgrade Your Grip | Feb 2026",
-        "meta_spend": 213.16,
+        "meta_spend": 213.4,
         "shopify_orders": 2,
         "shopify_revenue": 171.9,
         "shopify_roas": 0.81,
@@ -3371,7 +3371,7 @@
       }
     ],
     "totals": {
-      "meta_spend": 1239.02,
+      "meta_spend": 1239.76,
       "shopify_orders": 13,
       "shopify_revenue": 1299.75,
       "shopify_roas": 1.05
@@ -3491,7 +3491,7 @@
     ]
   },
   "channel_mix": {
-    "generated_at": "2026-10-15T05:49:08.507862-04:00",
+    "generated_at": "2026-10-15T06:21:01.180265-04:00",
     "shopify_attribution": "landing_site UTM \u00b7 Meta paid requires utm_campaign",
     "monthly_from": "2026-06-01",
     "monthly": [
