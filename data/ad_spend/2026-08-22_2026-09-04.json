@@ -1,22 +1,42 @@
 {
   "channels": {
     "Meta": {
-      "spend": 3593.87,
+      "spend": 3614.01,
+      "impressions": 108454,
+      "clicks": 3981,
+      "ctr": 3.6707,
+      "cpc": 0.91,
       "platform_purchases": 65,
       "platform_revenue": 6215.82,
-      "platform_roas": 1.73
+      "platform_roas": 1.72,
+      "spend_source": "live"
     },
     "Google": {
-      "spend": 835.8,
-      "platform_purchases": 0,
-      "platform_revenue": 0,
-      "platform_roas": 0
+      "spend": 989.19,
+      "platform_purchases": 37,
+      "platform_revenue": 3150.6,
+      "platform_roas": 3.19,
+      "spend_source": "live"
     },
     "Pinterest": {
       "spend": 481.6,
       "platform_purchases": 0,
       "platform_revenue": 0,
       "platform_roas": 0
+    }
+  },
+  "provenance": {
+    "Meta": {
+      "status": "ok",
+      "source": "meta_graph_api",
+      "pulled_at": "2026-10-15T00:28:08.103799-04:00",
+      "window_end": "2026-09-04"
+    },
+    "Google": {
+      "status": "ok",
+      "source": "ga4_ad_cost",
+      "pulled_at": "2026-10-15T00:28:08.103799-04:00",
+      "window_end": "2026-09-04"
     }
   }
 }
