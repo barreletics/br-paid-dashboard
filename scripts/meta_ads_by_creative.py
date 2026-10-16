@@ -379,8 +379,10 @@ def attach_budgets(windows: dict[str, Any], meta_rows: list[dict], ads: list[dic
             "daily_budget": round(int(ent["daily_budget"]) / 100, 2),
             "avg_daily_spend_7d": round(ent_spend.get(key, 0) / 7, 2),
         }
+    active = {norm(creative_label(a.get("name") or "")) for a in ads}
     for w in list(windows.values()):
         for r in (w.get("rows") or []) if isinstance(w, dict) else []:
+            r["active_now"] = norm(r["ad"]) in active
             b = list(per_label.get(norm(r["ad"]), {}).items())
             for key, v in b:
                 v["shared_with_creatives"] = len(labels_per_ent[key])
