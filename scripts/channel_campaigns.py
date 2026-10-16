@@ -125,22 +125,33 @@ def _pmax_window(rows: list[dict], orders: list[dict], s: str, e: str) -> list[d
     return out
 
 
+def _split_days(block: dict) -> None:
+    block["by_day"] = {k[4:]: block.pop(k) for k in [k for k in block if k.startswith("day:")]}
+
+
 def build_channel_campaigns(cfg: dict, today: date | None = None) -> dict[str, Any]:
     today = today or today_et()
     y = today - timedelta(days=1)
     s7 = y - timedelta(days=6)
-    orders = shopify_paid_orders(s7, y)
+    s30 = y - timedelta(days=29)
+    orders = shopify_paid_orders(s30, today)
     g_orders = [o for o in orders if order_channel(o) == "Google"]
     p_orders = [o for o in orders if order_channel(o) == "Pinterest"]
-    windows = {"yesterday": (y, y), "7d": (s7, y)}
+    windows = {"today": (today, today), "yesterday": (y, y), "7d": (s7, y), "30d": (s30, y)}
+    d = s30
+    while d <= today:
+        windows["day:" + d.isoformat()] = (d, d)
+        d += timedelta(days=1)
     out: dict[str, Any] = {"generated_for": today.isoformat()}
 
-    ga_rows, ga_err = ga4_campaign_daily(s7, y)
+    ga_rows, ga_err = ga4_campaign_daily(s30, today)
     pmax: dict[str, Any] = {"source": "GA4 advertiserAdCost / conversions by Google Ads campaign + Shopify last-visit UTM",
                             "error": ga_err}
     for k, (a, b) in windows.items():
         pmax[k] = {"window": {"start": a.isoformat(), "end": b.isoformat(), "label": fmt_label(a, b)},
                    "rows": _pmax_window(ga_rows, g_orders, a.isoformat(), b.isoformat())}
+    pmax["daily_budget"] = (cfg or {}).get("pmax_daily_budget")
+    _split_days(pmax)
     out["pmax"] = pmax
 
     man = (cfg or {}).get("pinterest_blend_manual") or {}
@@ -160,5 +171,8 @@ def build_channel_campaigns(cfg: dict, today: date | None = None) -> dict[str, A
         pin[k] = {"window": {"start": s, "end": e, "label": fmt_label(a, b)},
                   "missing_spend_days": missing,
                   "rows": [_row("Pinterest (all campaigns)", sp, pc, pv, po)] if (sp or po) else []}
+    pin["daily_budget"] = (cfg or {}).get("pinterest_daily_budget")
+    pin["budget_note"] = (cfg or {}).get("pinterest_budget_note")
+    _split_days(pin)
     out["pinterest"] = pin
     return out

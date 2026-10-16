@@ -126,7 +126,7 @@ def meta_ad_insights(start: date, end: date, daily: bool = False) -> list[dict[s
     rows: list[dict[str, Any]] = []
     url_base = f"https://graph.facebook.com/v21.0/{acct}/insights"
     params: dict[str, str] = {
-        "fields": "ad_name,adset_name,campaign_name,spend,actions,action_values",
+        "fields": "ad_name,adset_name,adset_id,campaign_name,campaign_id,spend,actions,action_values",
         "level": "ad",
         "limit": "500",
         "time_range": json.dumps({"since": start.isoformat(), "until": end.isoformat()}),
@@ -325,32 +325,108 @@ def aggregate_creatives(
     }
 
 
+def meta_active_budgets() -> list[dict[str, Any]]:
+    """Read-only: active ads with their ad set / campaign daily budgets (USD)."""
+    token = os.environ.get("META_ACCESS_TOKEN", "").strip()
+    acct = os.environ.get("META_AD_ACCOUNT_ID", "act_10152741884925238")
+    if not token:
+        return []
+    if not acct.startswith("act_"):
+        acct = f"act_{acct}"
+    params = {
+        "fields": "name,effective_status,adset{id,name,daily_budget,lifetime_budget},"
+                  "campaign{id,name,daily_budget,lifetime_budget}",
+        "effective_status": json.dumps(["ACTIVE"]),
+        "limit": "200",
+        "access_token": token,
+    }
+    url = f"https://graph.facebook.com/v21.0/{acct}/ads?{urllib.parse.urlencode(params)}"
+    out: list[dict[str, Any]] = []
+    for _ in range(20):
+        with urllib.request.urlopen(url, timeout=120) as resp:
+            data = json.loads(resp.read())
+        out.extend(data.get("data") or [])
+        url = (data.get("paging") or {}).get("next")
+        if not url:
+            break
+    return out
+
+
+def attach_budgets(windows: dict[str, Any], meta_rows: list[dict], ads: list[dict], s7: date, y: date) -> None:
+    """Per creative: the daily budget(s) it runs under + 7d avg daily spend of that budget entity."""
+    s_iso, e_iso = s7.isoformat(), y.isoformat()
+    ent_spend: dict[str, float] = defaultdict(float)
+    for r in meta_rows:
+        d = r.get("date_start") or ""
+        if s_iso <= d <= e_iso:
+            sp = float(r.get("spend") or 0)
+            ent_spend["adset:" + str(r.get("adset_id"))] += sp
+            ent_spend["campaign:" + str(r.get("campaign_id"))] += sp
+    per_label: dict[str, dict[str, dict]] = defaultdict(dict)
+    labels_per_ent: dict[str, set] = defaultdict(set)
+    for ad in ads:
+        lab = norm(creative_label(ad.get("name") or ""))
+        aset, camp = ad.get("adset") or {}, ad.get("campaign") or {}
+        if aset.get("daily_budget"):
+            key, ent, lvl = "adset:" + aset["id"], aset, "ad set"
+        elif camp.get("daily_budget"):
+            key, ent, lvl = "campaign:" + camp["id"], camp, "campaign (CBO)"
+        else:
+            continue
+        labels_per_ent[key].add(lab)
+        per_label[lab][key] = {
+            "level": lvl, "name": ent.get("name"),
+            "daily_budget": round(int(ent["daily_budget"]) / 100, 2),
+            "avg_daily_spend_7d": round(ent_spend.get(key, 0) / 7, 2),
+        }
+    for w in list(windows.values()):
+        for r in (w.get("rows") or []) if isinstance(w, dict) else []:
+            b = list(per_label.get(norm(r["ad"]), {}).items())
+            for key, v in b:
+                v["shared_with_creatives"] = len(labels_per_ent[key])
+            r["budgets"] = [v for _, v in b]
+            r["daily_budget"] = round(sum(v["daily_budget"] for _, v in b), 2) if b else None
+            r["budget_avg_daily_spend_7d"] = round(sum(v["avg_daily_spend_7d"] for _, v in b), 2) if b else None
+
+
 def build_meta_creative_windows(today: date | None = None) -> dict[str, Any]:
-    """Yesterday + last 7 complete days + per-day breakdown (ET). One Meta + one Shopify pull."""
+    """Today (partial) + yesterday + last 7 / 30 complete days + per-day (ET). One Meta + one Shopify pull."""
     today = today or today_et()
     y = today - timedelta(days=1)
     s7 = y - timedelta(days=6)
-    meta_rows = meta_ad_insights(s7, y, daily=True)
+    s30 = y - timedelta(days=29)
+    meta_rows = meta_ad_insights(s30, today, daily=True)
     if not meta_rows:
         raise RuntimeError("Meta ad insights returned no rows (token missing or API error)")
     pin_ids = {"626758797715", "626758433774", "626759617021", "626760011313"}
     shop = [
-        o for o in shopify_orders_for_window(s7, y)
+        o for o in shopify_orders_for_window(s30, today)
         if o["utm_campaign"] not in pin_ids and "pinterest" not in o["utm_source"].lower()
     ]
     by_day = {}
-    d = s7
-    while d <= y:
+    d = s30
+    while d <= today:
         by_day[d.isoformat()] = aggregate_creatives(meta_rows, shop, d, d)
         d += timedelta(days=1)
-    return {
+    out = {
         "generated_for": today.isoformat(),
+        "as_of": datetime.now(ET).isoformat(),
         "attribution": "Meta = platform-claimed purchases/value (account default attribution). "
                        "Shopify = last-visit utm_content (store truth).",
+        "today": by_day[today.isoformat()],
         "yesterday": by_day[y.isoformat()],
         "7d": aggregate_creatives(meta_rows, shop, s7, y),
+        "30d": aggregate_creatives(meta_rows, shop, s30, y),
         "by_day": by_day,
     }
+    out["today"]["partial"] = True
+    try:
+        ads = meta_active_budgets()
+        attach_budgets({k: out[k] for k in ("today", "yesterday", "7d", "30d")}, meta_rows, ads, s7, y)
+        out["budgets_note"] = f"{len(ads)} active ads read from Meta (read-only)"
+    except Exception as exc:  # budgets are optional
+        out["budgets_note"] = f"budget fetch failed: {exc}"
+    return out
 
 
 def build_meta_ads_by_creative(

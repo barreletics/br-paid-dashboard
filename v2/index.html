@@ -29,10 +29,10 @@ details{background:var(--card);border:1px solid var(--bd);border-radius:12px;mar
 .src{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--bd);padding:6px 0;font-size:13px}.err{color:var(--r);padding:20px}
 .dec{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}.dcard{border:1px solid var(--bd);border-radius:10px;padding:10px}
 .dcard h3{font-size:14px;margin:0 0 4px;display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;align-items:center}.dcard table{font-size:12px}.dline{font-size:13px;margin-top:6px}.dline b{font-weight:700}
-.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.legend .chip{white-space:normal}.tot td{font-weight:700;border-top:2px solid var(--bd)}
+.legend button.on{background:var(--tx);color:var(--card)}.legend button{border-radius:999px;padding:4px 10px}.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.legend .chip{white-space:normal}.tot td{font-weight:700;border-top:2px solid var(--bd)}
 </style></head><body>
 <header><div class="row"><h1>Paid Ads</h1>
-<div class="seg" id="win"><button data-w="7">7d</button><button data-w="14">14d</button><button data-w="30">30d</button></div>
+<div class="seg" id="win"><button data-w="today">Today</button><button data-w="yesterday">Yesterday</button><button data-w="7d">7d</button><button data-w="30d">30d</button></div>
 <button id="reload" title="Reload">⟳</button><button id="theme" title="Dark mode">◐</button></div>
 <div class="asof" id="asof">Loading…</div></header>
 <main id="app"></main>
@@ -50,61 +50,79 @@ const B=t=>t==='s'?'<span class="badge store">store</span>':'<span class="badge 
 const fmtT=s=>{if(!s)return null;const d=new Date(s);return isNaN(d)?s:d.toLocaleString('en-US',{timeZone:'America/Detroit',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' ET'};
 const daysAgo=ds=>{if(!ds)return null;return Math.floor((Date.now()-new Date(ds+'T12:00:00-04:00'))/864e5)};
 function chip(cur,prev,good='up',label){if(!num(cur)||!num(prev)||prev===0)return '<span class="chip nt">no prior</span>';const p=(cur-prev)/Math.abs(prev)*100;const better=good==='up'?p>=0:p<=0;return `<span class="chip ${Math.abs(p)<1?'nt':better?'up':'dn'}">${p>=0?'▲':'▼'} ${Math.abs(p).toFixed(0)}% ${label}</span>`}
-let D=null,W=localStorage.getItem('v2win')||'7';
+let D=null,W=localStorage.getItem('v2win2')||'7d',F='all';if(!['today','yesterday','7d','30d'].includes(W))W='7d';
 const th=localStorage.getItem('v2theme');if(th==='dark')document.documentElement.dataset.theme='dark';
 $('#theme').onclick=()=>{const d=document.documentElement;const dark=d.dataset.theme!=='dark';if(dark)d.dataset.theme='dark';else delete d.dataset.theme;localStorage.setItem('v2theme',dark?'dark':'light')};
 $('#reload').onclick=()=>load(true);
-document.querySelectorAll('#win button').forEach(b=>b.onclick=()=>{W=b.dataset.w;localStorage.setItem('v2win',W);render()});
+document.querySelectorAll('#win button').forEach(b=>b.onclick=()=>{W=b.dataset.w;localStorage.setItem('v2win2',W);render()});
 async function load(){try{const r=await fetch('../data/latest.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);D=await r.json();render()}catch(e){$('#app').innerHTML=`<div class="err">Could not load data/latest.json: ${esc(e.message)}</div>`}}
 function sec(id,title,html,open){return `<details id="${id}"${open?' open':''}><summary>${title}</summary><div>${html}</div></details>`}
-let MW=localStorage.getItem('v2mw')||'yesterday';
 const todayET=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Detroit'});
 const yesterdayET=()=>{const d=new Date(todayET()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10)};
-function decide(r,T){T=T||{};const sp=r.spend||0,o=r.orders||0,S=r.S,M=r.M;const pct=T.winner_budget_step_pct??20;let d;
- if(sp>=(T.pause_spend_no_orders??100)&&o===0)d=['dn','loser','pause'];
- else if(sp<(T.min_spend_for_call??50)||o<(T.min_orders_for_call??2))d=['nt','too early','hold'];
- else if(S>=(T.winner_roas??1.6))d=['up','winner',`add budget (+${pct}%)`];
- else if(S>=(T.profitable_roas??1.2))d=['bl','profitable','hold / scale slowly'];
- else if(S>=(T.breakeven_roas??0.9))d=['am','break-even','add creatives'];
- else d=['dn','losing','cut budget 30–50% or pause'];
- const over=num(M)&&num(S)&&S>0?M/S:(num(M)&&M>0&&o===0?Infinity:null);const ov=over!=null&&over>(T.overstate_ratio??2);
- return {chip:d[0],label:d[1],action:d[2],over,ov}}
-const says=(p,roas,u='purch')=>`${num(p)?(+p).toLocaleString('en-US',{maximumFractionDigits:1}):'—'} ${u} · ${x(roas)}`;
-function decisionsHTML(){const A=D.ad_decisions||{},T=A.thresholds||{},m=A.meta||{},out=[];const y=yesterdayET();
- const norm=(src,kind,r7,ry)=>({name:r7.ad,kind,spend:r7.meta_spend??r7.spend,orders:r7.shopify_orders,S:r7.shopify_roas,M:r7.meta_roas??r7.platform_roas,
-   p:r7.meta_claims_purch??r7.platform_purch,ry,r7,plat:src});
- const items=[];
- const my=Object.fromEntries(((m.yesterday||{}).rows||[]).map(r=>[r.ad,r]));
- ((m['7d']||{}).rows||[]).filter(r=>(r.meta_spend||0)>=5).forEach(r=>items.push(norm('Meta','Meta ad',r,my[r.ad])));
- for(const [key,kind,plat] of [['pmax','Google PMax','Google'],['pinterest','Pinterest','Pinterest']]){const c=A[key]||{};const yy=Object.fromEntries(((c.yesterday||{}).rows||[]).map(r=>[r.ad,r]));((c['7d']||{}).rows||[]).filter(r=>(r.spend||0)>0).forEach(r=>items.push(norm(plat,kind,r,yy[r.ad])))}
- const rowv=(lab,r)=>{if(!r)return `<tr><td>${lab}</td><td colspan="3" class="na">no spend</td></tr>`;const sp=r.meta_spend??r.spend,mp=r.meta_claims_purch??r.platform_purch,mr=r.meta_roas??r.platform_roas;
-   return `<tr><td>${lab}</td><td>${usd(sp,2)}</td><td>${says(mp,mr)}</td><td>${says(r.shopify_orders,r.shopify_roas,r.shopify_orders===1?'order':'orders')}</td></tr>`};
- const cards=items.map(it=>{const d=decide(it,T);const r=it.r7;
-   const real=it.orders===0?`${it.plat} claims ${num(it.p)?it.p:0} purchases; store saw 0 orders on ${usd(it.spend)} spend.`:
-     `${it.plat} claims ${num(it.p)?it.p:'—'} purch at ${x(it.M)}; store saw ${it.orders} at ${x(it.S)}`+(num(d.over)&&isFinite(d.over)?` — ${it.plat} overstates ${d.over.toFixed(1)}×.`:'.');
-   return `<div class="dcard"><h3><span>${esc(it.name)} <span class="tl">${esc(it.kind)}${r.ad_set?' · '+esc(r.ad_set):''}</span></span><span class="chip ${d.chip}">${esc(d.label)}</span></h3>
-   <table><tr><th></th><th>Spend</th><th>${esc(it.plat)} says</th><th>Shopify shows</th></tr>${rowv('Yest.',it.ry)}${rowv('7d',r)}</table>
-   <div class="dline"><b>Reality:</b> ${esc(real)}</div><div class="dline"><b>Decision:</b> ${esc(it.name)}: ${esc(d.label)}, ${esc(d.action)}${d.ov?`. ${esc(it.plat)} overstating, trust store`:''}.</div></div>`}).join('');
- const w7=(m['7d']||{}).window||{},wy=(m.yesterday||{}).window||{};
+const WL={today:'Today',yesterday:'Yesterday','7d':'Last 7 days','30d':'Last 30 days'};
+function blk(c){return (c||{})[W]||{}}
+function asofHTML(){const m=(D.ad_decisions||{}).meta||{};const b=blk(m);const lab=(b.window||{}).label||'';
+ return `<b>${WL[W]}</b> · ${esc(lab)}${W==='today'?` · <span class="chip am">partial, as of ${fmtT(m.as_of||D.generated_at)}</span>`:''} · data as of ${fmtT(D.generated_at)||'unknown'} · <a href="${L.old}">old page</a>`}
+const money=v=>'$'+Math.round(v).toLocaleString('en-US');
+function decide(r,T){T=T||{};const sp=r.spend||0,o=r.orders||0,S=r.S??0,M=r.M;const pct=T.winner_budget_step_pct??20,lo=T.cut_pct_low??30,hi=T.cut_pct_high??50;let d;
+ const bud=r.budget,used=r.usedPerDay;
+ if(sp>=(T.pause_spend_no_orders??100)&&o===0)d=['dn','loser','pause','loss'];
+ else if(sp>=(T.losing_min_spend??150)&&o<(T.losing_max_orders??2)&&S<(T.breakeven_roas??0.9))d=['dn','losing',`cut ${lo}–${hi}%${bud?` (${money(bud)} → ${money(bud*(1-hi/100))}–${money(bud*(1-lo/100))}/day)`:''} or pause`,'loss'];
+ else if(sp<(T.min_spend_for_call??50)||o<(T.min_orders_for_call??2))d=['nt','too early','hold','early'];
+ else if(S>=(T.winner_roas??1.6)){let a=bud?`add ${pct}% budget (${money(bud)} → ${money(bud*(1+pct/100))}/day)`:`add ${pct}% budget (budget unknown)`;
+   if(bud&&num(used)){if(used<bud*(T.underspend_ratio??0.8))a=`budget has room: spending ${money(used)}/day of ${money(bud)}/day — no raise needed yet`;else if(used>=bud*(T.budget_limited_ratio??0.9))a+=` — budget-limited (spending ${money(used)}/day), raise budget`}
+   d=['up','winner',a,'win']}
+ else if(S>=(T.profitable_roas??1.2))d=['bl','profitable','hold / scale slowly','ok'];
+ else if(S>=(T.breakeven_roas??0.9))d=['am','break-even','add 2–3 new creatives, keep budget','ok'];
+ else d=['dn','losing',`cut ${lo}–${hi}%${bud?` (${money(bud)} → ${money(bud*(1-hi/100))}–${money(bud*(1-lo/100))}/day)`:''} or pause`,'loss'];
+ const over=num(M)&&S>0?M/S:null;const ov=over!=null&&over>(T.overstate_ratio??2);
+ return {chip:d[0],label:d[1],action:d[2],grp:d[3],act:['win','loss'].includes(d[3]),over,ov,small:d[3]==='early'&&W!=='7d'}}
+const says=(p,roas,u='purch')=>`${num(p)?(+p).toLocaleString('en-US',{maximumFractionDigits:1}):'0'} ${u} · ${x(roas)}`;
+function cardItems(){const A=D.ad_decisions||{},T=A.thresholds||{},items=[];
+ const m=A.meta||{},b=blk(m),my=Object.fromEntries((((m.yesterday)||{}).rows||[]).map(r=>[r.ad,r]));
+ const r7m=Object.fromEntries((((m['7d'])||{}).rows||[]).map(r=>[r.ad,r]));
+ (b.rows||[]).filter(r=>(r.meta_spend||0)>=(W==='7d'||W==='30d'?5:1)).forEach(r=>{const r7=r7m[r.ad]||r;items.push({name:r.ad,kind:'Meta ad',plat:'Meta',sub:r.ad_set,r,spend:r.meta_spend,orders:r.shopify_orders,S:r.shopify_roas,M:r.meta_roas,p:r.meta_claims_purch,
+   budget:r7.daily_budget,usedPerDay:r7.budget_avg_daily_spend_7d,budNote:(r7.budgets||[]).map(x=>`${x.level} "${x.name}" ${money(x.daily_budget)}/day${x.shared_with_creatives>1?` shared by ${x.shared_with_creatives} creatives`:''}`).join('; ')})});
+ for(const [key,kind,plat] of [['pmax','Google PMax','Google'],['pinterest','Pinterest','Pinterest']]){const c=A[key]||{};const r7=Object.fromEntries((((c['7d'])||{}).rows||[]).map(r=>[r.ad,r]));
+   (blk(c).rows||[]).filter(r=>(r.spend||0)>0).forEach(r=>{const w7=r7[r.ad];items.push({name:r.ad,kind,plat,r,spend:r.spend,orders:r.shopify_orders,S:r.shopify_roas,M:r.platform_roas,p:r.platform_purch,
+   budget:c.daily_budget,usedPerDay:w7?w7.spend/7:null,budNote:c.daily_budget?`${c.budget_note||'budget'} ${money(c.daily_budget)}/day (config)`:''})})}
+ items.forEach(it=>it.d=decide(it,T));const rank={loss:0,win:1,ok:2,early:3};items.sort((a,b)=>rank[a.d.grp]-rank[b.d.grp]||b.spend-a.spend);return items}
+function decisionsHTML(){const A=D.ad_decisions||{},T=A.thresholds||{},m=A.meta||{},y=yesterdayET();const b=blk(m);const items=cardItems();
+ const show=items.filter(it=>F==='all'||(F==='act'&&it.d.act)||(F==='win'&&it.d.grp==='win')||(F==='loss'&&it.d.grp==='loss'));
+ const cards=show.map(it=>{const d=it.d,r=it.r,gap=num(it.p)&&num(it.orders)?it.p-it.orders:null;
+   const real=`${it.plat} claims ${num(it.p)?+it.p.toFixed?.(1)||it.p:0} purch at ${x(it.M)}; store saw ${it.orders||0} order${it.orders===1?'':'s'} at ${x(it.S)}`+(gap!=null&&gap>0?` (gap +${+gap.toFixed(1)}${d.over?`, ${d.over.toFixed(1)}× overstated`:''})`:'')+'.';
+   return `<div class="dcard"><h3><span>${esc(it.name)} <span class="tl">${esc(it.kind)}${it.sub?' · '+esc(it.sub):''}</span></span><span><span class="chip ${d.chip}">${esc(d.label)}</span>${d.small?' <span class="chip nt">small sample</span>':''}</span></h3>
+   <table><tr><th>Spend</th><th>${esc(it.plat)} says</th><th>Shopify shows</th></tr><tr><td style="text-align:left">${usd(it.spend,2)}</td><td>${says(it.p,it.M)}</td><td>${says(it.orders,it.S,it.orders===1?'order':'orders')}</td></tr></table>
+   <div class="dline"><b>Reality:</b> ${esc(real)}</div><div class="dline"><b>Decision:</b> ${esc(it.name)}: ${esc(d.label)}, ${esc(d.action)}${d.ov?`. ${esc(it.plat)} overstating, trust store`:''}.</div>${it.budNote?`<div class="tl" style="margin-top:4px">Budget: ${esc(it.budNote)}</div>`:''}</div>`}).join('');
+ const wy=(m.yesterday||{}).window||{};
  const stale=wy.end&&wy.end!==y?`<div class="note">⚠ Per-ad data ends ${esc(wy.end)}; expected ${y}. Refresh may be failing.</div>`:(!m.yesterday?`<div class="note">⚠ Per-ad Meta data missing${A.errors&&A.errors.meta?': '+esc(A.errors.meta):''}.</div>`:'');
- const pinMiss=((A.pinterest||{})['7d']||{}).missing_spend_days||[];
- const lg=`<div class="legend"><span class="chip nt">too early: &lt;$${T.min_spend_for_call??50} or &lt;${T.min_orders_for_call??2} orders → hold</span><span class="chip dn">≥$${T.pause_spend_no_orders??100} &amp; 0 orders → pause</span><span class="chip up">store ROAS ≥${T.winner_roas??1.6} → add budget +${T.winner_budget_step_pct??20}%</span><span class="chip bl">${T.profitable_roas??1.2}–${T.winner_roas??1.6} → hold / scale slowly</span><span class="chip am">${T.breakeven_roas??0.9}–${T.profitable_roas??1.2} → add creatives</span><span class="chip dn">&lt;${T.breakeven_roas??0.9} → cut 30–50% / pause</span><span class="chip nt">platform ROAS &gt;${T.overstate_ratio??2}× store → trust store</span></div>`;
- return `<div class="card" id="decisions"><h2>Decisions · last 7 days (${esc(w7.label||'n/a')})</h2><div class="sub">One card per active ad. Decision uses <b>Shopify (store) ROAS</b> over 7 complete days; yesterday = ${esc(wy.label||'n/a')}.</div>${stale}${pinMiss.length?`<div class="note">Pinterest spend missing for ${pinMiss.join(', ')} (manual Blend).</div>`:''}
- ${cards?`<div class="dec">${cards}</div>`:NA}${lg}</div>`}
-function saysTableHTML(){const A=D.ad_decisions||{},m=A.meta||{};const b=m[MW]||{},rows=b.rows||[],t=b.totals||{},y=yesterdayET();
- const c=(v,f)=>f(v);const tr=(r,cls='')=>`<tr class="${cls}"><td>${cls?'<b>Total</b>':`<a href="${L.metaAds}" target="_blank">${esc(r.ad)}</a><div class="tl">${esc(r.ad_set||'')}</div>`}</td><td>${usd(r.meta_spend,2)}</td><td>${n0(r.meta_claims_purch)}</td><td>${usd(r.meta_cpa,2)}</td><td>${x(r.meta_roas)}</td><td>${r.shopify_orders&&r.order_names?`<a href="${order(r.order_names[0])}" target="_blank">${r.shopify_orders}</a>`:n0(r.shopify_orders)}</td><td>${usd(r.shopify_cpa,2)}</td><td>${x(r.shopify_roas)}</td><td>${num(r.meta_claims_purch)&&num(r.shopify_orders)?((r.meta_claims_purch-r.shopify_orders)>0?'+':'')+(r.meta_claims_purch-r.shopify_orders):NA}</td></tr>`;
+ const pinMiss=(blk(A.pinterest).missing_spend_days)||[];
+ const cnt=f=>items.filter(it=>f==='all'||(f==='act'&&it.d.act)||(f==='win'&&it.d.grp==='win')||(f==='loss'&&it.d.grp==='loss')).length;
+ const flt=`<div class="legend" id="flt">${[['all','All'],['act','Act now'],['win','Winners'],['loss','Losers']].map(([k,l])=>`<button data-f="${k}" class="${F===k?'on':''}">${l} (${cnt(k)})</button>`).join('')}</div>`;
+ const lg=`<div class="legend">${[['dn',`≥$${T.pause_spend_no_orders??100} & 0 orders → pause`],['dn',`≥$${T.losing_min_spend??150}, <${T.losing_max_orders??2} orders, ROAS <${T.breakeven_roas??0.9} → losing`],['nt',`<$${T.min_spend_for_call??50} or <${T.min_orders_for_call??2} orders → hold`],['up',`store ROAS ≥${T.winner_roas??1.6} → +${T.winner_budget_step_pct??20}% budget`],['bl',`${T.profitable_roas??1.2}–${T.winner_roas??1.6} → hold / scale slowly`],['am',`${T.breakeven_roas??0.9}–${T.profitable_roas??1.2} → 2–3 new creatives`],['dn',`<${T.breakeven_roas??0.9} → cut ${T.cut_pct_low??30}–${T.cut_pct_high??50}%`]].map(([c,t])=>`<span class="chip ${c}">${esc(t)}</span>`).join('')}</div>`;
+ const acts=items.map(it=>`<li class="${it.d.act?'':'tl'}"><span class="chip ${it.d.chip}">${esc(it.d.label)}</span> ${esc(it.name)}: ${esc(it.d.action)}${it.d.small?' (small sample)':''}</li>`).join('');
+ return `<div class="card" id="decisions"><h2>Decisions · ${esc(WL[W])} (${esc((b.window||{}).label||'n/a')})</h2><div class="sub">One card per active ad. Rules use <b>Shopify (store) ROAS</b> for the selected window; 7d is the default call.</div>${stale}${pinMiss.length?`<div class="note">Pinterest spend missing for ${pinMiss.join(', ')} (manual Blend).</div>`:''}
+ ${flt}<div style="height:8px"></div>${cards?`<div class="dec">${cards}</div>`:'<span class="na">no ads in this filter</span>'}${lg}</div>
+ <div class="card" id="actions"><h2>Action items</h2><ol style="margin:0;padding-left:18px;line-height:1.9">${acts||'<span class="na">none</span>'}</ol></div>`}
+function saysTableHTML(){const A=D.ad_decisions||{},m=A.meta||{};const b=blk(m),rows=b.rows||[],t=b.totals||{},y=yesterdayET();
+ const tr=(r,cls='')=>`<tr class="${cls}"><td>${cls?'<b>Total</b>':`<a href="${L.metaAds}" target="_blank">${esc(r.ad)}</a><div class="tl">${esc(r.ad_set||'')}</div>`}</td><td>${usd(r.meta_spend,2)}</td><td>${n0(r.meta_claims_purch)}</td><td>${usd(r.meta_cpa,2)}</td><td>${x(r.meta_roas)}</td><td>${r.shopify_orders&&r.order_names?`<a href="${order(r.order_names[0])}" target="_blank">${r.shopify_orders}</a>`:n0(r.shopify_orders)}</td><td>${usd(r.shopify_cpa,2)}</td><td>${x(r.shopify_roas)}</td><td>${num(r.meta_claims_purch)&&num(r.shopify_orders)?((r.meta_claims_purch-r.shopify_orders)>0?'+':'')+(r.meta_claims_purch-r.shopify_orders):NA}</td></tr>`;
  const end=(m.yesterday||{}).window?.end;const stale=!end?'<div class="note">⚠ No per-ad data in latest.json.</div>':end!==y?`<div class="note">⚠ Stale: data ends ${esc(end)}, expected ${y}.</div>`:'';
- return `<div class="card" id="says"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Meta says vs Shopify shows</h2><div class="seg" id="mw"><button data-m="yesterday" class="${MW==='yesterday'?'on':''}">Yesterday</button><button data-m="7d" class="${MW==='7d'?'on':''}">7d</button></div></div>
- <div class="sub" style="margin-top:6px">${esc((b.window||{}).label||'')} · Meta = platform-claimed${B('p')} · Shopify = last-visit utm_content${B('s')}</div>${stale}
+ return `<div class="card" id="says"><h2>Meta says vs Shopify shows · ${esc(WL[W])}</h2>
+ <div class="sub">${esc((b.window||{}).label||'')}${W==='today'?' (partial)':''} · Meta = platform-claimed${B('p')} · Shopify = last-visit utm_content${B('s')}</div>${stale}
  <div class="scroll"><table><tr><th>Ad</th><th>Spend</th><th>Meta purch</th><th>Meta CPA</th><th>Meta ROAS</th><th>Shopify orders</th><th>Shopify CPA</th><th>Shopify ROAS</th><th>Gap</th></tr>${rows.map(r=>tr(r)).join('')}${rows.length?tr(t,'tot'):''}</table></div></div>`}
-function pmaxHTML(){const p=(D.ad_decisions||{}).pmax||{},b=p['7d']||{};if(!b.rows)return NA;
+function tilesHTML(){const A=D.ad_decisions||{},b=blk(A.meta),w=b.window||{};let sp=(b.totals||{}).meta_spend||0,tag=(b.totals||{}).shopify_revenue||0;
+ for(const k of ['pmax','pinterest'])(blk(A[k]).rows||[]).forEach(r=>{sp+=r.spend||0;tag+=r.shopify_revenue||0});
+ let all=0;const dr=D.daily_revenue||{};Object.keys(dr).forEach(d=>{if(w.start&&d>=w.start&&d<=w.end)all+=dr[d]});
+ const tile=(l,v,bd,sub)=>`<div class="tile"><div class="tl">${l}${bd}</div><div class="tv">${v}</div><div class="tl">${sub}</div></div>`;
+ return `<div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">${tile('Paid ROAS',x(sp?tag/sp:null),B('s'),`ad-tagged store sales ${usd(tag)} ÷ spend`)}${tile('Halo ROAS',x(sp?all/sp:null),B('s'),`all store revenue ${usd(all)} ÷ spend`)}${tile('Total ad spend',usd(sp),B('p'),'Meta + PMax + Pinterest')}</div><div class="sub" style="margin:6px 0 10px">${esc(WL[W])} · ${esc(w.label||'')}${W==='today'?' (partial)':''}</div>`}
+function pmaxHTML(){const p=(D.ad_decisions||{}).pmax||{},b=p[W]||{};if(!b.rows)return NA;
  return `<div class="sub">${esc(b.window?.label||'')} · ${esc(p.source||'')}${p.error?' · error: '+esc(p.error):''}</div><div class="scroll"><table><tr><th>Campaign</th><th>Spend</th><th>Google conv</th><th>Google ROAS</th><th>Shopify orders</th><th>Shopify CPA</th><th>Shopify ROAS</th></tr>${b.rows.map(r=>`<tr><td>${esc(r.ad)}</td><td>${usd(r.spend,2)}</td><td>${n0(r.platform_purch)}</td><td>${x(r.platform_roas)}</td><td>${n0(r.shopify_orders)}</td><td>${usd(r.shopify_cpa,2)}</td><td>${x(r.shopify_roas)}</td></tr>`).join('')}</table></div>`}
-document.addEventListener('click',e=>{const b=e.target.closest('#mw button');if(b){MW=b.dataset.m;localStorage.setItem('v2mw',MW);render();setTimeout(()=>document.getElementById('says')?.scrollIntoView(),0)}});
+document.addEventListener('click',e=>{const b=e.target.closest('#flt button');if(b){F=b.dataset.f;render()}});
 function render(){
  document.querySelectorAll('#win button').forEach(b=>b.classList.toggle('on',b.dataset.w===W));
- const w=(D.windows||{})[W]||{};const win=w.window||D.window||{};const k=w.kpis||{};const pk=(w.prior_period||{}).kpis||{};const chans=w.channels||[];
+ const LW=W==='30d'?'30':'7';const w=(D.windows||{})[LW]||{};const win=w.window||D.window||{};const k=w.kpis||{};const pk=(w.prior_period||{}).kpis||{};const chans=w.channels||[];
  const plab=`vs ${(w.prior_period||{}).window?.label||win.prior_label||'prior'}`;const cl=`vs prior ${win.days||W}d`;
- $('#asof').innerHTML=`${esc(win.label||'')} · ${win.days||W}d rolling · data as of ${fmtT(D.generated_at)||'unknown'} · <a href="${L.old}">old page</a>`;
+ $('#asof').innerHTML=asofHTML();
  const th=D.thresholds||{};const out=[];
  out.push(decisionsHTML());out.push(saysTableHTML());
  // tiles
@@ -116,18 +134,7 @@ function render(){
  const tagNow=chans.reduce((a,c)=>a+(c.shopify_revenue||0),0),tagL=chans.reduce((a,c)=>a+(c.shopify_revenue_last||0),0);
  const proasL=pk.total_ad_spend?tagL/pk.total_ad_spend:null;const haloL=num(pk.paid_revenue)&&pk.total_ad_spend?(pk.paid_revenue-tagL)/pk.total_ad_spend:null;
  const noCost='<div class="tl">needs real COGS + fulfillment cost (Xero/3PL); data has only a modeled '+(num(de.modeled_cogs_pct)?Math.round(de.modeled_cogs_pct*100)+'%':'')+' COGS assumption</div>';
- out.push(`<div class="tiles">
- ${tile('Paid ROAS',x(de.shopify_roas_blended),chip(de.shopify_roas_blended,proasL,'up',cl),B('s'),'UTM-tagged store rev '+usd(tagNow)+' ÷ spend')}
- ${tile('Halo ROAS',x(num(k.paid_revenue)&&k.total_ad_spend?k.paid_revenue/k.total_ad_spend:null),chip(num(k.paid_revenue)&&k.total_ad_spend?k.paid_revenue/k.total_ad_spend:null,num(pk.paid_revenue)&&pk.total_ad_spend?pk.paid_revenue/pk.total_ad_spend:null,'up',cl),B('s'),'all store sales incl. organic ÷ ad spend')}
- ${tile('Ad profit',NA,noCost,B('s'),'')}
- ${tile('Total profit',NA,noCost,B('s'),'')}
- ${tile('Total ad spend',usd(k.total_ad_spend),chip(k.total_ad_spend,pk.total_ad_spend,'down',cl),B('p'),'platform-reported spend')}
- ${tile('Cost / store order',usd(cpo,2),chip(cpo,pcpo,'down',cl),B('s'),'spend ÷ all store orders')}
- ${tile('Store orders',n0(k.paid_orders),chip(k.paid_orders,pk.paid_orders,'up',cl),B('s'),'all DTC orders (tagged + halo)')}
- ${tile('Store revenue',usd(k.paid_revenue),chip(k.paid_revenue,pk.paid_revenue,'up',cl),B('s'),'net '+usd(k.paid_revenue_net))}
- ${tile('Pinterest+TikTok share',num(divNow)?divNow.toFixed(1)+'%':NA,chip(divNow,divL,'up',cl),B('p'),'of spend · target TBD')}
- ${tile('Organic/untagged revenue',usd(num(k.paid_revenue)?k.paid_revenue-tagNow:null),chip(num(k.paid_revenue)?k.paid_revenue-tagNow:null,num(pk.paid_revenue)?pk.paid_revenue-tagL:null,'up',cl),B('s'),(k.paid_revenue?((k.paid_revenue-tagNow)/k.paid_revenue*100).toFixed(0)+'% of store revenue':'')+' · not UTM-tagged to paid')}
- </div><div class="sub" style="margin:6px 0 10px">Chips compare ${esc(plab)} (same length window).</div>`);
+ out.push(tilesHTML());
  // alerts + todos
  const todos=[];
  chans.forEach(c=>{const t=/meta/i.test(c.name)?th.meta_shopify_roas_target:/google/i.test(c.name)?th.google_shopify_roas_target:null;if(t&&num(c.shopify_roas)&&c.shopify_roas<t)todos.push(['red',`${c.name} store ROAS ${c.shopify_roas.toFixed(2)} < ${t}`,'#chan'])});
@@ -140,16 +147,6 @@ function render(){
  (D.strategy_todos||[]).forEach(t=>todos.push([t.status==='open'?'':'amb',`${t.owner}: ${t.action}`,'#todo']));
  const pr=t=>/^Spent |stale|data ends/.test(t[1])?0:/ROAS .* < /.test(t[1])?1:2;todos.sort((a,b)=>pr(a)-pr(b));
  out.push(`<div class="todos">${todos.map(t=>`<a class="${t[0]}" href="${t[2]}">${esc(t[1]).replace(/&lt;/g,'&lt;')}</a>`).join('')||'<span class="na">no to-dos</span>'}</div>`);
- // channels
- out.push(`<div class="card" id="chan"><h2>Channels · ${esc(win.label)}</h2><div class="sub">Store = Shopify last-touch UTM orders/revenue. Platform = what the ad platform claims. Gap = platform purchases − store orders.</div>`+
- chans.map(c=>{const g=num(c.platform_purchases)&&num(c.shopify_orders)?c.platform_purchases-c.shopify_orders:null;const gp=g!=null&&c.shopify_orders?` (${(c.platform_purchases/c.shopify_orders).toFixed(1)}× store)`:'';
- const st=(D.actions?.spend_more||[]).some(a=>a.channel===c.name)?['up','spend more']:(D.actions?.pull_back||[]).some(a=>a.channel===c.name)?['dn','pull back']:['am','hold'];
- return `<div class="ch"><div class="chh"><a href="${chLink(c.name)}" target="_blank">${esc(c.name)} ↗</a><span class="chip ${st[0]}">${st[1]}</span></div>
- <div class="kv"><div>Spend${B('p')}<b>${usd(c.spend)}</b>${chip(c.spend,c.spend_last,'down','')}</div><div>Store orders${B('s')}<b>${n0(c.shopify_orders)}</b>${chip(c.shopify_orders,c.shopify_orders_last,'up','')}</div><div>Cost/store order<b>${usd(c.shopify_cpa,2)}</b></div>
- <div>Store ROAS${B('s')}<b>${x(c.shopify_roas)}</b></div><div>Platform ROAS${B('p')}<b>${x(c.platform_roas)}</b></div><div>Gap (purch)<b>${g==null?NA:(g>0?'+':'')+g}</b>${gp}</div></div>
- <div class="tl">Store rev ${usd(c.shopify_revenue)} · platform claims ${n0(c.platform_purchases)} purch / ${usd(c.platform_revenue)} · spend source: ${esc(c.spend_source||'n/a')}</div></div>`}).join('')+
- `<div class="tl" style="margin-top:6px">Recommendation pill from the agency actions list (same for all windows). <a href="${L.shop}" target="_blank">Shopify orders ↗</a></div>
- <div class="note">Google check: the summary line "ROAS 2.87× on $6,479" uses $6,479 = Google's 30-day <b>store revenue</b>, not spend. 30-day Google <b>spend</b> is $2,258 (GA4 advertiserAdCost). 2.87× = 6,479 ÷ 2,258. Both numbers are right; the summary wording is misleading.</div></div>`);
  // pacing
  const bp=D.budget_pacing||{};const pct=bp.monthly_plan?bp.month_to_date_spend/bp.monthly_plan*100:null;
  const md=new Date(bp.mtd_end+'T12:00:00');const dim=new Date(md.getFullYear(),md.getMonth()+1,0).getDate();const exp=md.getDate()/dim*100;
@@ -195,7 +192,7 @@ function render(){
  out.push(sec('gloss','Glossary',`<table>${Object.entries(D.glossary||{}).map(([a,b])=>`<tr><td><b>${esc(a)}</b></td><td style="text-align:left">${esc(b)}</td></tr>`).join('')}</table>`));
  $('#app').innerHTML=out.join('');
 }
-function sources(){const dq=D.data_quality||{},w=(D.windows||{})[W]||{},as=w.ad_source_status||{};const today=D.window?.end;const res=[];
+function sources(){const dq=D.data_quality||{},w=(D.windows||{})[W==='30d'?'30':'7']||{},as=w.ad_source_status||{};const today=D.window?.end;const res=[];
  const add=(name,src,note,end,pulled)=>{const age=daysAgo(end);res.push({name,src,manual:/manual/i.test(src||''),note:note||'',stale:age==null?true:age>2,when:`data through ${end||'unknown'}${pulled?' · pulled '+fmtT(pulled):''}`})};
  add('Shopify (store truth)',dq.shopify?.source,dq.shopify?.note,today,dq.shopify?.pulled_at);
  add('Meta (platform)',dq.meta?.source,'',dq.meta?.last_live_through,dq.meta?.pulled_at);

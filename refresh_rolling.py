@@ -1654,7 +1654,7 @@ def main() -> None:
 
         mw = build_meta_creative_windows()
         ad_decisions["meta"] = mw
-        legacy = dict(mw["7d"])
+        legacy = {k: v for k, v in mw["7d"].items()}
         legacy["source_note"] = "Live Meta ad insights + Shopify last-touch utm_content (last 7 complete days)"
         payload["meta_ads_by_creative"] = legacy
     except Exception as exc:
