@@ -1396,6 +1396,12 @@ def build_data_quality(
     elif ad_status.get("Google", {}).get("source") == "ga4_ad_cost":
         google["source"] = "ga4_ad_cost"
     pin = _quality_entry("Pinterest", ad_status, "pinterest_api", last_pin, window_label)
+    man_pin = (cfg or {}).get("pinterest_blend_manual") or {}
+    if (ad_status.get("Pinterest") or {}).get("source") in ("blend_manual", None) and man_pin:
+        man_end = max((man_pin.get("daily") or {}), default=None) or man_pin.get("spend_end")
+        if man_end and (not pin.get("last_live_through") or man_end > pin["last_live_through"]):
+            pin["last_live_through"] = man_end
+            pin["note"] = f"Manual Blend spend through {man_end} · {man_pin.get('note') or ''}".strip(" ·")
     ga4 = _ga4_quality(ad_status, pull_errors, window_label)
     shopify_note = "DTC paid orders + UTM; wholesale separate; excludes cancelled, test, promo, exchanges"
     if shopify_pulled_at:
@@ -1640,12 +1646,31 @@ def main() -> None:
         )
     except Exception as exc:
         print(f"meta_shopify_attribution skipped: {exc}", file=sys.stderr)
+    # Per-ad "Meta says vs Shopify shows": yesterday + last 7 complete days + by_day (ET).
+    ad_decisions: dict = {"thresholds": cfg.get("decision_thresholds") or {}, "errors": {}}
     try:
-        from meta_ads_by_creative import build_meta_ads_by_creative
+        sys.path.insert(0, str(SCRIPTS))
+        from meta_ads_by_creative import build_meta_creative_windows
 
-        payload["meta_ads_by_creative"] = build_meta_ads_by_creative()
+        mw = build_meta_creative_windows()
+        ad_decisions["meta"] = mw
+        legacy = dict(mw["7d"])
+        legacy["source_note"] = "Live Meta ad insights + Shopify last-touch utm_content (last 7 complete days)"
+        payload["meta_ads_by_creative"] = legacy
     except Exception as exc:
+        ad_decisions["errors"]["meta"] = str(exc)
         print(f"meta_ads_by_creative skipped: {exc}", file=sys.stderr)
+    try:
+        from channel_campaigns import build_channel_campaigns
+
+        cc = build_channel_campaigns(cfg)
+        ad_decisions["pmax"] = cc["pmax"]
+        ad_decisions["pinterest"] = cc["pinterest"]
+    except Exception as exc:
+        ad_decisions["errors"]["channels"] = str(exc)
+        print(f"channel_campaigns skipped: {exc}", file=sys.stderr)
+    ad_decisions["generated_at"] = datetime.now(TZ).isoformat()
+    payload["ad_decisions"] = ad_decisions
     try:
         from channel_mix import build_channel_mix
 

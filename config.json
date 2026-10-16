@@ -61,7 +61,7 @@
   "economics_model": {
     "cogs_pct_of_net_dtc": 0.38,
     "fulfillment_cost_per_order_usd": 9,
-    "label": "Modeled contribution only \u2014 replace with Xero COGS + actual 3PL when available"
+    "label": "Modeled contribution only — replace with Xero COGS + actual 3PL when available"
   },
   "returns_model": {
     "refund_return_fee_usd": 7.95,
@@ -76,7 +76,7 @@
       "8:00 AM",
       "8:00 PM"
     ],
-    "times_dst_note": "During Eastern Standard Time (roughly Nov\u2013Mar), runs are about 7:00 AM and 7:00 PM instead.",
+    "times_dst_note": "During Eastern Standard Time (roughly Nov–Mar), runs are about 7:00 AM and 7:00 PM instead.",
     "sources_live": [
       "Shopify orders and revenue",
       "Meta ad spend",
@@ -100,5 +100,16 @@
       "email": "",
       "sections": "campaigns,creative,actions,agency"
     }
-  ]
+  ],
+  "decision_thresholds": {
+    "window": "7d",
+    "min_spend_for_call": 50,
+    "min_orders_for_call": 2,
+    "pause_spend_no_orders": 100,
+    "winner_roas": 1.6,
+    "profitable_roas": 1.2,
+    "breakeven_roas": 0.9,
+    "winner_budget_step_pct": 20,
+    "overstate_ratio": 2.0
+  }
 }

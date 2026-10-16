@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Meta ad × ad-set bucket vs Shopify last-touch utm_content (fixed Oct 2–8 ET window)."""
+"""Meta ad (creative) vs Shopify last-touch utm_content, per day (ET).
+
+No hard-coded dates: callers pass a window, or get yesterday + last 7 complete days."""
 
 from __future__ import annotations
 
@@ -9,7 +11,8 @@ import re
 import urllib.parse
 import urllib.request
 from collections import defaultdict
-from datetime import date
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 from typing import Any
 
 from meta_shopify_attribution import (
@@ -22,8 +25,25 @@ from meta_shopify_attribution import (
     shopify_token,
 )
 
-DEFAULT_START = date(2026, 10, 2)
-DEFAULT_END = date(2026, 10, 8)
+ET = ZoneInfo("America/Detroit")
+
+
+def today_et() -> date:
+    return datetime.now(ET).date()
+
+
+def default_window() -> tuple[date, date]:
+    """Last 7 complete days (ET), ending yesterday."""
+    end = today_et() - timedelta(days=1)
+    return end - timedelta(days=6), end
+
+
+def fmt_label(start: date, end: date) -> str:
+    if start == end:
+        return start.strftime("%a %b %-d, %Y")
+    if start.year == end.year:
+        return f"{start.strftime('%b %-d')} – {end.strftime('%b %-d, %Y')}"
+    return f"{start.strftime('%b %-d, %Y')} – {end.strftime('%b %-d, %Y')}"
 
 ORDERS_GQL = """
 query($cursor: String, $q: String!) {
@@ -96,7 +116,7 @@ def content_matches_ad(utm_content: str, ad_name: str) -> bool:
     return norm(creative_label(utm_content)) == norm(creative_label(ad_name))
 
 
-def meta_ad_insights(start: date, end: date) -> list[dict[str, Any]]:
+def meta_ad_insights(start: date, end: date, daily: bool = False) -> list[dict[str, Any]]:
     token = os.environ.get("META_ACCESS_TOKEN", "").strip()
     acct = os.environ.get("META_AD_ACCOUNT_ID", "act_10152741884925238")
     if not token:
@@ -112,6 +132,8 @@ def meta_ad_insights(start: date, end: date) -> list[dict[str, Any]]:
         "time_range": json.dumps({"since": start.isoformat(), "until": end.isoformat()}),
         "access_token": token,
     }
+    if daily:
+        params["time_increment"] = "1"
     while True:
         url = f"{url_base}?{urllib.parse.urlencode(params)}"
         with urllib.request.urlopen(url, timeout=120) as resp:
@@ -133,16 +155,34 @@ def platform_purchases(row: dict) -> int:
     return n
 
 
-def shopify_orders_for_window(start: date, end: date) -> list[dict[str, Any]]:
-    from datetime import timedelta
+def platform_revenue(row: dict) -> float:
+    v = 0.0
+    for a in row.get("action_values") or []:
+        if a.get("action_type") in ("purchase", "omni_purchase"):
+            v = max(v, float(a.get("value") or 0))
+    return v
 
+
+def et_date(created_at: str) -> str:
+    """Shopify createdAt is UTC ISO; bucket by Eastern calendar day."""
+    if not created_at:
+        return ""
+    try:
+        dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        return dt.astimezone(ET).date().isoformat()
+    except ValueError:
+        return created_at[:10]
+
+
+def shopify_paid_orders(start: date, end: date) -> list[dict[str, Any]]:
+    """All countable DTC orders in [start, end] ET with last-visit UTM (any channel)."""
     domain = os.environ["SHOPIFY_DOMAIN"]
     token = shopify_token(
         domain, os.environ["SHOPIFY_CLIENT_ID"], os.environ["SHOPIFY_CLIENT_SECRET"]
     )
     q = (
-        f"created_at:>={start.isoformat()} "
-        f"created_at:<{(end + timedelta(days=1)).isoformat()}"
+        f"created_at:>={(start - timedelta(days=1)).isoformat()} "
+        f"created_at:<{(end + timedelta(days=2)).isoformat()}"
     )
     cursor = None
     out: list[dict[str, Any]] = []
@@ -165,15 +205,20 @@ def shopify_orders_for_window(start: date, end: date) -> list[dict[str, Any]]:
                 continue
             lv = ((node.get("customerJourneySummary") or {}).get("lastVisit") or {})
             utm = lv.get("utmParameters") or {}
-            if not is_meta_paid_last_touch(utm, lv.get("landingPage") or ""):
+            d_et = et_date(node.get("createdAt") or "")
+            if not (start.isoformat() <= d_et <= end.isoformat()):
                 continue
             out.append(
                 {
                     "order": node.get("name"),
-                    "created_at": (node.get("createdAt") or "")[:10],
+                    "created_at": d_et,
                     "revenue": round(rev, 2),
                     "utm_content": (utm.get("content") or "").strip(),
                     "utm_campaign": (utm.get("campaign") or "").strip(),
+                    "utm_source": (utm.get("source") or "").strip(),
+                    "utm_medium": (utm.get("medium") or "").strip(),
+                    "landing_page": lv.get("landingPage") or "",
+                    "is_meta": is_meta_paid_last_touch(utm, lv.get("landingPage") or ""),
                 }
             )
         page = conn.get("pageInfo") or {}
@@ -183,12 +228,135 @@ def shopify_orders_for_window(start: date, end: date) -> list[dict[str, Any]]:
     return out
 
 
+def shopify_orders_for_window(start: date, end: date) -> list[dict[str, Any]]:
+    return [o for o in shopify_paid_orders(start, end) if o["is_meta"]]
+
+
+def _ratio(a: float, b: float) -> float | None:
+    return round(a / b, 2) if b else None
+
+
+def _finish_row(g: dict[str, Any]) -> dict[str, Any]:
+    spend = round(g["meta_spend"], 2)
+    mrev = round(g["meta_revenue"], 2)
+    srev = round(g["shopify_revenue"], 2)
+    mp = int(g["meta_claims_purch"])
+    so = int(g["shopify_orders"])
+    return {
+        "ad": g["ad"],
+        "ad_set": " + ".join(sorted(g["ad_sets"])) or "—",
+        "ad_sets": sorted(g["ad_sets"]),
+        "meta_spend": spend,
+        "meta_claims_purch": mp,
+        "meta_revenue": mrev,
+        "meta_roas": _ratio(mrev, spend),
+        "meta_cpa": _ratio(spend, mp),
+        "shopify_orders": so,
+        "shopify_revenue": srev,
+        "shopify_roas": _ratio(srev, spend),
+        "shopify_cpa": _ratio(spend, so),
+        "active": spend > 0,
+        "order_names": sorted(g["order_names"]),
+        "meta_ad_names": sorted(set(g["meta_ad_names"])),
+    }
+
+
+def _totals(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    g = {
+        "ad": "Total", "ad_sets": set(), "meta_spend": 0.0, "meta_claims_purch": 0,
+        "meta_revenue": 0.0, "shopify_orders": 0, "shopify_revenue": 0.0,
+        "order_names": [], "meta_ad_names": [],
+    }
+    for r in rows:
+        for k in ("meta_spend", "meta_claims_purch", "meta_revenue", "shopify_orders", "shopify_revenue"):
+            g[k] += r[k]
+    t = _finish_row(g)
+    for k in ("ad_set", "ad_sets", "order_names", "meta_ad_names", "active"):
+        t.pop(k, None)
+    return t
+
+
+def _new_group(label: str) -> dict[str, Any]:
+    return {
+        "ad": label, "ad_sets": set(), "meta_spend": 0.0, "meta_claims_purch": 0,
+        "meta_revenue": 0.0, "shopify_orders": 0, "shopify_revenue": 0.0,
+        "order_names": [], "meta_ad_names": [],
+    }
+
+
+def aggregate_creatives(
+    meta_rows: list[dict[str, Any]], shop_orders: list[dict[str, Any]], start: date, end: date
+) -> dict[str, Any]:
+    """Group by creative label (combined across ad sets) for [start, end]."""
+    s_iso, e_iso = start.isoformat(), end.isoformat()
+    grouped: dict[str, dict[str, Any]] = {}
+    for row in meta_rows:
+        d = row.get("date_start") or s_iso
+        if not (s_iso <= d <= e_iso):
+            continue
+        spend = float(row.get("spend") or 0)
+        purch = platform_purchases(row)
+        if spend <= 0 and purch <= 0:
+            continue
+        ad_name = row.get("ad_name") or "—"
+        label = creative_label(ad_name)
+        g = grouped.setdefault(norm(label), _new_group(label))
+        g["ad_sets"].add(adset_bucket(row.get("campaign_name") or "", row.get("adset_name") or ""))
+        g["meta_spend"] += spend
+        g["meta_claims_purch"] += purch
+        g["meta_revenue"] += platform_revenue(row)
+        g["meta_ad_names"].append(ad_name)
+    for o in shop_orders:
+        if not (s_iso <= o["created_at"] <= e_iso):
+            continue
+        label = creative_label_from_utm(o["utm_content"]) if o["utm_content"] else "(no utm_content)"
+        g = grouped.setdefault(norm(label), _new_group(label))
+        g["ad_sets"].add(adset_bucket(o["utm_campaign"]))
+        g["shopify_orders"] += 1
+        g["shopify_revenue"] += o["revenue"]
+        g["order_names"].append(o["order"])
+    rows = [_finish_row(g) for g in grouped.values()]
+    rows.sort(key=lambda r: (-r["meta_spend"], -r["shopify_revenue"]))
+    return {
+        "window": {"start": s_iso, "end": e_iso, "label": fmt_label(start, end),
+                   "days": (end - start).days + 1},
+        "rows": rows,
+        "totals": _totals(rows),
+    }
+
+
+def build_meta_creative_windows(today: date | None = None) -> dict[str, Any]:
+    """Yesterday + last 7 complete days + per-day breakdown (ET). One Meta + one Shopify pull."""
+    today = today or today_et()
+    y = today - timedelta(days=1)
+    s7 = y - timedelta(days=6)
+    meta_rows = meta_ad_insights(s7, y, daily=True)
+    if not meta_rows:
+        raise RuntimeError("Meta ad insights returned no rows (token missing or API error)")
+    shop = shopify_orders_for_window(s7, y)
+    by_day = {}
+    d = s7
+    while d <= y:
+        by_day[d.isoformat()] = aggregate_creatives(meta_rows, shop, d, d)
+        d += timedelta(days=1)
+    return {
+        "generated_for": today.isoformat(),
+        "attribution": "Meta = platform-claimed purchases/value (account default attribution). "
+                       "Shopify = last-visit utm_content (store truth).",
+        "yesterday": by_day[y.isoformat()],
+        "7d": aggregate_creatives(meta_rows, shop, s7, y),
+        "by_day": by_day,
+    }
+
+
 def build_meta_ads_by_creative(
     start: date | None = None,
     end: date | None = None,
 ) -> dict[str, Any]:
-    start_d = start or DEFAULT_START
-    end_d = end or DEFAULT_END
+    if start is None or end is None:
+        start_d, end_d = default_window()
+    else:
+        start_d, end_d = start, end
     meta_rows = meta_ad_insights(start_d, end_d)
     shop_orders = shopify_orders_for_window(start_d, end_d)
 
@@ -262,7 +430,7 @@ def build_meta_ads_by_creative(
         "window": {
             "start": start_d.isoformat(),
             "end": end_d.isoformat(),
-            "label": "Oct 2 – Oct 8, 2026",
+            "label": fmt_label(start_d, end_d),
         },
         "source_note": "Live Meta ad insights + Shopify last-touch utm_content",
         "rows": rows_out,
