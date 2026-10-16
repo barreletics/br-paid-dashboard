@@ -75,7 +75,7 @@ function decisionsHTML(){const A=D.ad_decisions||{},T=A.thresholds||{},m=A.meta|
    p:r7.meta_claims_purch??r7.platform_purch,ry,r7,plat:src});
  const items=[];
  const my=Object.fromEntries(((m.yesterday||{}).rows||[]).map(r=>[r.ad,r]));
- ((m['7d']||{}).rows||[]).filter(r=>r.active).forEach(r=>items.push(norm('Meta','Meta ad',r,my[r.ad])));
+ ((m['7d']||{}).rows||[]).filter(r=>(r.meta_spend||0)>=5).forEach(r=>items.push(norm('Meta','Meta ad',r,my[r.ad])));
  for(const [key,kind,plat] of [['pmax','Google PMax','Google'],['pinterest','Pinterest','Pinterest']]){const c=A[key]||{};const yy=Object.fromEntries(((c.yesterday||{}).rows||[]).map(r=>[r.ad,r]));((c['7d']||{}).rows||[]).filter(r=>(r.spend||0)>0).forEach(r=>items.push(norm(plat,kind,r,yy[r.ad])))}
  const rowv=(lab,r)=>{if(!r)return `<tr><td>${lab}</td><td colspan="3" class="na">no spend</td></tr>`;const sp=r.meta_spend??r.spend,mp=r.meta_claims_purch??r.platform_purch,mr=r.meta_roas??r.platform_roas;
    return `<tr><td>${lab}</td><td>${usd(sp,2)}</td><td>${says(mp,mr)}</td><td>${says(r.shopify_orders,r.shopify_roas,r.shopify_orders===1?'order':'orders')}</td></tr>`};

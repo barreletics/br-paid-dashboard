@@ -333,7 +333,11 @@ def build_meta_creative_windows(today: date | None = None) -> dict[str, Any]:
     meta_rows = meta_ad_insights(s7, y, daily=True)
     if not meta_rows:
         raise RuntimeError("Meta ad insights returned no rows (token missing or API error)")
-    shop = shopify_orders_for_window(s7, y)
+    pin_ids = {"626758797715", "626758433774", "626759617021", "626760011313"}
+    shop = [
+        o for o in shopify_orders_for_window(s7, y)
+        if o["utm_campaign"] not in pin_ids and "pinterest" not in o["utm_source"].lower()
+    ]
     by_day = {}
     d = s7
     while d <= y:
