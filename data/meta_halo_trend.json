@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-19T11:33:03.294465-04:00",
+  "generated_at": "2026-10-19T13:44:26.384401-04:00",
   "start": "2026-06-01",
   "end": "2026-10-19",
   "weeks": [
@@ -451,7 +451,7 @@
       "other_revenue": 394.8,
       "organic_halo_revenue": 3177.84,
       "organic_halo_orders": 31,
-      "meta_week": "bad"
+      "meta_week": "good"
     },
     {
       "week_start": "2026-10-05",
@@ -482,7 +482,7 @@
       "week_start": "2026-10-12",
       "week_end": "2026-10-18",
       "label": "Oct 12\u201318, 2026",
-      "meta_spend": 1464.36,
+      "meta_spend": 1464.46,
       "meta_orders": 19,
       "meta_revenue": 1814.25,
       "meta_roas": 1.24,
@@ -501,21 +501,21 @@
       "other_revenue": 340.84,
       "organic_halo_revenue": 2878.02,
       "organic_halo_orders": 31,
-      "meta_week": "bad"
+      "meta_week": "good"
     },
     {
       "week_start": "2026-10-19",
       "week_end": "2026-10-25",
       "label": "Oct 19\u201325, 2026",
-      "meta_spend": 97.54,
-      "meta_orders": 0,
-      "meta_revenue": 0.0,
-      "meta_roas": 0.0,
-      "meta_orders_per_day": 0.0,
+      "meta_spend": 123.53,
+      "meta_orders": 1,
+      "meta_revenue": 83.95,
+      "meta_roas": 0.68,
+      "meta_orders_per_day": 0.14,
       "google_paid_orders": 1,
       "google_paid_revenue": 143.15,
-      "organic_search_orders": 0,
-      "organic_search_revenue": 0,
+      "organic_search_orders": 1,
+      "organic_search_revenue": 87.95,
       "direct_orders": 0,
       "direct_revenue": 0,
       "organic_social_orders": 0,
@@ -524,27 +524,27 @@
       "email_revenue": 0,
       "other_orders": 0,
       "other_revenue": 0,
-      "organic_halo_revenue": 143.15,
-      "organic_halo_orders": 1,
+      "organic_halo_revenue": 231.1,
+      "organic_halo_orders": 2,
       "meta_week": "bad"
     }
   ],
   "stats": {
-    "corr_meta_spend_organic_halo_lag0": 0.53,
+    "corr_meta_spend_organic_halo_lag0": 0.52,
     "corr_meta_spend_organic_halo_lag1": 0.32,
-    "corr_meta_revenue_organic_halo_lag0": 0.15,
+    "corr_meta_revenue_organic_halo_lag0": 0.45,
     "corr_meta_spend_direct_lag0": 0.4,
-    "corr_meta_spend_organic_search_lag0": 0.4,
-    "organic_halo_revenue_per_meta_dollar": -0.026,
+    "corr_meta_spend_organic_search_lag0": 0.37,
+    "organic_halo_revenue_per_meta_dollar": 1.385,
     "weeks_count": 21,
-    "good_weeks": 8,
-    "bad_weeks": 13,
-    "avg_organic_halo_good": 4722.0,
-    "avg_organic_halo_bad": 4327.0
+    "good_weeks": 10,
+    "bad_weeks": 11,
+    "avg_organic_halo_good": 4383.0,
+    "avg_organic_halo_bad": 4191.0
   },
   "findings": [
-    "Since Jun 2026 (21 Mon\u2013Sun weeks): Meta spend vs organic halo revenue correlates weakly (lag-0 r\u22480.53, lag-1 r\u22480.32) \u2014 moves together sometimes, not lockstep.",
-    "Meta-attributed Shopify sales track halo better than spend alone (lag-0 r\u22480.15). Good Meta weeks avg ~$4722.0 organic halo vs ~$4327.0 on bad weeks.",
-    "Rule-of-thumb from weekly data: ~$-0.026 organic halo Shopify $ per $1 Meta spend (non-causal; includes Oct partial week)."
+    "Since Jun 2026 (21 Mon\u2013Sun weeks): Meta spend vs organic halo revenue correlates weakly (lag-0 r\u22480.52, lag-1 r\u22480.32) \u2014 moves together sometimes, not lockstep.",
+    "Meta-attributed Shopify sales track halo better than spend alone (lag-0 r\u22480.45). Good Meta weeks avg ~$4383.0 organic halo vs ~$4191.0 on bad weeks.",
+    "Rule-of-thumb from weekly data: ~$1.385 organic halo Shopify $ per $1 Meta spend (non-causal; includes Oct partial week)."
   ]
 }
