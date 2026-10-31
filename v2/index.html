@@ -16,7 +16,7 @@ button,.seg button{border:1px solid var(--bd);background:var(--card);color:var(-
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}.tile{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px}
 .tl{font-size:12px;color:var(--mu)}.tv{font-size:22px;font-weight:700;margin:2px 0}.chip{display:inline-block;font-size:11px;padding:2px 7px;border-radius:999px;white-space:nowrap}
 .up{background:var(--gb);color:var(--g)}.dn{background:var(--rb);color:var(--r)}.nt{background:var(--bd);color:var(--mu)}.am{background:var(--ab);color:var(--a)}.bl{background:var(--bb);color:var(--b)}
-.badge{font-size:10px;text-transform:uppercase;letter-spacing:.03em;padding:1px 5px;border-radius:4px;margin-left:4px}.store{background:var(--gb);color:var(--g)}.plat{background:var(--ab);color:var(--a)}
+.badge{font-size:10px;text-transform:uppercase;letter-spacing:.03em;padding:1px 5px;border-radius:4px;margin-left:4px}.store{background:var(--gb);color:var(--g)}.plat{background:var(--ab);color:var(--a)}.stale{background:var(--ab);color:var(--a);font-weight:700}
 .todos{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 10px}.todos a{flex:0 1 auto;max-width:100%;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
 .todos a.red{border-color:var(--r);color:var(--r)}.todos a.amb{border-color:var(--a);color:var(--a)}
 h2{font-size:15px;margin:0 0 8px}.sub{font-size:12px;color:var(--mu);margin:-4px 0 8px}
@@ -47,6 +47,9 @@ const NA='<span class="na">not available</span>';
 const usd=(v,d=0)=>num(v)?'$'+v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}):NA;
 const x=v=>num(v)?v.toFixed(2)+'×':NA,n0=v=>num(v)?v.toLocaleString('en-US'):NA;
 const B=t=>t==='s'?'<span class="badge store">store</span>':'<span class="badge plat">platform</span>';
+const pinDq=()=>D?.data_quality?.pinterest||D?.data_quality?.blend_pinterest||{};
+const pinIsStale=()=>{const p=pinDq();return p.status==='stale'||p.status==='manual'||p.source==='blend_manual'};
+const pinStaleBadge=()=>pinIsStale()?`<span class="badge stale">STALE</span>`:'';
 const fmtT=s=>{if(!s)return null;const d=new Date(s);return isNaN(d)?s:d.toLocaleString('en-US',{timeZone:'America/Detroit',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' ET'};
 const daysAgo=ds=>{if(!ds)return null;return Math.floor((Date.now()-new Date(ds+'T12:00:00-04:00'))/864e5)};
 function chip(cur,prev,good='up',label){if(!num(cur)||!num(prev)||prev===0)return '<span class="chip nt">no prior</span>';const p=(cur-prev)/Math.abs(prev)*100;const better=good==='up'?p>=0:p<=0;return `<span class="chip ${Math.abs(p)<1?'nt':better?'up':'dn'}">${p>=0?'▲':'▼'} ${Math.abs(p).toFixed(0)}% ${label}</span>`}
@@ -62,7 +65,8 @@ const yesterdayET=()=>{const d=new Date(todayET()+'T12:00:00Z');d.setUTCDate(d.g
 const WL={today:'Today',yesterday:'Yesterday','7d':'Last 7 days','30d':'Last 30 days'};
 function blk(c){return (c||{})[W]||{}}
 function asofHTML(){const m=(D.ad_decisions||{}).meta||{};const b=blk(m);const lab=(b.window||{}).label||'';
- return `<b>${WL[W]}</b> · ${esc(lab)}${W==='today'?` · <span class="chip am">partial, as of ${fmtT(m.as_of||D.generated_at)}</span>`:''} · data as of ${fmtT(D.generated_at)||'unknown'} · <a href="${L.old}">old page</a>`}
+ const p=pinDq();const pr=p.manual_spend_start&&p.manual_spend_end?` (${p.manual_spend_start}–${p.manual_spend_end})`:'';
+ return `<b>${WL[W]}</b> · ${esc(lab)}${W==='today'?` · <span class="chip am">partial, as of ${fmtT(m.as_of||D.generated_at)}</span>`:''}${pinIsStale()?` · Pinterest ${pinStaleBadge()}${pr?` <span class="tl">manual${esc(pr)}</span>`:''}`:''} · data as of ${fmtT(D.generated_at)||'unknown'} · <a href="${L.old}">old page</a>`}
 const money=v=>'$'+Math.round(v).toLocaleString('en-US');
 function decide(r,T){T=T||{};const sp=r.spend||0,o=r.orders||0,S=r.S??0,M=r.M;const pct=T.winner_budget_step_pct??20,lo=T.cut_pct_low??30,hi=T.cut_pct_high??50;let d;
  const bud=r.budget,used=r.usedPerDay;
@@ -154,7 +158,7 @@ function render(){
  out.push(`<div class="card" id="pacing"><h2>Spend pacing · ${esc(bp.month||'')}</h2><div class="sub">${esc(bp.mtd_start)}–${esc(bp.mtd_end)} · line = where spend should be today (${exp.toFixed(0)}%)</div>
  <div class="chh"><span>Total ${usd(bp.month_to_date_spend)} of ${usd(bp.monthly_plan)}</span><span class="chip ${bp.pacing_status==='on_track'?'up':'am'}">${esc(bp.pacing_status||'n/a')}</span></div>${pbar(bp.month_to_date_spend,bp.monthly_plan)}
  <div class="tl">Projected month: ${usd(bp.projected_month_spend)}</div>`+
- (bp.by_channel||[]).map(c=>`<div style="margin-top:8px"><div class="chh" style="font-weight:400"><a href="${chLink(c.channel)}" target="_blank">${esc(c.channel)}</a><span>${usd(c.mtd_spend)} / ${usd(c.monthly_plan)} <span class="chip ${c.status==='over'?'dn':c.status==='under'?'am':'up'}">${esc(c.status)}</span></span></div>${pbar(c.mtd_spend,c.monthly_plan)}<div class="tl">source: ${esc(c.spend_source)}</div></div>`).join('')+`</div>`);
+ (bp.by_channel||[]).map(c=>`<div style="margin-top:8px"><div class="chh" style="font-weight:400"><a href="${chLink(c.channel)}" target="_blank">${esc(c.channel)}</a>${/pinterest/i.test(c.channel)?pinStaleBadge():''}<span>${usd(c.mtd_spend)} / ${usd(c.monthly_plan)} <span class="chip ${c.status==='over'?'dn':c.status==='under'?'am':'up'}">${esc(c.status)}</span></span></div>${pbar(c.mtd_spend,c.monthly_plan)}<div class="tl">source: ${esc(c.spend_source)}${/pinterest/i.test(c.channel)&&pinIsStale()?` · manual ${esc((pinDq().manual_spend_start||'?')+'–'+(pinDq().manual_spend_end||'?'))}`:''}</div></div>`).join('')+`</div>`);
  // PMax per campaign
  out.push(`<div class="card" id="pmax"><h2>Google PMax by campaign</h2>${pmaxHTML()}</div>`);
  // parity with old page
@@ -170,7 +174,7 @@ function render(){
  // alerts
  out.push(sec('alerts',`Spent $X, 0 store orders (${zero.length})`,zero.length?`<table><tr><th>Where</th><th>Spend</th><th>Threshold</th></tr>${zero.map(z=>`<tr><td>${esc(z.name)}<div class="tl">${esc(z.lvl)}</div></td><td>${usd(z.spend)}</td><td>${z.lim?usd(z.lim)+' (config)':'$100 default'}</td></tr>`).join('')}</table>`:'No channel or ad over threshold with zero store orders.',zero.length>0));
  // sources
- out.push(sec('sources','Data sources & freshness',srcs.map(s=>`<div class="src"><span>${s.stale?'🔴':s.manual?'🟡':'🟢'} <b>${esc(s.name)}</b><div class="tl">${esc(s.src)} · ${esc(s.note)}</div></span><span class="tl" style="text-align:right">${esc(s.when)}</span></div>`).join('')+`<div class="src"><span>⚪ <b>TikTok</b><div class="tl">not connected</div></span></div><div class="tl">🔴 stale = data ends &gt;2 days before today · 🟡 manual entry (not a live API). Pinterest manual spend covers only its stated dates; windows starting earlier undercount Pinterest spend. Pinterest API: ${esc(((w.ad_pull_errors||{}).Pinterest)||'no error')}.</div>`,srcs.some(s=>s.stale)));
+ out.push(sec('sources','Data sources & freshness',srcs.map(s=>`<div class="src"><span>${s.stale?'🔴':s.manual?'🟡':'🟢'} <b>${esc(s.name)}</b>${s.badge||''}<div class="tl">${esc(s.src)} · ${esc(s.note)}</div></span><span class="tl" style="text-align:right">${esc(s.when)}</span></div>`).join('')+`<div class="src"><span>⚪ <b>TikTok</b><div class="tl">not connected</div></span></div><div class="tl">🔴 stale = data ends &gt;2 days before today · 🟡 manual entry (not a live API). Pinterest manual spend covers only its stated dates; windows starting earlier undercount Pinterest spend. Pinterest API: ${esc(((w.ad_pull_errors||{}).Pinterest)||'no error')}.</div>`,srcs.some(s=>s.stale)));
  // to-do
  const ac=D.actions||{};out.push(sec('todo','Full to-do list & actions',`<table><tr><th>Item</th><th>Owner</th><th>Due</th></tr>${(D.strategy_todos||[]).map(t=>`<tr><td>${esc(t.action)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}${(D.next_week_priorities||[]).map(t=>`<tr><td>P${t.priority}: ${esc(t.action)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}${(ac.watch||[]).map(t=>`<tr><td>Watch ${esc(t.channel)}: ${esc(t.item)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}</table>`));
  // daily
@@ -193,12 +197,12 @@ function render(){
  $('#app').innerHTML=out.join('');
 }
 function sources(){const dq=D.data_quality||{},w=(D.windows||{})[W==='30d'?'30':'7']||{},as=w.ad_source_status||{};const today=D.window?.end;const res=[];
- const add=(name,src,note,end,pulled)=>{const age=daysAgo(end);res.push({name,src,manual:/manual/i.test(src||''),note:note||'',stale:age==null?true:age>2,when:`data through ${end||'unknown'}${pulled?' · pulled '+fmtT(pulled):''}`})};
+ const add=(name,src,note,end,pulled,extra)=>{const age=daysAgo(end);const ex=extra||{};const o={name,src,manual:ex.manual!=null?ex.manual:/manual/i.test(src||''),note:note||'',stale:ex.stale!=null?ex.stale:(age==null?true:age>2),when:`data through ${end||'unknown'}${pulled?' · pulled '+fmtT(pulled):''}`,badge:ex.badge||''};res.push(o)};
  add('Shopify (store truth)',dq.shopify?.source,dq.shopify?.note,today,dq.shopify?.pulled_at);
  add('Meta (platform)',dq.meta?.source,'',dq.meta?.last_live_through,dq.meta?.pulled_at);
  add('Google via GA4 (platform)',dq.google?.source,'',dq.google?.last_live_through,dq.google?.pulled_at);
- const pn=as.Pinterest?.note||'';const m=null;
- add('Pinterest (platform, manual Blend)',as.Pinterest?.source||dq.pinterest?.source,`${pn} · manual Blend spend`,m?m[1]:dq.pinterest?.last_live_through,null);
+ const pp=dq.pinterest||dq.blend_pinterest||{};const pn=pp.note||as.Pinterest?.note||'';const pend=pp.manual_spend_end||pp.last_live_through;const pstale=pp.status==='stale'||pp.status==='manual'||pp.source==='blend_manual';
+ add('Pinterest (platform, manual Blend)',pp.source||as.Pinterest?.source,pn,pend,null,{stale:pstale,manual:pstale,badge:pstale?pinStaleBadge():''});
  add('GA4 (direction only)',dq.ga4?.source,'',dq.ga4?.pulled_at?.slice(0,10),dq.ga4?.pulled_at);
  const mc=D.meta_ads_by_creative?.window;add('Meta ads by creative',D.meta_ads_by_creative?.source_note,'yesterday + last 7 complete days',mc?.end,null);
  return res}
