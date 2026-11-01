@@ -15,6 +15,7 @@ button,.seg button{border:1px solid var(--bd);background:var(--card);color:var(-
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}.tile{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px}
 .tl{font-size:12px;color:var(--mu)}.tv{font-size:22px;font-weight:700;margin:2px 0}.chip{display:inline-block;font-size:11px;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.tile .tile-chip{display:block;margin:4px 0 6px}.tile .tile-chip .chip{display:inline-block;max-width:100%;white-space:normal;line-height:1.35}.tile .tile-sub{display:block;margin-top:0;line-height:1.35}
 .up{background:var(--gb);color:var(--g)}.dn{background:var(--rb);color:var(--r)}.nt{background:var(--bd);color:var(--mu)}.am{background:var(--ab);color:var(--a)}.bl{background:var(--bb);color:var(--b)}
 .badge{font-size:10px;text-transform:uppercase;letter-spacing:.03em;padding:1px 5px;border-radius:4px;margin-left:4px}.store{background:var(--gb);color:var(--g)}.plat{background:var(--ab);color:var(--a)}
 .todos{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 10px}.todos a{flex:0 1 auto;max-width:100%;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
@@ -116,7 +117,7 @@ function tilesHTML(){const A=D.ad_decisions||{},b=blk(A.meta),w=b.window||{};let
  const tile=(l,v,bd,sub)=>`<div class="tile"><div class="tl">${l}${bd}</div><div class="tv">${v}</div><div class="tl">${sub}</div></div>`;
  return `<div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">${tile('Paid ROAS',x(sp?tag/sp:null),B('s'),`ad-tagged store sales ${usd(tag)} ÷ spend`)}${tile('Halo ROAS',x(spC?all/spC:null),B('s'),`all store revenue ${usd(all)} ÷ spend${clip?` (${d0} on; store data starts there)`:''}`)}${tile('Total ad spend',usd(sp),B('p'),'Meta + PMax + Pinterest')}</div><div class="sub" style="margin:6px 0 10px">${esc(WL[W])} · ${esc(w.label||'')}${W==='today'?' (partial)':''}</div>`}
 function executiveTopHTML(k,pk,plab,win,tagNow,tagL){
- const tile=(l,v,d,sub)=>`<div class="tile"><div class="tl">${l}</div><div class="tv">${v}</div>${d}<div class="tl">${sub}</div></div>`;
+ const tile=(l,v,d,sub)=>`<div class="tile"><div class="tl">${l}</div><div class="tv">${v}</div><div class="tile-chip">${d}</div><div class="tl tile-sub">${sub}</div></div>`;
  const spend=k.total_ad_spend,pSpend=pk.total_ad_spend;
  const rev=k.paid_revenue,pRev=pk.paid_revenue;
  const storeRoas=spend?rev/spend:null,pStoreRoas=pSpend?pRev/pSpend:null;
