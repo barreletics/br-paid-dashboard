@@ -1,12 +1,6 @@
 name: Refresh rolling dashboard
 
 on:
-  schedule:
-    # GitHub often skips single hourly crons — four staggered attempts per hour (ET ~:08,:23,:38,:53).
-    - cron: '8 * * * *'
-    - cron: '23 * * * *'
-    - cron: '38 * * * *'
-    - cron: '53 * * * *'
   workflow_dispatch:
     inputs:
       force:
