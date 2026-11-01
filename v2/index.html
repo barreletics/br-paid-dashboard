@@ -115,6 +115,23 @@ function tilesHTML(){const A=D.ad_decisions||{},b=blk(A.meta),w=b.window||{};let
  let all=0;const dr=D.daily_revenue||{};const d0=Object.keys(dr).sort()[0];Object.keys(dr).forEach(d=>{if(w.start&&d>=w.start&&d<=w.end)all+=dr[d]});const clip=d0&&w.start&&d0>w.start;let spC=sp;if(clip){spC=0;const m=(A.meta||{}).by_day||{};Object.entries(m).forEach(([d,v])=>{if(d>=d0&&d<=w.end)spC+=(v.totals||{}).meta_spend||0});for(const k of ['pmax','pinterest'])Object.entries((A[k]||{}).by_day||{}).forEach(([d,v])=>{if(d>=d0&&d<=w.end)(v.rows||[]).forEach(r=>spC+=r.spend||0)})}
  const tile=(l,v,bd,sub)=>`<div class="tile"><div class="tl">${l}${bd}</div><div class="tv">${v}</div><div class="tl">${sub}</div></div>`;
  return `<div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">${tile('Paid ROAS',x(sp?tag/sp:null),B('s'),`ad-tagged store sales ${usd(tag)} ÷ spend`)}${tile('Halo ROAS',x(spC?all/spC:null),B('s'),`all store revenue ${usd(all)} ÷ spend${clip?` (${d0} on; store data starts there)`:''}`)}${tile('Total ad spend',usd(sp),B('p'),'Meta + PMax + Pinterest')}</div><div class="sub" style="margin:6px 0 10px">${esc(WL[W])} · ${esc(w.label||'')}${W==='today'?' (partial)':''}</div>`}
+function executiveTopHTML(k,pk,plab,win,tagNow,tagL){
+ const tile=(l,v,d,sub)=>`<div class="tile"><div class="tl">${l}</div><div class="tv">${v}</div>${d}<div class="tl">${sub}</div></div>`;
+ const spend=k.total_ad_spend,pSpend=pk.total_ad_spend;
+ const rev=k.paid_revenue,pRev=pk.paid_revenue;
+ const storeRoas=spend?rev/spend:null,pStoreRoas=pSpend?pRev/pSpend:null;
+ const net=num(rev)&&num(spend)?rev-spend:null,pNet=num(pRev)&&num(pSpend)?pRev-pSpend:null;
+ const adRoas=spend&&tagNow?tagNow/spend:null,pAdRoas=pSpend&&tagL?tagL/pSpend:null;
+ return `<div class="card" id="exec"><h2>At a glance</h2><div class="sub">${esc(win.label||'')} · ${plab} · Shopify = truth</div>
+ <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(128px,1fr))">
+ ${tile('Total ad spend',usd(spend),chip(spend,pSpend,'down',plab),'Meta + Google + Pinterest')}
+ ${tile('Store revenue',usd(rev),chip(rev,pRev,'up',plab),'All DTC orders')}
+ ${tile('Ad-tagged sales',usd(tagNow),chip(tagNow,tagL,'up',plab),'Paid channel UTMs')}
+ ${tile('Store ROAS',x(storeRoas),chip(storeRoas,pStoreRoas,'up',plab),'store revenue ÷ spend')}
+ ${tile('MER',x(k.blended_mer),chip(k.blended_mer,pk.blended_mer,'up',plab),'store ÷ ad spend')}
+ ${tile('Revenue − spend',usd(net),chip(net,pNet,'up',plab),'store minus ads')}
+ </div></div>`;
+}
 function pmaxHTML(){const p=(D.ad_decisions||{}).pmax||{},b=p[W]||{};if(!b.rows)return NA;
  return `<div class="sub">${esc(b.window?.label||'')} · ${esc(p.source||'')}${p.error?' · error: '+esc(p.error):''}</div><div class="scroll"><table><tr><th>Campaign</th><th>Spend</th><th>Google conv</th><th>Google ROAS</th><th>Shopify orders</th><th>Shopify CPA</th><th>Shopify ROAS</th></tr>${b.rows.map(r=>`<tr><td>${esc(r.ad)}</td><td>${usd(r.spend,2)}</td><td>${n0(r.platform_purch)}</td><td>${x(r.platform_roas)}</td><td>${n0(r.shopify_orders)}</td><td>${usd(r.shopify_cpa,2)}</td><td>${x(r.shopify_roas)}</td></tr>`).join('')}</table></div>`}
 document.addEventListener('click',e=>{const b=e.target.closest('#flt button');if(b){F=b.dataset.f;render()}});
@@ -124,17 +141,12 @@ function render(){
  const plab=`vs ${(w.prior_period||{}).window?.label||win.prior_label||'prior'}`;const cl=`vs prior ${win.days||W}d`;
  $('#asof').innerHTML=asofHTML();
  const th=D.thresholds||{};const out=[];
+ const tagNow=chans.reduce((a,c)=>a+(c.shopify_revenue||0),0),tagL=chans.reduce((a,c)=>a+(c.shopify_revenue_last||0),0);
+ out.push(executiveTopHTML(k,pk,plab,win,tagNow,tagL));
+ out.push(`<div class="card" id="roas-window"><h2>ROAS this window · ${esc(WL[W])}</h2>${tilesHTML()}</div>`);
  out.push(decisionsHTML());out.push(saysTableHTML());
- // tiles
- const cpo=num(k.total_ad_spend)&&k.paid_orders?k.total_ad_spend/k.paid_orders:null;const pcpo=num(pk.total_ad_spend)&&pk.paid_orders?pk.total_ad_spend/pk.paid_orders:null;
  const sp=c=>chans.filter(ch=>c.test(ch.name)).reduce((a,ch)=>a+(ch.spend||0),0);const tot=chans.reduce((a,c)=>a+(c.spend||0),0);
  const divNow=tot?(sp(/pinterest|tiktok/i))/tot*100:null;const totL=chans.reduce((a,c)=>a+(c.spend_last||0),0);const divL=totL?chans.filter(c=>/pinterest|tiktok/i.test(c.name)).reduce((a,c)=>a+(c.spend_last||0),0)/totL*100:null;
- const tile=(l,v,c,b,sub='')=>`<div class="tile"><div class="tl">${l}${b}</div><div class="tv">${v}</div>${c}${sub?`<div class="tl">${sub}</div>`:''}</div>`;
- const de=w.director_economics||{};
- const tagNow=chans.reduce((a,c)=>a+(c.shopify_revenue||0),0),tagL=chans.reduce((a,c)=>a+(c.shopify_revenue_last||0),0);
- const proasL=pk.total_ad_spend?tagL/pk.total_ad_spend:null;const haloL=num(pk.paid_revenue)&&pk.total_ad_spend?(pk.paid_revenue-tagL)/pk.total_ad_spend:null;
- const noCost='<div class="tl">needs real COGS + fulfillment cost (Xero/3PL); data has only a modeled '+(num(de.modeled_cogs_pct)?Math.round(de.modeled_cogs_pct*100)+'%':'')+' COGS assumption</div>';
- out.push(tilesHTML());
  // alerts + todos
  const todos=[];
  chans.forEach(c=>{const t=/meta/i.test(c.name)?th.meta_shopify_roas_target:/google/i.test(c.name)?th.google_shopify_roas_target:null;if(t&&num(c.shopify_roas)&&c.shopify_roas<t)todos.push(['red',`${c.name} store ROAS ${c.shopify_roas.toFixed(2)} < ${t}`,'#chan'])});
@@ -180,7 +192,7 @@ function render(){
  out.push(sec('hist','History (rolling snapshots)',`<div class="scroll"><table><tr><th>Window</th><th>Orders</th><th>Revenue</th><th>Spend</th><th>MER</th></tr>${(D.history_weekly||[]).slice().reverse().map(h=>`<tr><td>${esc(h.label)}</td><td>${n0(h.orders)}</td><td>${usd(h.revenue)}</td><td>${usd(h.ad_spend)}</td><td>${x(h.mer)}</td></tr>`).join('')}</table></div>`));
  // campaigns
  out.push(sec('camps','Campaign status',`<table>${(D.campaign_status||[]).map(c=>`<tr><td><a href="${chLink(c.channel)}" target="_blank">${esc(c.channel)} · ${esc(c.campaign)}</a><div class="tl">${esc(c.key_metric)} · ${esc(c.next_milestone)}</div></td><td>${esc(c.status)}<div class="tl">${usd(c.spend_period)}</div></td></tr>`).join('')}</table>`+
-  ((D.meta_shopify_attribution_7d||{}).campaigns?`<h2 style="margin-top:10px">Meta campaigns vs store · ${esc(D.meta_shopify_attribution_7d.window.label)}</h2><table><tr><th>Campaign</th><th>Spend</th><th>Store orders</th><th>Store ROAS</th></tr>${D.meta_shopify_attribution_7d.campaigns.map(c=>`<tr><td>${esc(c.campaign_label)}</td><td>${usd(c.meta_spend)}</td><td>${n0(c.shopify_orders)}</td><td>${x(c.shopify_roas)}</td></tr>`).join('')}</table>`:'')));
+  ((D.meta_shopify_attribution_7d||{}).campaigns?`<h2 style="margin-top:10px">Meta campaigns vs store · ${esc(D.meta_shopify_attribution_7d.window.label)}</h2><table><tr><th>Campaign</th><th>Spend</th><th>Store orders</th><th>Store ROAS</th></tr>${D.meta_shopify_attribution_7d.campaigns.map(c=>`<tr><td>${esc(c.campaign_label)}</td><td>${usd(c.meta_spend)}</td><td>${n0(c.shopify_orders)}</td><td>${x(c.shopify_roas)}</td></tr>`).join('')}</table>`:''));
  out.push(sec('agency','Agency changes log (latest first)',`<table>${(D.agency_activity||[]).slice().reverse().map(a=>`<tr><td>${esc(a.date)}</td><td style="text-align:left">${esc(a.owner)}: ${esc(a.action)}</td></tr>`).join('')}</table>`));
  // conversion split
  const os=D.organic_snapshot||{},gf=D.ga4_funnel||{};
