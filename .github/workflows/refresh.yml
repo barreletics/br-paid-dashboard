@@ -1,6 +1,12 @@
 name: Refresh rolling dashboard
 
 on:
+  schedule:
+    # 2026-11-03 (Andrew): restore auto-refresh removed Nov 1 (75dec362); replaces the four hourly crons
+    # (:08/:23/:38/:53) with two runs per day. GitHub cron is UTC: 12:30 UTC = 7:30 AM EST, 21:30 UTC = 4:30 PM EST.
+    # During EDT (Mar-Nov) these fire one hour later in local time: 8:30 AM and 5:30 PM EDT.
+    - cron: '30 12 * * *'
+    - cron: '30 21 * * *'
   workflow_dispatch:
     inputs:
       force:
