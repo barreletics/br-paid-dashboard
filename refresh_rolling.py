@@ -118,10 +118,13 @@ def _pinterest_manual_channel(
         "spend_partial_coverage": partial,
     }
     info = {
-        "status": "ok",
+        "status": "stale",
         "source": "blend_manual",
         "window_end": end.isoformat(),
         "note": window_note,
+        "manual_spend_start": bs.isoformat() if bs else None,
+        "manual_spend_end": be.isoformat() if be else None,
+        "error": err,
     }
     return ch, info
 
@@ -1328,24 +1331,40 @@ def _quality_entry(
         status = "estimate"
     elif raw == "pending":
         status = "pending"
+    elif raw in ("stale", "manual"):
+        status = raw
     else:
         status = "error"
     notes: list[str] = []
     if raw == "ok":
         notes.append(f"Live pull for {window_label}")
+    elif raw in ("stale", "manual"):
+        if st.get("note"):
+            notes.append(st["note"])
+        ms, me = st.get("manual_spend_start"), st.get("manual_spend_end")
+        if ms and me:
+            notes.append(f"Manual data covers {ms}–{me} (not live Pinterest API)")
+        elif raw == "stale":
+            notes.append(f"Manual fallback — live Pinterest unavailable for {window_label}")
     elif st.get("note"):
         notes.append(st["note"])
     if st.get("error"):
         notes.append(st["error"])
-    if last_live and raw != "ok":
+    if last_live and raw not in ("ok", "stale", "manual"):
         notes.append(f"Last successful live window ended {last_live}")
-    return {
+    entry = {
         "status": status,
         "source": st.get("source") or default_source,
         "note": " · ".join(notes) if notes else f"No live data for {window_label}",
         "last_live_through": last_live,
         "pulled_at": st.get("pulled_at"),
     }
+    for k in ("manual_spend_start", "manual_spend_end"):
+        if st.get(k):
+            entry[k] = st[k]
+    if key == "Pinterest" and status in ("stale", "manual") and entry.get("manual_spend_end"):
+        entry["last_live_through"] = entry["manual_spend_end"]
+    return entry
 
 
 def _ga4_quality(ad_status: dict[str, dict], pull_errors: dict[str, str], window_label: str) -> dict:
@@ -1396,12 +1415,20 @@ def build_data_quality(
     elif ad_status.get("Google", {}).get("source") == "ga4_ad_cost":
         google["source"] = "ga4_ad_cost"
     pin = _quality_entry("Pinterest", ad_status, "pinterest_api", last_pin, window_label)
-    man_pin = (cfg or {}).get("pinterest_blend_manual") or {}
-    if (ad_status.get("Pinterest") or {}).get("source") in ("blend_manual", None) and man_pin:
-        man_end = max((man_pin.get("daily") or {}), default=None) or man_pin.get("spend_end")
-        if man_end and (not pin.get("last_live_through") or man_end > pin["last_live_through"]):
-            pin["last_live_through"] = man_end
-            pin["note"] = f"Manual Blend spend through {man_end} · {man_pin.get('note') or ''}".strip(" ·")
+    pin_st = ad_status.get("Pinterest") or {}
+    if pin_st.get("source") == "blend_manual":
+        bs, be = _pinterest_blend_dates((cfg or {}).get("pinterest_blend_manual") or {})
+        if pin_st.get("manual_spend_start"):
+            pin["manual_spend_start"] = pin_st["manual_spend_start"]
+        elif bs:
+            pin["manual_spend_start"] = bs.isoformat()
+        if pin_st.get("manual_spend_end"):
+            pin["manual_spend_end"] = pin_st["manual_spend_end"]
+        elif be:
+            pin["manual_spend_end"] = be.isoformat()
+        if pin.get("manual_spend_end"):
+            pin["last_live_through"] = pin["manual_spend_end"]
+        pin["status"] = pin_st.get("status") if pin_st.get("status") in ("stale", "manual") else "stale"
     ga4 = _ga4_quality(ad_status, pull_errors, window_label)
     shopify_note = "DTC paid orders + UTM; wholesale separate; excludes cancelled, test, promo, exchanges"
     if shopify_pulled_at:
