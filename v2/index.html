@@ -46,6 +46,17 @@ details.fold>div{padding:0 14px 14px}
 .meaning{background:var(--bb);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;margin-bottom:14px;line-height:1.5;font-size:16px}
 .meaning strong{display:block;font-size:13px;color:var(--mu);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
 .meaning p{margin:0 0 8px}.meaning p:last-child{margin:0}
+.answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}
+.answer-tile{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 14px 12px;min-width:0}
+.answer-tile h3{font-size:12px;color:var(--mu);margin:0 0 8px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.answer-tile .ans{font-size:19px;font-weight:750;line-height:1.3;color:var(--tx)}
+.answer-tile .ans-sub{font-size:14px;color:var(--mu);margin-top:8px;line-height:1.45}
+.answer-tile .ans-line{margin-top:6px;font-size:15px;line-height:1.4}
+.answer-tile .ans-line b{color:var(--tx)}
+.answer-tile.a-win{border-color:var(--g);background:linear-gradient(180deg,var(--gb),var(--card) 55%)}
+.answer-tile.a-lose{border-color:var(--r);background:linear-gradient(180deg,var(--rb),var(--card) 55%)}
+.answer-range{font-size:13px;color:var(--mu);margin:-6px 0 10px}
+@media (max-width:480px){.answer-grid{grid-template-columns:1fr;gap:12px}.answer-tile .ans{font-size:21px}.answer-tile{padding:16px}}
 .map-sec{margin-bottom:18px}.map-h{font-size:17px;margin:0 0 10px;display:flex;align-items:center;gap:10px;font-weight:700}
 .map-n{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;background:var(--tx);color:var(--card);font-size:14px;flex-shrink:0}
 .lab-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px}
@@ -128,6 +139,32 @@ function whatThisMeansHTML(k,tagNow,camps,winLab){
  <p>We spent <b>${usd(sp)}</b> on ads (${esc(win)}) and store sales tied to those ads were <b>${usd(back)}</b>.</p>
  <p>Best performer: <b>${esc(bName)}</b>${bestExtra}.</p>
  <p>Biggest concern: <b>${esc(wName)}</b> (${esc(wDetail)}).</p></div>`}
+function answerTilesHTML(camps){
+ const w7=(D.windows||{})['7']||{};const k7=w7.kpis||{};const ch7=w7.channels||[];
+ const winLab=esc(camps.win.label||w7.window?.label||'Last 7 days');
+ const items=camps.items;const active=items.filter(c=>c.lab.key!=='paused'&&num(c.roas));
+ const withOrd=items.filter(c=>num(c.orders)&&c.orders>0&&num(c.spend));
+ const byRoas=active.slice().sort((a,b)=>b.roas-a.roas);
+ const byCpa=withOrd.slice().sort((a,b)=>(a.spend/a.orders)-(b.spend/b.orders));
+ const bestRet=byRoas[0];const cheap=byCpa[0];
+ const winners=byRoas.filter(c=>c.lab.key==='win'||(c.roas>=((D.ad_decisions||{}).thresholds||{}).winner_roas));const showWin=winners.length?winners:byRoas.slice(0,3);
+ const working=showWin.map(c=>esc(c.title)+' · '+c.roas.toFixed(1)+'×').join('<br>')||NA;
+ let notTitle='—',notSub='';
+ const paused=items.filter(c=>c.lab.key==='paused');
+ const losing=active.filter(c=>c.lab.key==='lose').sort((a,b)=>a.roas-b.roas);
+ const weak=active.filter(c=>c.lab.key==='watch').sort((a,b)=>a.roas-b.roas);
+ if(paused.length){notTitle='Pinterest (paused)';notSub=paused.map(c=>esc(c.title)+' · spent '+usd(c.spend,0)+', 0 store orders').join('<br>')}
+ else if(losing.length){notTitle=esc(losing[0].title);notSub=(losing[0].roas.toFixed(1)+'× return per $1 · needs help')}
+ else if(weak.length){notTitle=esc(weak[0].title);notSub=(weak[0].roas.toFixed(1)+'× return per $1 · keep watching')}
+ const total=num(k7.total_ad_spend)?k7.total_ad_spend:ch7.reduce((a,c)=>a+(c.spend||0),0);
+ const chSpend=ch7.map(c=>{const n=/google/i.test(c.name)?'Google':/pinterest/i.test(c.name)?'Pinterest':'Meta';return n+' '+usd(c.spend,0)}).join(' · ');
+ const cheapLine=cheap?(esc(cheap.title)+' · <b>'+usd(cheap.spend/cheap.orders,0)+'</b> per store order'):NA;
+ const bestLine=bestRet?(esc(bestRet.title)+' · <b>'+bestRet.roas.toFixed(1)+'×</b> return per $1'):NA;
+ return `<div class="answer-range">Last 7 days · ${winLab} · Shopify last-touch</div><div class="answer-grid" id="answer-tiles">
+ <div class="answer-tile a-win"><h3>1 · What's working</h3><div class="ans">${working}</div><div class="ans-sub">Highest store return per $1 spent</div></div>
+ <div class="answer-tile a-lose"><h3>2 · What's not</h3><div class="ans">${notTitle}</div><div class="ans-sub">${notSub||'Nothing flagged as losing'}</div></div>
+ <div class="answer-tile"><h3>3 · What it costs</h3><div class="ans">${usd(total,0)} total</div><div class="ans-sub">${chSpend}</div></div>
+ <div class="answer-tile a-win"><h3>4 · Cheapest &amp; best</h3><div class="ans-line">Cheapest order:<br>${cheapLine}</div><div class="ans-line" style="margin-top:10px">Best return:<br>${bestLine}</div></div></div>`}
 function whatNextHTML(){const bits=[];
  (D.next_week_priorities||[]).slice(0,6).forEach(p=>bits.push(typeof p==='string'?p:(p.action||p.text||'')));
  (D.strategy_todos||[]).filter(t=>t.status==='open').slice(0,4).forEach(t=>bits.push(`${t.owner}: ${t.action}`));
@@ -223,6 +260,7 @@ function render(){
  const tagNow=chans.reduce((a,c)=>a+(c.shopify_revenue||0),0),tagL=chans.reduce((a,c)=>a+(c.shopify_revenue_last||0),0);
  const camps=campData();
  out.push(whatThisMeansHTML(k,tagNow,camps,win.label||WL[W]));
+ out.push(answerTilesHTML(camps));
  out.push(mapSection(1,'The big picture',executiveTopHTML(k,pk,plab,win,tagNow,tagL)));
  out.push(mapSection(2,"What's working",`<div class="sub">${camps.win.label?'Store orders in '+esc(camps.win.label):'Campaigns with strong return per $1 spent'}</div>${campListHTML(camps.items.filter(c=>c.lab.key==='win'))}`));
  out.push(mapSection(3,"What's not",`<div class="sub">Paused, weak return, or still too early to judge</div>${campListHTML(camps.items.filter(c=>c.lab.key!=='win'))}`));
