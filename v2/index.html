@@ -111,7 +111,7 @@ function campData(){const T=(D.ad_decisions||{}).thresholds||D.thresholds||{};co
 function campRowHTML(c){const roasTxt=num(c.roas)?c.roas.toFixed(1)+'× per $1':(/paused/i.test(c.row.status||'')?'—':'n/a');
  const ordTxt=num(c.orders)?n0(c.orders)+' store order'+(c.orders===1?'':'s'):(/paused/i.test(c.row.status||'')?'0 store orders':'—');
  return `<a class="camp-row" href="${chLink(c.channel)}" target="_blank" rel="noopener"><div class="camp-top"><span class="camp-name">${esc(c.title)}</span><span class="chip ${c.lab.cls}">${esc(c.lab.text)}</span></div><div class="camp-stats"><span>Spent <b>${usd(c.spend,2)}</b></span><span><b>${ordTxt}</b></span><span>Return per $1 <b>${roasTxt}</b></span></div></a>`}
-function campListHTML(list){return `<div class="camp-list">${list.map(campRowHTML).join('')||`<div class="empty-state">${NA}</div>`}</div>`}
+function campListHTML(list){const inner=list.length?list.map(campRowHTML).join(''):('<div class="empty-state">'+NA+'</div>');return '<div class="camp-list">'+inner+'</div>'}
 function hint(t){return `<button type="button" class="hint" data-hint="${esc(t)}">what's this?</button>`}
 function whatThisMeansHTML(k,tagNow,camps,winLab){
  const sp=k.total_ad_spend;const back=tagNow;const win=winLab||camps.win?.label||'this period';
@@ -123,9 +123,10 @@ function whatThisMeansHTML(k,tagNow,camps,winLab){
  else if(active.find(c=>c.lab.key==='lose'))worst=active.filter(c=>c.lab.key==='lose').sort((a,b)=>a.roas-b.roas)[0]||worst;
  const bName=best?best.title:'—';const wName=worst?worst.title:'—';
  const wDetail=worst&&worst.lab?.key==='paused'?'paused':(worst&&num(worst.roas)?worst.roas.toFixed(1)+'× return per $1':'needs attention');
+ const bestExtra=best&&num(best.roas)?' ('+best.roas.toFixed(1)+'× return per $1 spent)':'';
  return `<div class="meaning" id="what-means"><strong>What this means</strong>
  <p>We spent <b>${usd(sp)}</b> on ads (${esc(win)}) and store sales tied to those ads were <b>${usd(back)}</b>.</p>
- <p>Best performer: <b>${esc(bName)}</b>${best&&num(best.roas)?` (${best.roas.toFixed(1)}× return per $1 spent)`:'']}.</p>
+ <p>Best performer: <b>${esc(bName)}</b>${bestExtra}.</p>
  <p>Biggest concern: <b>${esc(wName)}</b> (${esc(wDetail)}).</p></div>`}
 function whatNextHTML(){const bits=[];
  (D.next_week_priorities||[]).slice(0,6).forEach(p=>bits.push(typeof p==='string'?p:(p.action||p.text||'')));
