@@ -24,8 +24,8 @@ OTHER_META = (
 )
 
 AUDIENCE_FIELDS = (
-    "id,name,subtype,approximate_count,approximate_count_lower_bound,"
-    "approximate_count_upper_bound,retention_days,rule,data_source,description,time_updated"
+    "id,name,subtype,approximate_count_lower_bound,approximate_count_upper_bound,"
+    "retention_days,rule,data_source,description,time_updated"
 )
 INSIGHT_FIELDS = (
     "reach,impressions,clicks,inline_link_clicks,spend,actions,action_values"
@@ -135,13 +135,16 @@ def audience_detail(audience_id: str) -> tuple[dict, str | None]:
             rule = json.loads(rule)
         except json.JSONDecodeError:
             pass
+    lo = data.get("approximate_count_lower_bound")
+    hi = data.get("approximate_count_upper_bound")
+    approx = int(hi or lo or 0) if (hi or lo) else None
     return {
         "id": data.get("id"),
         "name": data.get("name"),
         "subtype": data.get("subtype"),
-        "approximate_count": data.get("approximate_count"),
-        "approximate_count_lower_bound": data.get("approximate_count_lower_bound"),
-        "approximate_count_upper_bound": data.get("approximate_count_upper_bound"),
+        "approximate_count": approx,
+        "approximate_count_lower_bound": lo,
+        "approximate_count_upper_bound": hi,
         "retention_days": data.get("retention_days"),
         "rule": rule,
         "data_source": data.get("data_source"),
@@ -265,18 +268,24 @@ def verdict(
         )
         return "PROVEN", reason
 
-    if audiences and max_aud > 0 and prospecting_reach > 0:
+    if prospecting_reach > 0:
         pct = f"{share * 100:.0f}%" if share is not None else "n/a"
+        pool = ""
+        if audiences:
+            names = ", ".join(a.get("name") or "?" for a in audiences[:5])
+            pool = f" Audiences include: {names}."
         reason = (
-            "Retargeting uses website/engagement/video audiences that also collect people from "
-            f"all Meta campaigns — not Prospecting-only. Prospecting 30d reach {prospecting_reach:,} "
-            f"vs other Meta campaigns reach {other_reach:,} (~{pct} of Meta reach). "
-            "No audience rule tied only to Prospecting."
+            "Retargeting pools (website / cart / video / IG engagers) are shared — not Prospecting-only."
+            f"{pool} Prospecting 30d reach {prospecting_reach:,}, landing page views {prospecting_lpv:,}; "
+            f"other Meta campaigns reach {other_reach:,} (~{pct} of Meta reach in the last 30 days)."
         )
-        return "LIKELY" if share and share >= 0.15 else "NOT PROVEN", reason
+        if audiences and not any("references Prospecting" in h for h in explicit):
+            return "LIKELY", reason + " No audience rule names only Prospecting."
+        if audiences:
+            return "LIKELY", reason
+        return "LIKELY", reason + " (Audience detail partially unavailable from Graph.)"
 
-    reason = "Could not load retargeting audiences or Prospecting reach from Meta Graph."
-    return "NOT PROVEN", reason
+    return "NOT PROVEN", "Could not load Prospecting reach or retargeting setup from Meta Graph."
 
 
 def build_ads_connect(cfg: dict | None = None) -> dict[str, Any]:
@@ -327,6 +336,17 @@ def build_ads_connect(cfg: dict | None = None) -> dict[str, Any]:
             seen: set[str] = set()
             for s in sets:
                 tgt = s.get("targeting") or {}
+                if isinstance(tgt, str):
+                    try:
+                        tgt = json.loads(tgt)
+                    except json.JSONDecodeError:
+                        tgt = {}
+                s["targeting_parsed"] = {
+                    "custom_audiences": [x.get("name") or x.get("id") for x in (tgt.get("custom_audiences") or [])],
+                    "excluded_custom_audiences": [
+                        x.get("name") or x.get("id") for x in (tgt.get("excluded_custom_audiences") or [])
+                    ],
+                }
                 if isinstance(tgt, str):
                     try:
                         tgt = json.loads(tgt)
@@ -384,7 +404,12 @@ def build_ads_connect(cfg: dict | None = None) -> dict[str, Any]:
             "retargeting_campaign": RETARGETING_NAME,
             "prospecting_campaign": PROSPECTING_NAME,
             "ad_sets": [
-                {"id": s.get("id"), "name": s.get("name"), "status": s.get("status")}
+                {
+                    "id": s.get("id"),
+                    "name": s.get("name"),
+                    "status": s.get("status"),
+                    "targeting_parsed": s.get("targeting_parsed"),
+                }
                 for s in adsets
             ],
             "custom_audiences": audiences,
