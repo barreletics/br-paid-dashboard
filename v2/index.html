@@ -43,7 +43,18 @@ details.fold>div{padding:0 14px 14px}
 .chip.watchlab{background:var(--ab);color:var(--a);font-size:12px;font-weight:700;padding:4px 10px}
 .chip.loselab{background:var(--rb);color:var(--r);font-size:12px;font-weight:700;padding:4px 10px}
 .chip.pausedlab{background:var(--bd);color:var(--mu);font-size:12px;font-weight:700;padding:4px 10px}
+.meaning{background:var(--bb);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;margin-bottom:14px;line-height:1.5;font-size:16px}
+.meaning strong{display:block;font-size:13px;color:var(--mu);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.meaning p{margin:0 0 8px}.meaning p:last-child{margin:0}
+.map-sec{margin-bottom:18px}.map-h{font-size:17px;margin:0 0 10px;display:flex;align-items:center;gap:10px;font-weight:700}
+.map-n{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;background:var(--tx);color:var(--card);font-size:14px;flex-shrink:0}
+.lab-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px}
+.hint{border:0;background:none;color:var(--b);font-size:11px;padding:0 2px;cursor:pointer;text-decoration:underline;font-weight:500}
+.empty-state{color:var(--mu);font-size:15px;padding:8px 0}
+.sec5-wrap{border:2px solid var(--bd);border-radius:14px;padding:12px;background:var(--card)}
+.sec5-wrap>.fold{margin-bottom:8px}
 @media (max-width:480px){
+.meaning{font-size:17px;padding:16px}.map-h{font-size:18px}
 body{font-size:16px;line-height:1.45}h1{font-size:18px}h2{font-size:17px;margin-bottom:10px}
 .tiles{gap:10px}.tile{padding:12px}.tl{font-size:13px}.tv{font-size:26px}
 main{padding:10px;max-width:100%;overflow-x:hidden}.card{padding:14px}
@@ -83,20 +94,44 @@ const MOB=()=>typeof window!=='undefined'&&window.innerWidth<=480;
 function fold(id,title,html,openIf){const open=!!openIf&&!MOB();return `<details class="fold" id="${id}"${open?' open':''}><summary>${esc(title)}</summary><div>${html}</div></details>`}
 function sec(id,title,html,open){return fold(id,title,html,open)}
 function parseStoreKM(km){const m=String(km||'').match(/(?:store last-touch:\s*)?(\d+)\s+orders?\s*·\s*\$([\d,]+\.?\d*)\s*·\s*([\d.]+)\s*×/i);if(!m)return null;return {orders:+m[1],revenue:parseFloat(m[2].replace(/,/g,'')),roas:+m[3]}}
-function campWeekLabel(row,T){const st=parseStoreKM(row.key_metric)||{};const spend=row.spend_period||0;const paused=/paused/i.test(row.status||'');if(paused)return {text:'Paused',cls:'pausedlab'};
- const wT=T.winner_roas??1.6,pT=T.profitable_roas??1.2,bT=T.breakeven_roas??0.9,minS=T.min_spend_for_call??50;
- const r=st.roas;if(!num(r))return paused?{text:'Paused',cls:'pausedlab'}:{text:'Watch',cls:'watchlab'};
- if(r>=wT)return {text:'Winning',cls:'winlab'};if(r<bT&&spend>=minS)return {text:'Losing',cls:'loselab'};return {text:'Watch',cls:'watchlab'}}
-function campaignsWeekHTML(){const T=(D.ad_decisions||{}).thresholds||D.thresholds||{};const ms=D.meta_shopify_attribution_7d||{};const win=ms.window||{};const rows=D.campaign_status||[];
- const want=[['Meta',/Prospecting|Barreletix/i,'Meta Prospecting'],['Meta',/Creative Test/i,'Meta Creative Test'],['Meta',/Two-Pair/i,'Meta Two-Pair Offer'],['Meta',/Retargeting/i,'Meta Retargeting'],['Google',/PMax/i,'Google PMax'],['Pinterest',/Restore Winner/i,'Pinterest Restore Winner'],['Pinterest',/Reel Test/i,'Pinterest Reel Test']];
- const picked=[];want.forEach(([ch,re,title])=>{const row=rows.find(r=>r.channel===ch&&re.test(r.campaign||''));if(!row)return;
-   const st=parseStoreKM(row.key_metric);const meta=(ms.campaigns||[]).find(c=>re.test(c.meta_campaign_name||c.campaign_label||'')&&!/\+\s*Retargeting/i.test(c.campaign_label||''));
-   const spend=row.spend_period;let orders=st?st.orders:null,roas=st?st.roas:null;
-   if(meta&&/Retargeting/i.test(title)){/* campaign_status has deduped spend */}else if(meta&&!st){orders=meta.shopify_orders;roas=meta.shopify_roas}
-   const lab=campWeekLabel(row,T);const roasTxt=num(roas)?roas.toFixed(1)+'×':( /paused/i.test(row.status)?'—':'n/a');
-   const ordTxt=num(orders)?n0(orders)+' order'+(orders===1?'':'s'):(/paused/i.test(row.status)?'0 orders':'—');
-   picked.push(`<a class="camp-row" href="${chLink(row.channel)}" target="_blank" rel="noopener"><div class="camp-top"><span class="camp-name">${esc(title)}</span><span class="chip ${lab.cls}">${esc(lab.text)}</span></div><div class="camp-stats"><span>Spend <b>${usd(spend,2)}</b></span><span>Store <b>${ordTxt}</b></span><span>Return <b>${roasTxt}</b></span></div></a>`)});
- return `<div class="card" id="campaigns-week"><h2>Campaigns this week</h2><div class="sub">Shopify last-touch${win.label?' · '+esc(win.label):''} · store truth</div><div class="camp-list">${picked.join('')||NA}</div></div>`}
+function campWeekLabel(row,T){const st=parseStoreKM(row.key_metric)||{};const spend=row.spend_period||0;const paused=/paused/i.test(row.status||'');if(paused)return {text:'Paused',cls:'pausedlab',key:'paused'};
+ const wT=T.winner_roas??1.6,bT=T.breakeven_roas??0.9,minS=T.min_spend_for_call??50;
+ const r=st.roas;if(!num(r))return {text:'Keep watching',cls:'watchlab',key:'watch'};
+ if(r>=wT)return {text:'Working well',cls:'winlab',key:'win'};
+ if(r<bT&&spend>=minS)return {text:'Needs help',cls:'loselab',key:'lose'};
+ return {text:'Keep watching',cls:'watchlab',key:'watch'}}
+const CAMP_WANT=[['Meta',/Prospecting|Barreletix/i,'Meta Prospecting'],['Meta',/Creative Test/i,'Meta Creative Test'],['Meta',/Two-Pair/i,'Meta Two-Pair Offer'],['Meta',/Retargeting/i,'Meta Retargeting'],['Google',/PMax/i,'Google PMax'],['Pinterest',/Restore Winner/i,'Pinterest Restore Winner'],['Pinterest',/Reel Test/i,'Pinterest Reel Test']];
+function campData(){const T=(D.ad_decisions||{}).thresholds||D.thresholds||{};const ms=D.meta_shopify_attribution_7d||{};const rows=D.campaign_status||[];const out=[];
+ CAMP_WANT.forEach(([ch,re,title])=>{const row=rows.find(r=>r.channel===ch&&re.test(r.campaign||''));if(!row)return;
+  const st=parseStoreKM(row.key_metric);const meta=(ms.campaigns||[]).find(c=>re.test(c.meta_campaign_name||c.campaign_label||'')&&!/\+\s*Retargeting/i.test(c.campaign_label||''));
+  const spend=row.spend_period;let orders=st?st.orders:null,roas=st?st.roas:null,revenue=st?st.revenue:null;
+  if(meta&&!st){orders=meta.shopify_orders;roas=meta.shopify_roas;revenue=meta.shopify_revenue}
+  const lab=campWeekLabel(row,T);out.push({title,row,spend,orders,roas,revenue,lab,channel:row.channel})});
+ return {items:out,win:(ms.window||{})}}
+function campRowHTML(c){const roasTxt=num(c.roas)?c.roas.toFixed(1)+'× per $1':(/paused/i.test(c.row.status||'')?'—':'n/a');
+ const ordTxt=num(c.orders)?n0(c.orders)+' store order'+(c.orders===1?'':'s'):(/paused/i.test(c.row.status||'')?'0 store orders':'—');
+ return `<a class="camp-row" href="${chLink(c.channel)}" target="_blank" rel="noopener"><div class="camp-top"><span class="camp-name">${esc(c.title)}</span><span class="chip ${c.lab.cls}">${esc(c.lab.text)}</span></div><div class="camp-stats"><span>Spent <b>${usd(c.spend,2)}</b></span><span><b>${ordTxt}</b></span><span>Return per $1 <b>${roasTxt}</b></span></div></a>`}
+function campListHTML(list){return `<div class="camp-list">${list.map(campRowHTML).join('')||`<div class="empty-state">${NA}</div>`}</div>`}
+function hint(t){return `<button type="button" class="hint" data-hint="${esc(t)}">what's this?</button>`}
+function whatThisMeansHTML(k,tagNow,camps,winLab){
+ const sp=k.total_ad_spend;const back=tagNow;const win=winLab||camps.win?.label||'this period';
+ const active=camps.items.filter(c=>c.lab.key!=='paused'&&num(c.roas));
+ const paused=camps.items.filter(c=>c.lab.key==='paused');
+ let best=null,worst=null;
+ active.forEach(c=>{if(!best||c.roas>best.roas)best=c;if(!worst||c.roas<worst.roas)worst=c});
+ if(paused.length)worst={title:'Pinterest (paused)',lab:{key:'paused'}};
+ else if(active.find(c=>c.lab.key==='lose'))worst=active.filter(c=>c.lab.key==='lose').sort((a,b)=>a.roas-b.roas)[0]||worst;
+ const bName=best?best.title:'—';const wName=worst?worst.title:'—';
+ const wDetail=worst&&worst.lab?.key==='paused'?'paused':(worst&&num(worst.roas)?worst.roas.toFixed(1)+'× return per $1':'needs attention');
+ return `<div class="meaning" id="what-means"><strong>What this means</strong>
+ <p>We spent <b>${usd(sp)}</b> on ads (${esc(win)}) and store sales tied to those ads were <b>${usd(back)}</b>.</p>
+ <p>Best performer: <b>${esc(bName)}</b>${best&&num(best.roas)?` (${best.roas.toFixed(1)}× return per $1 spent)`:'']}.</p>
+ <p>Biggest concern: <b>${esc(wName)}</b> (${esc(wDetail)}).</p></div>`}
+function whatNextHTML(){const bits=[];
+ (D.next_week_priorities||[]).slice(0,6).forEach(p=>bits.push(typeof p==='string'?p:(p.action||p.text||'')));
+ (D.strategy_todos||[]).filter(t=>t.status==='open').slice(0,4).forEach(t=>bits.push(`${t.owner}: ${t.action}`));
+ if(!bits.length&&(D.executive_summary||[]).length)bits.push(D.executive_summary[D.executive_summary.length-1]);
+ return bits.length?`<ol style="margin:0;padding-left:20px;line-height:1.65;font-size:16px">${bits.map(b=>`<li>${esc(b)}</li>`).join('')}</ol>`:`<div class="empty-state">No urgent items listed in the data.</div>`}
 const todayET=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Detroit'});
 const yesterdayET=()=>{const d=new Date(todayET()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10)};
 const WL={today:'Today',yesterday:'Yesterday','7d':'Last 7 days','30d':'Last 30 days'};
@@ -156,25 +191,28 @@ function tilesHTML(){const A=D.ad_decisions||{},b=blk(A.meta),w=b.window||{};let
  const tile=(l,v,bd,sub)=>`<div class="tile"><div class="tl">${l}${bd}</div><div class="tv">${v}</div><div class="tl">${sub}</div></div>`;
  return `<div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">${tile('Paid ROAS',x(sp?tag/sp:null),B('s'),`ad-tagged store sales ${usd(tag)} ÷ spend`)}${tile('Halo ROAS',x(spC?all/spC:null),B('s'),`all store revenue ${usd(all)} ÷ spend${clip?` (${d0} on; store data starts there)`:''}`)}${tile('Total ad spend',usd(sp),B('p'),'Meta + PMax + Pinterest')}</div><div class="sub" style="margin:6px 0 10px">${esc(WL[W])} · ${esc(w.label||'')}${W==='today'?' (partial)':''}</div>`}
 function executiveTopHTML(k,pk,plab,win,tagNow,tagL){
- const tile=(l,v,d,sub)=>`<div class="tile"><div class="tl">${l}</div><div class="tv">${v}</div><div class="tile-chip">${d}</div><div class="tl tile-sub">${sub}</div></div>`;
+ const tile=(l,v,d,sub)=>`<div class="tile"><div class="tl lab-row">${l}</div><div class="tv">${v}</div><div class="tile-chip">${d}</div><div class="tl tile-sub">${sub}</div></div>`;
  const spend=k.total_ad_spend,pSpend=pk.total_ad_spend;
  const rev=k.paid_revenue,pRev=pk.paid_revenue;
  const storeRoas=spend?rev/spend:null,pStoreRoas=pSpend?pRev/pSpend:null;
  const net=num(rev)&&num(spend)?rev-spend:null,pNet=num(pRev)&&num(pSpend)?pRev-pSpend:null;
- const adRoas=spend&&tagNow?tagNow/spend:null,pAdRoas=pSpend&&tagL?tagL/pSpend:null;
- return `<div class="card" id="exec"><h2>At a glance</h2><div class="sub">${esc(win.label||'')} · ${plab} · Shopify = truth</div>
+ const retLbl=(plain,tip)=>`${plain} ${hint(tip)}`;
+ const retVal=v=>num(v)?v.toFixed(2)+'×':'n/a';
+ return `<div class="card" id="exec"><div class="sub">${esc(win.label||'')} · ${plab} · numbers from the store, not ad platforms</div>
  <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(128px,1fr))">
- ${tile('Total ad spend',usd(spend),chip(spend,pSpend,'down',plab),'Meta + Google + Pinterest')}
- ${tile('Store revenue',usd(rev),chip(rev,pRev,'up',plab),'All DTC orders')}
- ${tile('Ad-tagged sales',usd(tagNow),chip(tagNow,tagL,'up',plab),'Paid channel UTMs')}
- ${tile('Store ROAS',x(storeRoas),chip(storeRoas,pStoreRoas,'up',plab),'store revenue ÷ spend')}
- ${tile('MER',x(k.blended_mer),chip(k.blended_mer,pk.blended_mer,'up',plab),'store ÷ ad spend')}
- ${tile('Revenue − spend',usd(net),chip(net,pNet,'up',plab),'store minus ads')}
+ ${tile(retLbl('Ad spend','Money paid to Meta, Google, and Pinterest for ads.'),usd(spend),chip(spend,pSpend,'down',plab),'All paid channels combined')}
+ ${tile(retLbl('Total store sales','Revenue from all direct-to-consumer Shopify orders in this period.'),usd(rev),chip(rev,pRev,'up',plab),'Every order, paid ads or not')}
+ ${tile(retLbl('Sales from ads','Store revenue where we can see which ad brought the customer.'),usd(tagNow),chip(tagNow,tagL,'up',plab),'Counted when the order links to an ad click')}
+ ${tile(retLbl('Return per $1 spent (whole store)','Total store sales divided by ad spend. Above 1× means sales exceeded ad cost.'),retVal(storeRoas),chip(storeRoas,pStoreRoas,'up',plab),'Uses all store sales in the period')}
+ ${tile(retLbl('Return per $1 spent (all sales)','Same idea as above — blended marketing efficiency.'),retVal(k.blended_mer),chip(k.blended_mer,pk.blended_mer,'up',plab),'Store-wide check on ad spend')}
+ ${tile(retLbl('Sales minus ad spend','Rough cash left after paying for ads (not full profit).'),usd(net),chip(net,pNet,'up',plab),'Before product and shipping costs')}
  </div></div>`;
 }
 function pmaxHTML(){const p=(D.ad_decisions||{}).pmax||{},b=p[W]||{};if(!b.rows)return NA;
  return `<div class="sub">${esc(b.window?.label||'')} · ${esc(p.source||'')}${p.error?' · error: '+esc(p.error):''}</div><div class="scroll"><table><tr><th>Campaign</th><th>Spend</th><th>Google conv</th><th>Google ROAS</th><th>Shopify orders</th><th>Shopify CPA</th><th>Shopify ROAS</th></tr>${b.rows.map(r=>`<tr><td>${esc(r.ad)}</td><td>${usd(r.spend,2)}</td><td>${n0(r.platform_purch)}</td><td>${x(r.platform_roas)}</td><td>${n0(r.shopify_orders)}</td><td>${usd(r.shopify_cpa,2)}</td><td>${x(r.shopify_roas)}</td></tr>`).join('')}</table></div>`}
-document.addEventListener('click',e=>{const b=e.target.closest('#flt button');if(b){F=b.dataset.f;render()}});
+document.addEventListener('click',e=>{const b=e.target.closest('#flt button');if(b){F=b.dataset.f;render()}
+ const h=e.target.closest('.hint');if(h&&h.dataset.hint){e.preventDefault();alert(h.dataset.hint)}});
+function mapSection(n,title,body){return `<section class="map-sec" id="sec-${n}"><h2 class="map-h"><span class="map-n">${n}</span> ${esc(title)}</h2>${body}</section>`}
 function render(){
  document.querySelectorAll('#win button').forEach(b=>b.classList.toggle('on',b.dataset.w===W));
  const LW=W==='30d'?'30':'7';const w=(D.windows||{})[LW]||{};const win=w.window||D.window||{};const k=w.kpis||{};const pk=(w.prior_period||{}).kpis||{};const chans=w.channels||[];
@@ -182,11 +220,16 @@ function render(){
  $('#asof').innerHTML=asofHTML();
  const th=D.thresholds||{};const out=[];
  const tagNow=chans.reduce((a,c)=>a+(c.shopify_revenue||0),0),tagL=chans.reduce((a,c)=>a+(c.shopify_revenue_last||0),0);
- out.push(executiveTopHTML(k,pk,plab,win,tagNow,tagL));
- out.push(campaignsWeekHTML());
- out.push(fold('roas',`ROAS this window · ${WL[W]}`,`<div class="card" style="margin:0;border:0;padding:0">${tilesHTML()}</div>`,false));
- out.push(fold('decisions',`Decisions · ${WL[W]}`,decisionsHTML(),false));
- out.push(fold('says',`Meta says vs Shopify · ${WL[W]}`,saysTableHTML(),false));
+ const camps=campData();
+ out.push(whatThisMeansHTML(k,tagNow,camps,win.label||WL[W]));
+ out.push(mapSection(1,'The big picture',executiveTopHTML(k,pk,plab,win,tagNow,tagL)));
+ out.push(mapSection(2,"What's working",`<div class="sub">${camps.win.label?'Store orders in '+esc(camps.win.label):'Campaigns with strong return per $1 spent'}</div>${campListHTML(camps.items.filter(c=>c.lab.key==='win'))}`));
+ out.push(mapSection(3,"What's not",`<div class="sub">Paused, weak return, or still too early to judge</div>${campListHTML(camps.items.filter(c=>c.lab.key!=='win'))}`));
+ out.push(mapSection(4,"What we're doing next",whatNextHTML()));
+ const detail=[];
+ detail.push(fold('roas',`Return math · ${WL[W]}`,`<div class="card" style="margin:0;border:0;padding:0">${tilesHTML()}</div>`,false));
+ detail.push(fold('decisions',`Per-ad decisions · ${WL[W]}`,decisionsHTML(),false));
+ detail.push(fold('says',`Meta claims vs store · ${WL[W]}`,saysTableHTML(),false));
  const sp=c=>chans.filter(ch=>c.test(ch.name)).reduce((a,ch)=>a+(ch.spend||0),0);const tot=chans.reduce((a,c)=>a+(c.spend||0),0);
  const divNow=tot?(sp(/pinterest|tiktok/i))/tot*100:null;const totL=chans.reduce((a,c)=>a+(c.spend_last||0),0);const divL=totL?chans.filter(c=>/pinterest|tiktok/i.test(c.name)).reduce((a,c)=>a+(c.spend_last||0),0)/totL*100:null;
  // alerts + todos
@@ -200,7 +243,7 @@ function render(){
  const mcd=daysAgo((mc.window||{}).end);if(mcd>1)todos.push(['amb',`Per-ad data ends ${mc.window.label}`,'#says']);
  (D.strategy_todos||[]).forEach(t=>todos.push([t.status==='open'?'':'amb',`${t.owner}: ${t.action}`,'#todo']));
  const pr=t=>/^Spent |stale|data ends/.test(t[1])?0:/ROAS .* < /.test(t[1])?1:2;todos.sort((a,b)=>pr(a)-pr(b));
- out.push(fold('quick',`Quick alerts (${todos.length})`,`<div class="todos" style="display:flex;padding:0">${todos.map(t=>`<a class="${t[0]}" href="${t[2]}">${esc(t[1]).replace(/&lt;/g,'&lt;')}</a>`).join('')||'<span class="na">none</span>'}</div>`,todos.length>0));
+ detail.push(fold('quick',`Quick alerts (${todos.length})`,`<div class="todos" style="display:flex;padding:0">${todos.map(t=>`<a class="${t[0]}" href="${t[2]}">${esc(t[1]).replace(/&lt;/g,'&lt;')}</a>`).join('')||'<span class="na">none</span>'}</div>`,false));
  // pacing
  const bp=D.budget_pacing||{};const pct=bp.monthly_plan?bp.month_to_date_spend/bp.monthly_plan*100:null;
  const md=new Date(bp.mtd_end+'T12:00:00');const dim=new Date(md.getFullYear(),md.getMonth()+1,0).getDate();const exp=md.getDate()/dim*100;
@@ -220,28 +263,24 @@ function render(){
  <div class="scroll"><table><tr><th>Month</th><th>Meta</th><th>Google</th><th>Pinterest</th><th>TikTok</th></tr>${cm.map(m=>`<tr><td>${esc(m.month)}</td><td>${m.meta_share_pct}%</td><td>${m.google_share_pct}%</td><td>${m.pinterest_share_pct}%</td><td class="na">—</td></tr>`).join('')}</table></div>
  <div class="tl">Monthly = share of store (UTM) ad-attributed revenue${B('s')}. Shares of spend by month: ${NA}.</div>
  <div class="ch" style="margin-top:8px"><div class="chh"><a href="${L.tiktok}" target="_blank">TikTok test ↗</a><span class="chip nt">not started</span></div><div class="tl">No TikTok spend or orders in data. Budget and pass/fail cost per store order: TBD.</div></div>`;
- out.push(fold('more','More detail (pacing, KPIs, anomalies, PMax)',`<h3 style="margin:0 0 6px;font-size:15px">Spend pacing · ${esc(bp.month||'')}</h3>${pace}<h3 style="margin:14px 0 6px;font-size:15px">Google PMax by campaign</h3>${pmaxHTML()}<h3 style="margin:14px 0 6px;font-size:15px">KPI vs target</h3>${kpiH}<h3 style="margin:14px 0 6px;font-size:15px">Anomalies</h3>${anomH}<h3 style="margin:14px 0 6px;font-size:15px">Next week priorities</h3>${nextH}<h3 style="margin:14px 0 6px;font-size:15px">Diversification off Meta</h3>${divH}`,false));
- out.push(fold('alerts',`Spent $X, 0 store orders (${zero.length})`,zero.length?`<table><tr><th>Where</th><th>Spend</th><th>Threshold</th></tr>${zero.map(z=>`<tr><td>${esc(z.name)}<div class="tl">${esc(z.lvl)}</div></td><td>${usd(z.spend)}</td><td>${z.lim?usd(z.lim)+' (config)':'$100 default'}</td></tr>`).join('')}</table>`:'No channel or ad over threshold with zero store orders.',zero.length>0));
- // sources
- out.push(sec('sources','Data sources & freshness',srcs.map(s=>`<div class="src"><span>${s.stale?'🔴':s.manual?'🟡':'🟢'} <b>${esc(s.name)}</b><div class="tl">${esc(s.src)} · ${esc(s.note)}</div></span><span class="tl" style="text-align:right">${esc(s.when)}</span></div>`).join('')+`<div class="src"><span>⚪ <b>TikTok</b><div class="tl">not connected</div></span></div><div class="tl">🔴 stale = data ends &gt;2 days before today · 🟡 manual entry (not a live API). Pinterest manual spend covers only its stated dates; windows starting earlier undercount Pinterest spend. Pinterest API: ${esc(((w.ad_pull_errors||{}).Pinterest)||'no error')}.</div>`,srcs.some(s=>s.stale)));
- // to-do
- const ac=D.actions||{};out.push(sec('todo','Full to-do list & actions',`<table><tr><th>Item</th><th>Owner</th><th>Due</th></tr>${(D.strategy_todos||[]).map(t=>`<tr><td>${esc(t.action)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}${(D.next_week_priorities||[]).map(t=>`<tr><td>P${t.priority}: ${esc(t.action)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}${(ac.watch||[]).map(t=>`<tr><td>Watch ${esc(t.channel)}: ${esc(t.item)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}</table>`));
- // daily
+ detail.push(fold('more','Pacing, KPIs, anomalies, PMax',`<h3 style="margin:0 0 6px;font-size:15px">Spend pacing · ${esc(bp.month||'')}</h3>${pace}<h3 style="margin:14px 0 6px;font-size:15px">Google PMax by campaign</h3>${pmaxHTML()}<h3 style="margin:14px 0 6px;font-size:15px">KPI vs target</h3>${kpiH}<h3 style="margin:14px 0 6px;font-size:15px">Anomalies</h3>${anomH}<h3 style="margin:14px 0 6px;font-size:15px">Next week priorities (full list)</h3>${nextH}<h3 style="margin:14px 0 6px;font-size:15px">Diversification off Meta</h3>${divH}`,false));
+ detail.push(fold('alerts',`Spent money, 0 store orders (${zero.length})`,zero.length?`<table><tr><th>Where</th><th>Spend</th><th>Threshold</th></tr>${zero.map(z=>`<tr><td>${esc(z.name)}<div class="tl">${esc(z.lvl)}</div></td><td>${usd(z.spend)}</td><td>${z.lim?usd(z.lim)+' (config)':'$100 default'}</td></tr>`).join('')}</table>`:'No channel or ad over threshold with zero store orders.',false));
+ const ac=D.actions||{};
+ detail.push(fold('sources','Data sources & freshness',srcs.map(s=>`<div class="src"><span>${s.stale?'🔴':s.manual?'🟡':'🟢'} <b>${esc(s.name)}</b><div class="tl">${esc(s.src)} · ${esc(s.note)}</div></span><span class="tl" style="text-align:right">${esc(s.when)}</span></div>`).join('')+`<div class="src"><span>⚪ <b>TikTok</b><div class="tl">not connected</div></span></div><div class="tl">🔴 stale = data ends &gt;2 days before today · 🟡 manual entry (not a live API). Pinterest manual spend covers only its stated dates; windows starting earlier undercount Pinterest spend. Pinterest API: ${esc(((w.ad_pull_errors||{}).Pinterest)||'no error')}.</div>`,false));
+ detail.push(fold('todo','Full to-do list & actions',`<table><tr><th>Item</th><th>Owner</th><th>Due</th></tr>${(D.strategy_todos||[]).map(t=>`<tr><td>${esc(t.action)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}${(D.next_week_priorities||[]).map(t=>`<tr><td>P${t.priority}: ${esc(t.action)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}${(ac.watch||[]).map(t=>`<tr><td>Watch ${esc(t.channel)}: ${esc(t.item)}</td><td>${esc(t.owner)}</td><td>${esc(t.due)}</td></tr>`).join('')}</table>`,false));
  const dor=w.daily_orders||{},drv=w.daily_revenue||{};const mx=Math.max(1,...Object.values(dor));
- out.push(sec('daily','Daily store orders'+'',`<table><tr><th>Day</th><th>Orders${B('s')}</th><th>Revenue</th><th></th></tr>${Object.keys(dor).sort().reverse().map(d=>`<tr><td>${d}</td><td>${dor[d]}</td><td>${usd(drv[d])}</td><td style="width:35%"><div class="bar"><i style="width:${dor[d]/mx*100}%"></i></div></td></tr>`).join('')}</table>`));
- // weekly history
- out.push(sec('hist','History (rolling snapshots)',`<div class="scroll"><table><tr><th>Window</th><th>Orders</th><th>Revenue</th><th>Spend</th><th>MER</th></tr>${(D.history_weekly||[]).slice().reverse().map(h=>`<tr><td>${esc(h.label)}</td><td>${n0(h.orders)}</td><td>${usd(h.revenue)}</td><td>${usd(h.ad_spend)}</td><td>${x(h.mer)}</td></tr>`).join('')}</table></div>`));
- // campaigns
- out.push(sec('camps','Campaign status',`<table>${(D.campaign_status||[]).map(c=>`<tr><td><a href="${chLink(c.channel)}" target="_blank">${esc(c.channel)} · ${esc(c.campaign)}</a><div class="tl">${esc(c.key_metric)} · ${esc(c.next_milestone)}</div></td><td>${esc(c.status)}<div class="tl">${usd(c.spend_period)}</div></td></tr>`).join('')}</table>`+
-  ((D.meta_shopify_attribution_7d||{}).campaigns?`<h2 style="margin-top:10px">Meta campaigns vs store · ${esc(D.meta_shopify_attribution_7d.window.label)}</h2><table><tr><th>Campaign</th><th>Spend</th><th>Store orders</th><th>Store ROAS</th></tr>${D.meta_shopify_attribution_7d.campaigns.map(c=>`<tr><td>${esc(c.campaign_label)}</td><td>${usd(c.meta_spend)}</td><td>${n0(c.shopify_orders)}</td><td>${x(c.shopify_roas)}</td></tr>`).join('')}</table>`:''))); out.push(sec('agency','Agency changes log (latest first)',`<table>${(D.agency_activity||[]).slice().reverse().map(a=>`<tr><td>${esc(a.date)}</td><td style="text-align:left">${esc(a.owner)}: ${esc(a.action)}</td></tr>`).join('')}</table>`));
- // conversion split
+ detail.push(fold('daily','Daily store orders',`<table><tr><th>Day</th><th>Orders${B('s')}</th><th>Revenue</th><th></th></tr>${Object.keys(dor).sort().reverse().map(d=>`<tr><td>${d}</td><td>${dor[d]}</td><td>${usd(drv[d])}</td><td style="width:35%"><div class="bar"><i style="width:${dor[d]/mx*100}%"></i></div></td></tr>`).join('')}</table>`,false));
+ detail.push(fold('hist','History (rolling snapshots)',`<div class="scroll"><table><tr><th>Window</th><th>Orders</th><th>Revenue</th><th>Spend</th><th>MER</th></tr>${(D.history_weekly||[]).slice().reverse().map(h=>`<tr><td>${esc(h.label)}</td><td>${n0(h.orders)}</td><td>${usd(h.revenue)}</td><td>${usd(h.ad_spend)}</td><td>${x(h.mer)}</td></tr>`).join('')}</table></div>`,false));
+ detail.push(fold('camps','Campaign status (raw)',`<table>${(D.campaign_status||[]).map(c=>`<tr><td><a href="${chLink(c.channel)}" target="_blank">${esc(c.channel)} · ${esc(c.campaign)}</a><div class="tl">${esc(c.key_metric)} · ${esc(c.next_milestone)}</div></td><td>${esc(c.status)}<div class="tl">${usd(c.spend_period)}</div></td></tr>`).join('')}</table>`+
+  ((D.meta_shopify_attribution_7d||{}).campaigns?`<h2 style="margin-top:10px">Meta campaigns vs store · ${esc(D.meta_shopify_attribution_7d.window.label)}</h2><table><tr><th>Campaign</th><th>Spend</th><th>Store orders</th><th>Store ROAS</th></tr>${D.meta_shopify_attribution_7d.campaigns.map(c=>`<tr><td>${esc(c.campaign_label)}</td><td>${usd(c.meta_spend)}</td><td>${n0(c.shopify_orders)}</td><td>${x(c.shopify_roas)}</td></tr>`).join('')}</table>`:''),false));
+ detail.push(fold('agency','Agency changes log',`<table>${(D.agency_activity||[]).slice().reverse().map(a=>`<tr><td>${esc(a.date)}</td><td style="text-align:left">${esc(a.owner)}: ${esc(a.action)}</td></tr>`).join('')}</table>`,false));
  const os=D.organic_snapshot||{},gf=D.ga4_funnel||{};
- out.push(sec('conv','Paid vs organic (GA4, direction only)',`<div class="sub">GA4 numbers ≠ Shopify. Window: main 30-day window.</div><table><tr><th>Channel</th><th>Sessions</th><th>Purch</th><th>Rev</th></tr>${(os.channels||[]).map(c=>`<tr><td>${esc(c.name)}</td><td>${n0(c.sessions)}</td><td>${n0(c.purchases)}</td><td>${usd(c.revenue)}</td></tr>`).join('')}<tr><td>Paid social</td><td>${n0(gf.paid_social_sessions)}</td><td>${n0(gf.purchases)}</td><td>${NA}</td></tr></table><div class="tl">Paid-social funnel: ${n0(gf.add_to_carts)} ATC → ${n0(gf.checkouts)} checkouts → ${n0(gf.purchases)} purch. Overall conversion rate: ${NA}. <a href="${L.ga}" target="_blank">GA4 ↗</a></div>`));
- // returns
+ detail.push(fold('conv','Paid vs organic (GA4)',`<div class="sub">GA4 numbers ≠ Shopify. Window: main 30-day window.</div><table><tr><th>Channel</th><th>Sessions</th><th>Purch</th><th>Rev</th></tr>${(os.channels||[]).map(c=>`<tr><td>${esc(c.name)}</td><td>${n0(c.sessions)}</td><td>${n0(c.purchases)}</td><td>${usd(c.revenue)}</td></tr>`).join('')}<tr><td>Paid social</td><td>${n0(gf.paid_social_sessions)}</td><td>${n0(gf.purchases)}</td><td>${NA}</td></tr></table><div class="tl">Paid-social funnel: ${n0(gf.add_to_carts)} ATC → ${n0(gf.checkouts)} checkouts → ${n0(gf.purchases)} purch. Overall conversion rate: ${NA}. <a href="${L.ga}" target="_blank">GA4 ↗</a></div>`,false));
  const r2=(w.director_economics||{}).returns_rollup||k.returns_rollup||{};const ue=k.unit_economics||{};
- out.push(sec('returns','Returns & unit economics',`<table><tr><td>Refund returns</td><td>${n0(r2.refund_return_orders)}</td></tr><tr><td>Exchanges</td><td>${n0(r2.exchange_orders)}</td></tr><tr><td>Refund cash out</td><td>${usd(r2.refunds_cash_out)}</td></tr><tr><td>Returns cash cost</td><td>${usd(r2.returns_cash_cost)}</td></tr><tr><td>AOV (store)</td><td>${usd(k.aov,2)}</td></tr><tr><td>Discounts</td><td>${usd(ue.discounts)}</td></tr><tr><td>Intl ship-to orders</td><td>${n0(ue.intl_ship_to_orders)}</td></tr><tr><td>Excluded orders (test/cancelled/etc.)</td><td>${n0((w.excluded||{}).orders)}</td></tr><tr><td>Wholesale (not in totals)</td><td>${n0(k.wholesale_orders)} · ${usd(k.wholesale_revenue)}</td></tr></table><div class="tl">New vs returning customers: ${NA}.</div>`));
- const ip=D.intl_performance||{};out.push(sec('intl','International',ip.shopify?`<div class="sub">${esc(ip.label)} vs ${esc(ip.prior_label)}</div><table>${Object.entries(ip.shopify).filter(([a,v])=>num(v)).map(([a,v])=>`<tr><td>${esc(a.replace(/_/g,' '))}</td><td>${/revenue/.test(a)?usd(v):n0(v)}</td></tr>`).join('')}</table>`:NA));
- out.push(sec('gloss','Glossary',`<table>${Object.entries(D.glossary||{}).map(([a,b])=>`<tr><td><b>${esc(a)}</b></td><td style="text-align:left">${esc(b)}</td></tr>`).join('')}</table>`));
+ detail.push(fold('returns','Returns & unit economics',`<table><tr><td>Refund returns</td><td>${n0(r2.refund_return_orders)}</td></tr><tr><td>Exchanges</td><td>${n0(r2.exchange_orders)}</td></tr><tr><td>Refund cash out</td><td>${usd(r2.refunds_cash_out)}</td></tr><tr><td>Returns cash cost</td><td>${usd(r2.returns_cash_cost)}</td></tr><tr><td>AOV (store)</td><td>${usd(k.aov,2)}</td></tr><tr><td>Discounts</td><td>${usd(ue.discounts)}</td></tr><tr><td>Intl ship-to orders</td><td>${n0(ue.intl_ship_to_orders)}</td></tr><tr><td>Excluded orders (test/cancelled/etc.)</td><td>${n0((w.excluded||{}).orders)}</td></tr><tr><td>Wholesale (not in totals)</td><td>${n0(k.wholesale_orders)} · ${usd(k.wholesale_revenue)}</td></tr></table><div class="tl">New vs returning customers: ${NA}.</div>`,false));
+ const ip=D.intl_performance||{};detail.push(fold('intl','International',ip.shopify?`<div class="sub">${esc(ip.label)} vs ${esc(ip.prior_label)}</div><table>${Object.entries(ip.shopify).filter(([a,v])=>num(v)).map(([a,v])=>`<tr><td>${esc(a.replace(/_/g,' '))}</td><td>${/revenue/.test(a)?usd(v):n0(v)}</td></tr>`).join('')}</table>`:NA,false));
+ detail.push(fold('gloss','Glossary',`<table>${Object.entries(D.glossary||{}).map(([a,b])=>`<tr><td><b>${esc(a)}</b></td><td style="text-align:left">${esc(b)}</td></tr>`).join('')}</table>`,false));
+ out.push(mapSection(5,'Full detail (for Andrew)',`<div class="sec5-wrap"><p class="sub" style="margin-top:0">Tap any row for per-ad tables, pacing, anomalies, data freshness, and glossary. Closed by default.</p>${detail.join('')}</div>`));
  $('#app').innerHTML=out.join('');
 }
 function sources(){const dq=D.data_quality||{},w=(D.windows||{})[W==='30d'?'30':'7']||{},as=w.ad_source_status||{};const today=D.window?.end;const res=[];
