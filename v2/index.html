@@ -31,6 +31,28 @@ details{background:var(--card);border:1px solid var(--bd);border-radius:12px;mar
 .dec{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}.dcard{border:1px solid var(--bd);border-radius:10px;padding:10px}
 .dcard h3{font-size:14px;margin:0 0 4px;display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;align-items:center}.dcard table{font-size:12px}.dline{font-size:13px;margin-top:6px}.dline b{font-weight:700}
 .legend button.on{background:var(--tx);color:var(--card)}.legend button{border-radius:999px;padding:4px 10px}.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.legend .chip{white-space:normal}.tot td{font-weight:700;border-top:2px solid var(--bd)}
+.camp-list{display:flex;flex-direction:column;gap:10px}.camp-row{border:1px solid var(--bd);border-radius:12px;padding:12px 14px;background:var(--bg);display:block;color:inherit;text-decoration:none}
+.camp-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.camp-name{font-size:16px;font-weight:650;line-height:1.25;flex:1;min-width:0}
+.camp-stats{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:15px;font-weight:600}
+.camp-stats span{color:var(--mu);font-weight:500}.camp-stats b{color:var(--tx);font-weight:700}
+details.fold{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-bottom:10px}details.fold>summary{padding:14px;font-weight:600;cursor:pointer;font-size:15px;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px}
+details.fold>summary::-webkit-details-marker{display:none}details.fold>summary::after{content:'＋';color:var(--mu);font-size:18px;font-weight:400}details.fold[open]>summary::after{content:'−'}
+details.fold>div{padding:0 14px 14px}
+.chip.winlab{background:var(--gb);color:var(--g);font-size:12px;font-weight:700;padding:4px 10px}
+.chip.watchlab{background:var(--ab);color:var(--a);font-size:12px;font-weight:700;padding:4px 10px}
+.chip.loselab{background:var(--rb);color:var(--r);font-size:12px;font-weight:700;padding:4px 10px}
+.chip.pausedlab{background:var(--bd);color:var(--mu);font-size:12px;font-weight:700;padding:4px 10px}
+@media (max-width:480px){
+body{font-size:16px;line-height:1.45}h1{font-size:18px}h2{font-size:17px;margin-bottom:10px}
+.tiles{gap:10px}.tile{padding:12px}.tl{font-size:13px}.tv{font-size:26px}
+main{padding:10px;max-width:100%;overflow-x:hidden}.card{padding:14px}
+.camp-name{font-size:17px}.camp-stats{font-size:16px}
+button,.seg button{font-size:14px;padding:8px 12px;min-height:40px}
+details.fold>summary{font-size:16px;padding:16px 14px}
+.scroll{overflow-x:visible;-webkit-overflow-scrolling:auto}table{font-size:14px;display:block;max-width:100%;overflow-x:visible}
+.todos{display:none}
+}
 </style></head><body>
 <header><div class="row"><h1>Paid Ads</h1>
 <div class="seg" id="win"><button data-w="today">Today</button><button data-w="yesterday">Yesterday</button><button data-w="7d">7d</button><button data-w="30d">30d</button></div>
@@ -57,7 +79,24 @@ $('#theme').onclick=()=>{const d=document.documentElement;const dark=d.dataset.t
 $('#reload').onclick=()=>load(true);
 document.querySelectorAll('#win button').forEach(b=>b.onclick=()=>{W=b.dataset.w;localStorage.setItem('v2win2',W);render()});
 async function load(){try{const r=await fetch('../data/latest.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);D=await r.json();render()}catch(e){$('#app').innerHTML=`<div class="err">Could not load data/latest.json: ${esc(e.message)}</div>`}}
-function sec(id,title,html,open){return `<details id="${id}"${open?' open':''}><summary>${title}</summary><div>${html}</div></details>`}
+const MOB=()=>typeof window!=='undefined'&&window.innerWidth<=480;
+function fold(id,title,html,openIf){const open=!!openIf&&!MOB();return `<details class="fold" id="${id}"${open?' open':''}><summary>${esc(title)}</summary><div>${html}</div></details>`}
+function sec(id,title,html,open){return fold(id,title,html,open)}
+function parseStoreKM(km){const m=String(km||'').match(/(?:store last-touch:\s*)?(\d+)\s+orders?\s*·\s*\$([\d,]+\.?\d*)\s*·\s*([\d.]+)\s*×/i);if(!m)return null;return {orders:+m[1],revenue:parseFloat(m[2].replace(/,/g,'')),roas:+m[3]}}
+function campWeekLabel(row,T){const st=parseStoreKM(row.key_metric)||{};const spend=row.spend_period||0;const paused=/paused/i.test(row.status||'');if(paused)return {text:'Paused',cls:'pausedlab'};
+ const wT=T.winner_roas??1.6,pT=T.profitable_roas??1.2,bT=T.breakeven_roas??0.9,minS=T.min_spend_for_call??50;
+ const r=st.roas;if(!num(r))return paused?{text:'Paused',cls:'pausedlab'}:{text:'Watch',cls:'watchlab'};
+ if(r>=wT)return {text:'Winning',cls:'winlab'};if(r<bT&&spend>=minS)return {text:'Losing',cls:'loselab'};return {text:'Watch',cls:'watchlab'}}
+function campaignsWeekHTML(){const T=(D.ad_decisions||{}).thresholds||D.thresholds||{};const ms=D.meta_shopify_attribution_7d||{};const win=ms.window||{};const rows=D.campaign_status||[];
+ const want=[['Meta',/Prospecting|Barreletix/i,'Meta Prospecting'],['Meta',/Creative Test/i,'Meta Creative Test'],['Meta',/Two-Pair/i,'Meta Two-Pair Offer'],['Meta',/Retargeting/i,'Meta Retargeting'],['Google',/PMax/i,'Google PMax'],['Pinterest',/Restore Winner/i,'Pinterest Restore Winner'],['Pinterest',/Reel Test/i,'Pinterest Reel Test']];
+ const picked=[];want.forEach(([ch,re,title])=>{const row=rows.find(r=>r.channel===ch&&re.test(r.campaign||''));if(!row)return;
+   const st=parseStoreKM(row.key_metric);const meta=(ms.campaigns||[]).find(c=>re.test(c.meta_campaign_name||c.campaign_label||'')&&!/\+\s*Retargeting/i.test(c.campaign_label||''));
+   const spend=row.spend_period;let orders=st?st.orders:null,roas=st?st.roas:null;
+   if(meta&&/Retargeting/i.test(title)){/* campaign_status has deduped spend */}else if(meta&&!st){orders=meta.shopify_orders;roas=meta.shopify_roas}
+   const lab=campWeekLabel(row,T);const roasTxt=num(roas)?roas.toFixed(1)+'×':( /paused/i.test(row.status)?'—':'n/a');
+   const ordTxt=num(orders)?n0(orders)+' order'+(orders===1?'':'s'):(/paused/i.test(row.status)?'0 orders':'—');
+   picked.push(`<a class="camp-row" href="${chLink(row.channel)}" target="_blank" rel="noopener"><div class="camp-top"><span class="camp-name">${esc(title)}</span><span class="chip ${lab.cls}">${esc(lab.text)}</span></div><div class="camp-stats"><span>Spend <b>${usd(spend,2)}</b></span><span>Store <b>${ordTxt}</b></span><span>Return <b>${roasTxt}</b></span></div></a>`)});
+ return `<div class="card" id="campaigns-week"><h2>Campaigns this week</h2><div class="sub">Shopify last-touch${win.label?' · '+esc(win.label):''} · store truth</div><div class="camp-list">${picked.join('')||NA}</div></div>`}
 const todayET=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Detroit'});
 const yesterdayET=()=>{const d=new Date(todayET()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10)};
 const WL={today:'Today',yesterday:'Yesterday','7d':'Last 7 days','30d':'Last 30 days'};
@@ -144,8 +183,10 @@ function render(){
  const th=D.thresholds||{};const out=[];
  const tagNow=chans.reduce((a,c)=>a+(c.shopify_revenue||0),0),tagL=chans.reduce((a,c)=>a+(c.shopify_revenue_last||0),0);
  out.push(executiveTopHTML(k,pk,plab,win,tagNow,tagL));
- out.push(`<div class="card" id="roas-window"><h2>ROAS this window · ${esc(WL[W])}</h2>${tilesHTML()}</div>`);
- out.push(decisionsHTML());out.push(saysTableHTML());
+ out.push(campaignsWeekHTML());
+ out.push(fold('roas',`ROAS this window · ${WL[W]}`,`<div class="card" style="margin:0;border:0;padding:0">${tilesHTML()}</div>`,false));
+ out.push(fold('decisions',`Decisions · ${WL[W]}`,decisionsHTML(),false));
+ out.push(fold('says',`Meta says vs Shopify · ${WL[W]}`,saysTableHTML(),false));
  const sp=c=>chans.filter(ch=>c.test(ch.name)).reduce((a,ch)=>a+(ch.spend||0),0);const tot=chans.reduce((a,c)=>a+(c.spend||0),0);
  const divNow=tot?(sp(/pinterest|tiktok/i))/tot*100:null;const totL=chans.reduce((a,c)=>a+(c.spend_last||0),0);const divL=totL?chans.filter(c=>/pinterest|tiktok/i.test(c.name)).reduce((a,c)=>a+(c.spend_last||0),0)/totL*100:null;
  // alerts + todos
@@ -159,29 +200,28 @@ function render(){
  const mcd=daysAgo((mc.window||{}).end);if(mcd>1)todos.push(['amb',`Per-ad data ends ${mc.window.label}`,'#says']);
  (D.strategy_todos||[]).forEach(t=>todos.push([t.status==='open'?'':'amb',`${t.owner}: ${t.action}`,'#todo']));
  const pr=t=>/^Spent |stale|data ends/.test(t[1])?0:/ROAS .* < /.test(t[1])?1:2;todos.sort((a,b)=>pr(a)-pr(b));
- out.push(`<div class="todos">${todos.map(t=>`<a class="${t[0]}" href="${t[2]}">${esc(t[1]).replace(/&lt;/g,'&lt;')}</a>`).join('')||'<span class="na">no to-dos</span>'}</div>`);
+ out.push(fold('quick',`Quick alerts (${todos.length})`,`<div class="todos" style="display:flex;padding:0">${todos.map(t=>`<a class="${t[0]}" href="${t[2]}">${esc(t[1]).replace(/&lt;/g,'&lt;')}</a>`).join('')||'<span class="na">none</span>'}</div>`,todos.length>0));
  // pacing
  const bp=D.budget_pacing||{};const pct=bp.monthly_plan?bp.month_to_date_spend/bp.monthly_plan*100:null;
  const md=new Date(bp.mtd_end+'T12:00:00');const dim=new Date(md.getFullYear(),md.getMonth()+1,0).getDate();const exp=md.getDate()/dim*100;
  const pbar=(sp,pl,s)=>{const p=pl?Math.min(sp/pl*100,100):0;return `<div class="bar"><i class="${sp>pl*exp/100*1.1?'over':''}" style="width:${p}%"></i><s style="left:${exp}%"></s></div>`};
- out.push(`<div class="card" id="pacing"><h2>Spend pacing · ${esc(bp.month||'')}</h2><div class="sub">${esc(bp.mtd_start)}–${esc(bp.mtd_end)} · line = where spend should be today (${exp.toFixed(0)}%)</div>
+ const pace=`<hr style="border:0;border-top:1px solid var(--bd);margin:12px 0"><div class="sub">${esc(bp.mtd_start)}–${esc(bp.mtd_end)} · line = where spend should be today (${exp.toFixed(0)}%)</div>
  <div class="chh"><span>Total ${usd(bp.month_to_date_spend)} of ${usd(bp.monthly_plan)}</span><span class="chip ${bp.pacing_status==='on_track'?'up':'am'}">${esc(bp.pacing_status||'n/a')}</span></div>${pbar(bp.month_to_date_spend,bp.monthly_plan)}
  <div class="tl">Projected month: ${usd(bp.projected_month_spend)}</div>`+
- (bp.by_channel||[]).map(c=>`<div style="margin-top:8px"><div class="chh" style="font-weight:400"><a href="${chLink(c.channel)}" target="_blank">${esc(c.channel)}</a><span>${usd(c.mtd_spend)} / ${usd(c.monthly_plan)} <span class="chip ${c.status==='over'?'dn':c.status==='under'?'am':'up'}">${esc(c.status)}</span></span></div>${pbar(c.mtd_spend,c.monthly_plan)}<div class="tl">source: ${esc(c.spend_source)}</div></div>`).join('')+`</div>`);
- // PMax per campaign
- out.push(`<div class="card" id="pmax"><h2>Google PMax by campaign</h2>${pmaxHTML()}</div>`);
- // parity with old page
- const kv=D.kpi_vs_target||[];out.push(`<div class="card" id="kpi"><h2>KPI vs target</h2>${kv.length?`<div class="scroll"><table><tr><th>KPI</th><th>This period</th><th>Last</th><th>Target</th><th></th></tr>${kv.map(r=>`<tr><td>${esc(r.kpi)}</td><td>${esc(r.this_period)}</td><td>${esc(r.last_period)}</td><td>${esc(r.target)}</td><td><span class="chip ${r.status==='good'?'up':r.status==='bad'?'dn':'am'}">${esc(r.status||'')}</span></td></tr>`).join('')}</table></div>`:NA}</div>`);
- const an=D.anomalies||[];out.push(`<div class="card" id="anom"><h2>Anomalies · cause and response</h2>${an.length?an.map(a=>`<div class="ch"><b>${esc(a.title||a.what||a.metric||'')}</b> ${a.change?`<span class="chip am">${esc(a.change)}</span>`:''}<div class="tl">${esc(a.cause||a.likely_cause||'')}${(a.response||a.action)?' → '+esc(a.response||a.action):''}</div></div>`).join(''):'<span class="na">none flagged</span>'}</div>`);
- const nw=D.next_week_priorities||[];out.push(`<div class="card" id="next"><h2>Next week priorities</h2>${nw.length?`<ol style="margin:0;padding-left:18px">${nw.map(p=>`<li>${esc(typeof p==='string'?p:(p.action||p.text||String(p.priority||"")))}${p&&p.owner?` <span class="tl">· ${esc(p.owner)}</span>`:''}</li>`).join('')}</ol>`:NA}</div>`);
- // diversification
+ (bp.by_channel||[]).map(c=>`<div style="margin-top:8px"><div class="chh" style="font-weight:400"><a href="${chLink(c.channel)}" target="_blank">${esc(c.channel)}</a><span>${usd(c.mtd_spend)} / ${usd(c.monthly_plan)} <span class="chip ${c.status==='over'?'dn':c.status==='under'?'am':'up'}">${esc(c.status)}</span></span></div>${pbar(c.mtd_spend,c.monthly_plan)}<div class="tl">source: ${esc(c.spend_source)}</div></div>`).join('');
+ const kv=D.kpi_vs_target||[];
+ const kpiH=kv.length?`<div class="scroll"><table><tr><th>KPI</th><th>This period</th><th>Last</th><th>Target</th><th></th></tr>${kv.map(r=>`<tr><td>${esc(r.kpi)}</td><td>${esc(r.this_period)}</td><td>${esc(r.last_period)}</td><td>${esc(r.target)}</td><td><span class="chip ${r.status==='good'?'up':r.status==='bad'?'dn':'am'}">${esc(r.status||'')}</span></td></tr>`).join('')}</table></div>`:NA;
+ const an=D.anomalies||[];
+ const anomH=an.length?an.map(a=>`<div class="ch"><b>${esc(a.title||a.what||a.metric||'')}</b> ${a.change?`<span class="chip am">${esc(a.change)}</span>`:''}<div class="tl">${esc(a.cause||a.likely_cause||'')}${(a.response||a.action)?' → '+esc(a.response||a.action):''}</div></div>`).join(''):'<span class="na">none flagged</span>';
+ const nw=D.next_week_priorities||[];
+ const nextH=nw.length?`<ol style="margin:0;padding-left:18px">${nw.map(p=>`<li>${esc(typeof p==='string'?p:(p.action||p.text||String(p.priority||"")))}${p&&p.owner?` <span class="tl">· ${esc(p.owner)}</span>`:''}</li>`).join('')}</ol>`:NA;
  const cm=(D.channel_mix||{}).monthly||[];
- out.push(`<div class="card" id="div"><h2>Diversification off Meta</h2><div class="sub">Pinterest+TikTok share of spend this window: <b>${num(divNow)?divNow.toFixed(1)+'%':'n/a'}</b> · target <b>TBD</b></div>
+ const divH=`<div class="sub">Pinterest+TikTok share of spend this window: <b>${num(divNow)?divNow.toFixed(1)+'%':'n/a'}</b> · target <b>TBD</b></div>
  <div class="scroll"><table><tr><th>Month</th><th>Meta</th><th>Google</th><th>Pinterest</th><th>TikTok</th></tr>${cm.map(m=>`<tr><td>${esc(m.month)}</td><td>${m.meta_share_pct}%</td><td>${m.google_share_pct}%</td><td>${m.pinterest_share_pct}%</td><td class="na">—</td></tr>`).join('')}</table></div>
  <div class="tl">Monthly = share of store (UTM) ad-attributed revenue${B('s')}. Shares of spend by month: ${NA}.</div>
- <div class="ch" style="margin-top:8px"><div class="chh"><a href="${L.tiktok}" target="_blank">TikTok test ↗</a><span class="chip nt">not started</span></div><div class="tl">No TikTok spend or orders in data. Budget and pass/fail cost per store order: TBD.</div></div></div>`);
- // alerts
- out.push(sec('alerts',`Spent $X, 0 store orders (${zero.length})`,zero.length?`<table><tr><th>Where</th><th>Spend</th><th>Threshold</th></tr>${zero.map(z=>`<tr><td>${esc(z.name)}<div class="tl">${esc(z.lvl)}</div></td><td>${usd(z.spend)}</td><td>${z.lim?usd(z.lim)+' (config)':'$100 default'}</td></tr>`).join('')}</table>`:'No channel or ad over threshold with zero store orders.',zero.length>0));
+ <div class="ch" style="margin-top:8px"><div class="chh"><a href="${L.tiktok}" target="_blank">TikTok test ↗</a><span class="chip nt">not started</span></div><div class="tl">No TikTok spend or orders in data. Budget and pass/fail cost per store order: TBD.</div></div>`;
+ out.push(fold('more','More detail (pacing, KPIs, anomalies, PMax)',`<h3 style="margin:0 0 6px;font-size:15px">Spend pacing · ${esc(bp.month||'')}</h3>${pace}<h3 style="margin:14px 0 6px;font-size:15px">Google PMax by campaign</h3>${pmaxHTML()}<h3 style="margin:14px 0 6px;font-size:15px">KPI vs target</h3>${kpiH}<h3 style="margin:14px 0 6px;font-size:15px">Anomalies</h3>${anomH}<h3 style="margin:14px 0 6px;font-size:15px">Next week priorities</h3>${nextH}<h3 style="margin:14px 0 6px;font-size:15px">Diversification off Meta</h3>${divH}`,false));
+ out.push(fold('alerts',`Spent $X, 0 store orders (${zero.length})`,zero.length?`<table><tr><th>Where</th><th>Spend</th><th>Threshold</th></tr>${zero.map(z=>`<tr><td>${esc(z.name)}<div class="tl">${esc(z.lvl)}</div></td><td>${usd(z.spend)}</td><td>${z.lim?usd(z.lim)+' (config)':'$100 default'}</td></tr>`).join('')}</table>`:'No channel or ad over threshold with zero store orders.',zero.length>0));
  // sources
  out.push(sec('sources','Data sources & freshness',srcs.map(s=>`<div class="src"><span>${s.stale?'🔴':s.manual?'🟡':'🟢'} <b>${esc(s.name)}</b><div class="tl">${esc(s.src)} · ${esc(s.note)}</div></span><span class="tl" style="text-align:right">${esc(s.when)}</span></div>`).join('')+`<div class="src"><span>⚪ <b>TikTok</b><div class="tl">not connected</div></span></div><div class="tl">🔴 stale = data ends &gt;2 days before today · 🟡 manual entry (not a live API). Pinterest manual spend covers only its stated dates; windows starting earlier undercount Pinterest spend. Pinterest API: ${esc(((w.ad_pull_errors||{}).Pinterest)||'no error')}.</div>`,srcs.some(s=>s.stale)));
  // to-do
