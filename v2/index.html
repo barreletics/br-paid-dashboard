@@ -56,6 +56,15 @@ details.fold>div{padding:0 14px 14px}
 .answer-tile.a-win{border-color:var(--g);background:linear-gradient(180deg,var(--gb),var(--card) 55%)}
 .answer-tile.a-lose{border-color:var(--r);background:linear-gradient(180deg,var(--rb),var(--card) 55%)}
 .answer-range{font-size:13px;color:var(--mu);margin:-6px 0 10px}
+.connect-card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
+.connect-card h3{font-size:16px;margin:0 0 10px}
+.connect-steps{display:flex;flex-direction:column;gap:12px}
+.connect-step{padding:12px;border-radius:12px;background:var(--bg);border:1px solid var(--bd);font-size:15px;line-height:1.45}
+.connect-step b{font-size:16px}
+.verdict{display:inline-block;font-weight:800;font-size:12px;padding:5px 12px;border-radius:999px;margin-bottom:10px}
+.verdict.proven{background:var(--gb);color:var(--g)}
+.verdict.likely{background:var(--ab);color:var(--a)}
+.verdict.not{background:var(--bd);color:var(--mu)}
 @media (max-width:480px){.answer-grid{grid-template-columns:1fr;gap:12px}.answer-tile .ans{font-size:21px}.answer-tile{padding:16px}}
 .map-sec{margin-bottom:18px}.map-h{font-size:17px;margin:0 0 10px;display:flex;align-items:center;gap:10px;font-weight:700}
 .map-n{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;background:var(--tx);color:var(--card);font-size:14px;flex-shrink:0}
@@ -130,10 +139,11 @@ function whatThisMeansHTML(k,tagNow,camps,winLab){
  const paused=camps.items.filter(c=>c.lab.key==='paused');
  let best=null,worst=null;
  active.forEach(c=>{if(!best||c.roas>best.roas)best=c;if(!worst||c.roas<worst.roas)worst=c});
- if(paused.length)worst={title:'Pinterest (paused)',lab:{key:'paused'}};
- else if(active.find(c=>c.lab.key==='lose'))worst=active.filter(c=>c.lab.key==='lose').sort((a,b)=>a.roas-b.roas)[0]||worst;
- const bName=best?best.title:'—';const wName=worst?worst.title:'—';
- const wDetail=worst&&worst.lab?.key==='paused'?'paused':(worst&&num(worst.roas)?worst.roas.toFixed(1)+'× return per $1':'needs attention');
+ let wName='—',wDetail='needs attention';
+ if(paused.length){wName='Pinterest';wDetail=paused.map(c=>c.title).join(', ')+' paused';}
+ else if(active.find(c=>c.lab.key==='lose')){worst=active.filter(c=>c.lab.key==='lose').sort((a,b)=>a.roas-b.roas)[0];wName=worst.title;wDetail=worst.roas.toFixed(1)+'× return per $1';}
+ else if(worst){wName=worst.title;wDetail=worst.roas.toFixed(1)+'× return per $1';}
+ const bName=best?best.title:'—';
  const bestExtra=best&&num(best.roas)?' ('+best.roas.toFixed(1)+'× return per $1 spent)':'';
  return `<div class="meaning" id="what-means"><strong>What this means</strong>
  <p>We spent <b>${usd(sp)}</b> on ads (${esc(win)}) and store sales tied to those ads were <b>${usd(back)}</b>.</p>
@@ -165,6 +175,21 @@ function answerTilesHTML(camps){
  <div class="answer-tile a-lose"><h3>2 · What's not</h3><div class="ans">${notTitle}</div><div class="ans-sub">${notSub||'Nothing flagged as losing'}</div></div>
  <div class="answer-tile"><h3>3 · What it costs</h3><div class="ans">${usd(total,0)} total</div><div class="ans-sub">${chSpend}</div></div>
  <div class="answer-tile a-win"><h3>4 · Cheapest &amp; best</h3><div class="ans-line">Cheapest order:<br>${cheapLine}</div><div class="ans-line" style="margin-top:10px">Best return:<br>${bestLine}</div></div></div>`}
+function howAdsConnectHTML(){
+ const ac=D.ads_connect||{};const v=(ac.verdict||'NOT PROVEN').toUpperCase();
+ const vcls=v==='PROVEN'?'proven':v==='LIKELY'?'likely':'not';
+ const pr=ac.prospecting_30d||{};const rt=ac.retargeting_store_7d||{};
+ const aud=(ac.custom_audiences||[]);const audN=aud.reduce((m,a)=>Math.max(m,int(a.approximate_count)||int(a.approximate_count_upper_bound)||0),0);
+ const pct=ac.prospecting_reach_share_pct_30d;const ga=ac.ga4_sessions||{};const gb=ga.buckets||{};
+ const w7=(D.meta_shopify_attribution_7d||{}).window||{};const winLab=w7.label||'Last 7 days';
+ const step1=`Step 1 — Prospecting finds new people: <b>${n0(pr.reach)}</b> reached (30d) · <b>${n0(pr.landing_page_views)}</b> site visits (landing page views, Meta) · <b>${n0(pr.inline_link_clicks)}</b> link clicks.`;
+ const pctTxt=num(pct)?' About <b>'+pct+'%</b> of Meta reach in the last 30 days came from Prospecting (vs other Meta campaigns).':'';
+ const audNames=aud.slice(0,3).map(a=>esc(a.name||a.id)).join(', ')||'—';
+ const step2=`Step 2 — They can join Retargeting audiences (${esc(winLab)} window for store; audience lookback up to <b>${ac.audience_retention_days_max||'—'}</b> days): size about <b>${n0(audN)}</b> (${audNames}).${pctTxt}`;
+ const step3=`Step 3 — Retargeting closes sales: <b>${n0(rt.orders)}</b> store orders · <b>${num(rt.return_per_dollar)?rt.return_per_dollar.toFixed(1)+'×':'—'}</b> return per $1 spent · ${usd(rt.spend,0)} spent (Shopify last-touch, ${esc(winLab)}).`;
+ const sess=num(gb.meta_prospecting)?` GA4 sessions (${ga.start||''}–${ga.end||''}): Meta Prospecting <b>${n0(gb.meta_prospecting)}</b>, Meta other <b>${n0(gb.meta_other_paid)}</b>, Google <b>${n0(gb.google_paid)}</b>, Pinterest <b>${n0(gb.pinterest_paid)}</b>, organic/direct <b>${n0(gb.organic_direct_other)}</b>.`:'';
+ return `<div class="connect-card" id="ads-connect"><h3>How the ads connect</h3><span class="verdict ${vcls}">${esc(v.replace(/_/g,' '))}</span><div class="tl" style="margin-bottom:10px">${esc(ac.verdict_reason||'No audience study in data yet.')}${sess}</div><div class="connect-steps"><div class="connect-step">${step1}</div><div class="connect-step">${step2}</div><div class="connect-step">${step3}</div></div><div class="tl" style="margin-top:10px">Read-only Meta Graph + GA4. ${esc((ac.sources||[]).join(' · '))}</div></div>`}
+function int(v){const n=parseInt(v,10);return isFinite(n)?n:0}
 function whatNextHTML(){const bits=[];
  (D.next_week_priorities||[]).slice(0,6).forEach(p=>bits.push(typeof p==='string'?p:(p.action||p.text||'')));
  (D.strategy_todos||[]).filter(t=>t.status==='open').slice(0,4).forEach(t=>bits.push(`${t.owner}: ${t.action}`));
@@ -174,7 +199,8 @@ const todayET=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Detro
 const yesterdayET=()=>{const d=new Date(todayET()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10)};
 const WL={today:'Today',yesterday:'Yesterday','7d':'Last 7 days','30d':'Last 30 days'};
 function blk(c){return (c||{})[W]||{}}
-function asofHTML(){const m=(D.ad_decisions||{}).meta||{};const b=blk(m);const lab=(b.window||{}).label||'';
+function asofHTML(){const m=(D.ad_decisions||{}).meta||{};const b=blk(m);const w7=(D.windows||{})['7']||{};
+ const lab=W==='7d'?((w7.window||{}).label||(D.meta_shopify_attribution_7d||{}).window?.label||(b.window||{}).label||''):(b.window||{}).label||'';
  return `<b>${WL[W]}</b> · ${esc(lab)}${W==='today'?` · <span class="chip am">partial, as of ${fmtT(m.as_of||D.generated_at)}</span>`:''} · data as of ${fmtT(D.generated_at)||'unknown'} · <a href="${L.old}">old page</a>`}
 const money=v=>'$'+Math.round(v).toLocaleString('en-US');
 function decide(r,T){T=T||{};const sp=r.spend||0,o=r.orders||0,S=r.S??0,M=r.M;const pct=T.winner_budget_step_pct??20,lo=T.cut_pct_low??30,hi=T.cut_pct_high??50;let d;
@@ -259,8 +285,10 @@ function render(){
  const th=D.thresholds||{};const out=[];
  const tagNow=chans.reduce((a,c)=>a+(c.shopify_revenue||0),0),tagL=chans.reduce((a,c)=>a+(c.shopify_revenue_last||0),0);
  const camps=campData();
- out.push(whatThisMeansHTML(k,tagNow,camps,win.label||WL[W]));
+ const win7Lab=(D.meta_shopify_attribution_7d||{}).window?.label||(D.windows||{})['7']?.window?.label||win.label||WL[W];
+ out.push(whatThisMeansHTML(k,tagNow,camps,win7Lab));
  out.push(answerTilesHTML(camps));
+ out.push(howAdsConnectHTML());
  out.push(mapSection(1,'The big picture',executiveTopHTML(k,pk,plab,win,tagNow,tagL)));
  out.push(mapSection(2,"What's working",`<div class="sub">${camps.win.label?'Store orders in '+esc(camps.win.label):'Campaigns with strong return per $1 spent'}</div>${campListHTML(camps.items.filter(c=>c.lab.key==='win'))}`));
  out.push(mapSection(3,"What's not",`<div class="sub">Paused, weak return, or still too early to judge</div>${campListHTML(camps.items.filter(c=>c.lab.key!=='win'))}`));

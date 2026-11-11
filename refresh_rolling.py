@@ -1646,6 +1646,15 @@ def main() -> None:
         )
     except Exception as exc:
         print(f"meta_shopify_attribution skipped: {exc}", file=sys.stderr)
+    try:
+        from meta_ads_connect import build_ads_connect, enrich_retargeting_store
+
+        ads_connect = build_ads_connect(cfg)
+        ads_connect["generated_at"] = datetime.now(TZ).isoformat()
+        enrich_retargeting_store(ads_connect, payload.get("campaign_status") or [])
+        payload["ads_connect"] = ads_connect
+    except Exception as exc:
+        print(f"meta_ads_connect skipped: {exc}", file=sys.stderr)
     # Per-ad "Meta says vs Shopify shows": yesterday + last 7 complete days + by_day (ET).
     ad_decisions: dict = {"thresholds": cfg.get("decision_thresholds") or {}, "errors": {}}
     try:
