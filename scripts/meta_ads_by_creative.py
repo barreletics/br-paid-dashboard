@@ -322,7 +322,62 @@ def aggregate_creatives(
                    "days": (end - start).days + 1},
         "rows": rows,
         "totals": _totals(rows),
+        "campaigns": aggregate_campaigns(meta_rows, shop_orders, start, end),
     }
+
+
+def aggregate_campaigns(
+    meta_rows: list[dict[str, Any]], shop_orders: list[dict[str, Any]], start: date, end: date
+) -> list[dict[str, Any]]:
+    """Per Meta campaign for [start, end]: spend/claims from Meta, store orders by last-visit utm_campaign.
+    Feeds the v2 dashboard's per-campaign rows for every day filter (today / yesterday / 7d / 30d)."""
+    s_iso, e_iso = start.isoformat(), end.isoformat()
+    grouped: dict[str, dict[str, Any]] = {}
+
+    def grp(name: str) -> dict[str, Any]:
+        key = norm(urllib.parse.unquote_plus(name or "")) or "(no utm_campaign)"
+        if key not in grouped:
+            grouped[key] = {"campaign": urllib.parse.unquote_plus(name or "") or "(no utm_campaign)",
+                            "meta_spend": 0.0, "meta_claims_purch": 0, "meta_revenue": 0.0,
+                            "shopify_orders": 0, "shopify_revenue": 0.0, "order_names": []}
+        return grouped[key]
+
+    for row in meta_rows:
+        d = row.get("date_start") or s_iso
+        if not (s_iso <= d <= e_iso):
+            continue
+        spend = float(row.get("spend") or 0)
+        purch = platform_purchases(row)
+        if spend <= 0 and purch <= 0:
+            continue
+        g = grp(row.get("campaign_name") or "")
+        g["meta_spend"] += spend
+        g["meta_claims_purch"] += purch
+        g["meta_revenue"] += platform_revenue(row)
+    for o in shop_orders:
+        if not (s_iso <= o["created_at"] <= e_iso):
+            continue
+        g = grp(o.get("utm_campaign") or "")
+        g["shopify_orders"] += 1
+        g["shopify_revenue"] += o["revenue"]
+        g["order_names"].append(o["order"])
+    out = []
+    for g in grouped.values():
+        spend, srev, mrev = round(g["meta_spend"], 2), round(g["shopify_revenue"], 2), round(g["meta_revenue"], 2)
+        out.append({
+            "campaign": g["campaign"],
+            "meta_spend": spend,
+            "meta_claims_purch": int(g["meta_claims_purch"]),
+            "meta_revenue": mrev,
+            "meta_roas": _ratio(mrev, spend),
+            "shopify_orders": g["shopify_orders"],
+            "shopify_revenue": srev,
+            "shopify_roas": _ratio(srev, spend),
+            "shopify_cpa": _ratio(spend, g["shopify_orders"]),
+            "order_names": sorted(g["order_names"]),
+        })
+    out.sort(key=lambda r: (-r["meta_spend"], -r["shopify_revenue"]))
+    return out
 
 
 def meta_active_budgets() -> list[dict[str, Any]]:
