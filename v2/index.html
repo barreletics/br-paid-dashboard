@@ -128,22 +128,22 @@ function campLabelW(c,T){if(c.paused)return {text:'Paused',cls:'pausedlab',key:'
  if(r>=wT)return {text:'Working well',cls:'winlab',key:'win'};
  if(r<bT&&(c.spend||0)>=minS)return {text:'Needs help',cls:'loselab',key:'lose'};
  return {text:'Keep watching',cls:'watchlab',key:'watch'}}
-function metaCampsFallback(m){// latest.json from before campaigns[] existed: derive from per-ad rows by ad-set bucket
- const g={};const add=(k,r)=>{const o=g[k]=g[k]||{campaign:k,meta_spend:0,shopify_orders:0,shopify_revenue:0};o.meta_spend+=r.meta_spend||0;o.shopify_orders+=r.shopify_orders||0;o.shopify_revenue+=r.shopify_revenue||0};
- (m.rows||[]).forEach(r=>{const b=r.ad_sets||[];const k=b.length!==1?'Meta (ads in several campaigns)':b[0]==='Prospecting'?'Prospecting':b[0]==='Creative Test'?'Creative Test':b[0]==='Other'?'Other':'Meta '+b[0];add(k,r)});
- return Object.values(g).map(o=>({...o,meta_spend:Math.round(o.meta_spend*100)/100,shopify_revenue:Math.round(o.shopify_revenue*100)/100,shopify_roas:o.meta_spend?Math.round(o.shopify_revenue/o.meta_spend*100)/100:null,approx:true}))}
+function metaCampsFallback(m){// latest.json written before per-window campaigns[] existed (fills on next refresh)
+ const at=D.meta_shopify_attribution_7d||{};
+ if(W==='7d'&&(at.campaigns||[]).length)return at.campaigns.map(c=>({campaign:c.meta_campaign_name||c.shopify_utm_campaign||c.campaign_label,meta_spend:c.meta_spend,shopify_orders:c.shopify_orders,shopify_revenue:c.shopify_revenue,approxWin:(at.window||{}).label}));
+ const t=m.totals||{};return t.meta_spend||t.shopify_orders?[{campaign:'Meta (all campaigns)',meta_spend:t.meta_spend||0,shopify_orders:t.shopify_orders||0,shopify_revenue:t.shopify_revenue||0,approx:true}]:[]}
 function campData(){const A=D.ad_decisions||{},T=A.thresholds||D.thresholds||{};const m=blk(A.meta);const st=D.campaign_status||[];const out=[];
  const status=re=>st.filter(r=>re.test(r.campaign||''));const isPaused=(re,spend)=>!(spend>0)&&status(re).length>0&&status(re).every(r=>/paused/i.test(r.status||''));
  const push=(title,channel,spend,orders,revenue,re,extra)=>{const roas=num(spend)&&spend>0&&num(revenue)?revenue/spend:null;const c={title,channel,spend:spend||0,orders:orders||0,revenue:revenue||0,roas,paused:re?isPaused(re,spend):false,...(extra||{})};c.row={status:c.paused?'PAUSED':'ACTIVE'};c.lab=campLabelW(c,T);out.push(c)};
  const mc=m.campaigns||metaCampsFallback(m);const used=new Set();
  const approx=!m.campaigns;
- CAMP_WANT.filter(([ch])=>ch==='Meta').forEach(([ch,re,title])=>{const hit=mc.filter(c=>!used.has(c)&&!(c.approx&&c.campaign==='Other')&&re.test(c.campaign||''));hit.forEach(c=>used.add(c));if(approx&&!hit.length)return;
+ CAMP_WANT.filter(([ch])=>ch==='Meta').forEach(([ch,re,title])=>{const hit=mc.filter(c=>!used.has(c)&&re.test(c.campaign||''));hit.forEach(c=>used.add(c));if(approx&&!hit.length)return;
   push(title,'Meta',hit.reduce((a,c)=>a+(c.meta_spend||0),0),hit.reduce((a,c)=>a+(c.shopify_orders||0),0),hit.reduce((a,c)=>a+(c.shopify_revenue||0),0),re)});
- mc.filter(c=>!used.has(c)&&((c.meta_spend||0)>0||(c.shopify_orders||0)>0)).forEach(c=>push(c.approx&&c.campaign==='Other'?'Meta Two-Pair + Retargeting (combined)':/^Meta/.test(c.campaign)?c.campaign:'Meta · '+(c.campaign==='(no utm_campaign)'?'no campaign tag':c.campaign),'Meta',c.meta_spend,c.shopify_orders,c.shopify_revenue,null,{approx:!!c.approx}));
+ mc.filter(c=>!used.has(c)&&((c.meta_spend||0)>0||(c.shopify_orders||0)>0)).forEach(c=>push(/^Meta/.test(c.campaign)?c.campaign:'Meta · '+(c.campaign==='(no utm_campaign)'?'no campaign tag':c.campaign),'Meta',c.meta_spend,c.shopify_orders,c.shopify_revenue,null,{approx:!!c.approx}));
  const sumRows=b=>{const r=(b||{}).rows||[];return [r.reduce((a,x)=>a+(x.spend||0),0),r.reduce((a,x)=>a+(x.shopify_orders||0),0),r.reduce((a,x)=>a+(x.shopify_revenue||0),0)]};
  push('Google PMax','Google',...sumRows(blk(A.pmax)),/PMax/i);
  push('Pinterest','Pinterest',...sumRows(blk(A.pinterest)),/Restore Winner|Reel Test/i);
- return {items:out,win:(m.window||{}),approx:!m.campaigns}}
+ const aw7=(mc[0]||{}).approxWin;return {items:out,win:(m.window||{}),approx:!m.campaigns,note:!m.campaigns?(aw7?`Meta campaign rows: ${aw7}`:'Meta campaign split arrives with the next refresh'):''}}
 function adWin(key){const A=D.ad_decisions||{};const pick=c=>key?(((c||{}).by_day||{})[key]||{}):blk(c);const m=pick(A.meta);const t=m.totals||{};
  const sum=(b,f)=>((b||{}).rows||[]).reduce((a,r)=>a+(r[f]||0),0);const pm=pick(A.pmax),pi=pick(A.pinterest);
  const chans=[{name:'Meta',spend:t.meta_spend||0,tag:t.shopify_revenue||0},{name:'Google',spend:sum(pm,'spend'),tag:sum(pm,'shopify_revenue')},{name:'Pinterest',spend:sum(pi,'spend'),tag:sum(pi,'shopify_revenue')}];
@@ -190,7 +190,7 @@ function answerTilesHTML(camps,aw){
  const chSpend=aw.chans.map(c=>c.name+' '+usd(c.spend,0)).join(' · ');
  const cheapLine=cheap?(esc(cheap.title)+' · <b>'+usd(cheap.spend/cheap.orders,0)+'</b> per store order'):NA;
  const bestLine=bestRet?(esc(bestRet.title)+' · <b>'+bestRet.roas.toFixed(1)+'×</b> return per $1'):NA;
- return `<div class="answer-range">${esc(WL[W])} · ${winLab}${W==='today'?' (partial)':''} · Shopify last-touch${camps.approx?' · Meta split by ad set until next refresh':''}</div><div class="answer-grid" id="answer-tiles">
+ return `<div class="answer-range">${esc(WL[W])} · ${winLab}${W==='today'?' (partial)':''} · Shopify last-touch${camps.note?' · '+esc(camps.note):''}</div><div class="answer-grid" id="answer-tiles">
  <div class="answer-tile a-win"><h3>1 · What's working</h3><div class="ans">${working}</div><div class="ans-sub">Highest store return per $1 spent</div></div>
  <div class="answer-tile a-lose"><h3>2 · What's not</h3><div class="ans">${notTitle}</div><div class="ans-sub">${notSub||'Nothing flagged as losing'}</div></div>
  <div class="answer-tile"><h3>3 · What it costs</h3><div class="ans">${usd(total,0)} total</div><div class="ans-sub">${chSpend}</div></div>
@@ -383,7 +383,7 @@ function sources(){const dq=D.data_quality||{},w=(D.windows||{})[W==='30d'?'30':
  add('GA4 (direction only)',dq.ga4?.source,'',dq.ga4?.pulled_at?.slice(0,10),dq.ga4?.pulled_at);
  const mc=D.meta_ads_by_creative?.window;add('Meta ads by creative',D.meta_ads_by_creative?.source_note,'yesterday + last 7 complete days',mc?.end,null);
  return res}
-const APP_V='2026-11-18-dayfilter';
+const APP_V='2026-11-18-dayfilter2';
 async function checkVersion(){try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=(await r.json()).v;if(v&&v!==APP_V&&sessionStorage.getItem('v2reloaded')!==v){sessionStorage.setItem('v2reloaded',v);location.replace(location.pathname+'?v='+encodeURIComponent(v))}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){checkVersion();load()}});
 window.addEventListener('pageshow',e=>{if(e.persisted){checkVersion();load()}});
