@@ -1,63 +1,63 @@
 {
-  "generated_at": "2026-11-22T20:52:59.022684-05:00",
+  "generated_at": "2026-11-23T06:29:36.948944-05:00",
   "window": {
-    "start": "2026-10-24",
-    "end": "2026-11-22",
-    "label": "Oct 24 \u2013 Nov 22, 2026",
+    "start": "2026-10-25",
+    "end": "2026-11-23",
+    "label": "Oct 25 \u2013 Nov 23, 2026",
     "days": 30,
     "mode": "rolling",
     "through": "today",
-    "prior_start": "2026-09-24",
-    "prior_end": "2026-10-23",
-    "prior_label": "Sep 24 \u2013 Oct 23, 2026",
-    "month_start": "2026-08-28",
-    "month_end": "2026-09-26",
-    "month_label": "Aug 28 \u2013 Sep 26, 2026"
+    "prior_start": "2026-09-25",
+    "prior_end": "2026-10-24",
+    "prior_label": "Sep 25 \u2013 Oct 24, 2026",
+    "month_start": "2026-08-29",
+    "month_end": "2026-09-27",
+    "month_label": "Aug 29 \u2013 Sep 27, 2026"
   },
   "executive_summary": [
-    "DTC store 228 orders \u00b7 $26,247 (+49% vs Sep 24 \u2013 Oct 23, 2026). Wholesale 3 orders \u00b7 $1,114 \u2014 not in DTC totals.",
-    "Google PMax \u00b7 Shopify ROAS 1.54\u00d7 on $4,843 \u2014 best paid channel.",
-    "Meta \u00b7 79 Shopify UTM orders \u00b7 ROAS 1.14\u00d7 (platform claims 142 purch).",
-    "Pinterest \u00b7 3 Shopify orders \u00b7 $535 spend.",
+    "DTC store 229 orders \u00b7 $26,331 (+49% vs Sep 25 \u2013 Oct 24, 2026). Wholesale 3 orders \u00b7 $1,114 \u2014 not in DTC totals.",
+    "Google PMax \u00b7 Shopify ROAS 1.58\u00d7 on $4,843 \u2014 best paid channel.",
+    "Meta \u00b7 80 Shopify UTM orders \u00b7 ROAS 1.17\u00d7 (platform claims 144 purch).",
+    "Pinterest \u00b7 3 Shopify orders \u00b7 $531 spend.",
     "Hold Meta budget until Shopify UTM ROAS \u22651.5\u00d7 for 7 days \u00b7 keep Google running."
   ],
   "kpi_vs_target": [
     {
       "kpi": "Paid orders",
-      "this_period": 228,
-      "last_period": 171,
+      "this_period": 229,
+      "last_period": 172,
       "target": 90,
       "unit": "orders",
       "status": "good"
     },
     {
       "kpi": "Shopify revenue",
-      "this_period": 26247,
-      "last_period": 17588,
+      "this_period": 26331,
+      "last_period": 17644,
       "target": 10000,
       "unit": "$",
       "status": "watch"
     },
     {
       "kpi": "Blended MER",
-      "this_period": 2.41,
-      "last_period": 1.74,
+      "this_period": 2.46,
+      "last_period": 1.75,
       "target": 3.0,
       "unit": "\u00d7",
       "status": "good"
     },
     {
       "kpi": "Meta Shopify ROAS",
-      "this_period": 1.14,
-      "last_period": 0.84,
+      "this_period": 1.17,
+      "last_period": 0.82,
       "target": 1.5,
       "unit": "\u00d7",
       "status": "watch"
     },
     {
       "kpi": "Google Shopify ROAS",
-      "this_period": 1.54,
-      "last_period": 2.31,
+      "this_period": 1.58,
+      "last_period": 2.36,
       "target": 3.0,
       "unit": "\u00d7",
       "status": "good"
@@ -74,37 +74,37 @@
   "budget_pacing": {
     "month": "2026-11",
     "mtd_start": "2026-11-01",
-    "mtd_end": "2026-11-22",
-    "month_to_date_spend": 8088,
+    "mtd_end": "2026-11-23",
+    "month_to_date_spend": 8190,
     "monthly_plan": 9800,
-    "projected_month_spend": 11029,
+    "projected_month_spend": 10683,
     "pacing_status": "over",
     "spend_includes_estimates": false,
-    "note": "Calendar MTD 2026-11-01\u20132026-11-22 (22 days) \u00b7 from live platform pulls for this calendar month",
+    "note": "Calendar MTD 2026-11-01\u20132026-11-23 (23 days) \u00b7 from live platform pulls for this calendar month",
     "by_channel": [
       {
         "channel": "Meta",
-        "mtd_spend": 5303,
+        "mtd_spend": 5364,
         "monthly_plan": 7500,
         "status": "on_track",
         "spend_source": "live",
-        "used_pct": 71
+        "used_pct": 72
       },
       {
         "channel": "Google PMax",
-        "mtd_spend": 2450,
+        "mtd_spend": 2471,
         "monthly_plan": 1500,
         "status": "over",
         "spend_source": "live",
-        "used_pct": 163
+        "used_pct": 165
       },
       {
         "channel": "Pinterest",
-        "mtd_spend": 335,
+        "mtd_spend": 355,
         "monthly_plan": 800,
         "status": "under",
         "spend_source": "manual",
-        "used_pct": 42
+        "used_pct": 44
       }
     ]
   },
@@ -112,35 +112,35 @@
     "shopify": {
       "status": "ok",
       "source": "shopify_rest",
-      "note": "DTC paid orders + UTM; wholesale separate; excludes cancelled, test, promo, exchanges \u00b7 pulled 2026-11-22T20:52:59.022684-05:00",
-      "pulled_at": "2026-11-22T20:52:59.022684-05:00"
+      "note": "DTC paid orders + UTM; wholesale separate; excludes cancelled, test, promo, exchanges \u00b7 pulled 2026-11-23T06:29:36.948944-05:00",
+      "pulled_at": "2026-11-23T06:29:36.948944-05:00"
     },
     "blend_meta": {
       "status": "ok",
       "source": "meta_graph_api",
-      "note": "Live pull for Oct 24 \u2013 Nov 22, 2026",
-      "last_live_through": "2026-11-22",
-      "pulled_at": "2026-11-22T20:52:52.147802-05:00"
+      "note": "Live pull for Oct 25 \u2013 Nov 23, 2026",
+      "last_live_through": "2026-11-23",
+      "pulled_at": "2026-11-23T06:29:30.228607-05:00"
     },
     "blend_google": {
       "status": "ok",
       "source": "ga4_ad_cost",
-      "note": "Live pull for Oct 24 \u2013 Nov 22, 2026",
-      "last_live_through": "2026-11-22",
-      "pulled_at": "2026-11-22T20:52:52.147802-05:00"
+      "note": "Live pull for Oct 25 \u2013 Nov 23, 2026",
+      "last_live_through": "2026-11-23",
+      "pulled_at": "2026-11-23T06:29:30.228607-05:00"
     },
     "blend_pinterest": {
       "status": "ok",
       "source": "blend_manual",
-      "note": "Manual Blend spend through 2026-11-21 \u00b7 manual, via Blend, Nov 21",
-      "last_live_through": "2026-11-21",
+      "note": "Manual Blend spend through 2026-11-22 \u00b7 manual, via Blend, Nov 22",
+      "last_live_through": "2026-11-22",
       "pulled_at": null
     },
     "ga4": {
       "status": "ok",
       "source": "ga4_ad_cost",
-      "note": "GA4 advertiserAdCost for Oct 24 \u2013 Nov 22, 2026",
-      "pulled_at": "2026-11-22T20:52:52.147802-05:00"
+      "note": "GA4 advertiserAdCost for Oct 25 \u2013 Nov 23, 2026",
+      "pulled_at": "2026-11-23T06:29:30.228607-05:00"
     },
     "shopify_mcp": {
       "status": "skip",
@@ -155,50 +155,50 @@
     "meta": {
       "status": "ok",
       "source": "meta_graph_api",
-      "note": "Live pull for Oct 24 \u2013 Nov 22, 2026",
-      "last_live_through": "2026-11-22",
-      "pulled_at": "2026-11-22T20:52:52.147802-05:00"
+      "note": "Live pull for Oct 25 \u2013 Nov 23, 2026",
+      "last_live_through": "2026-11-23",
+      "pulled_at": "2026-11-23T06:29:30.228607-05:00"
     },
     "google": {
       "status": "ok",
       "source": "ga4_ad_cost",
-      "note": "Live pull for Oct 24 \u2013 Nov 22, 2026",
-      "last_live_through": "2026-11-22",
-      "pulled_at": "2026-11-22T20:52:52.147802-05:00"
+      "note": "Live pull for Oct 25 \u2013 Nov 23, 2026",
+      "last_live_through": "2026-11-23",
+      "pulled_at": "2026-11-23T06:29:30.228607-05:00"
     },
     "pinterest": {
       "status": "ok",
       "source": "blend_manual",
-      "note": "Manual Blend spend through 2026-11-21 \u00b7 manual, via Blend, Nov 21",
-      "last_live_through": "2026-11-21",
+      "note": "Manual Blend spend through 2026-11-22 \u00b7 manual, via Blend, Nov 22",
+      "last_live_through": "2026-11-22",
       "pulled_at": null
     }
   },
   "kpis": {
-    "paid_orders": 228,
-    "paid_revenue": 26246.66,
-    "paid_revenue_net": 25835.96,
+    "paid_orders": 229,
+    "paid_revenue": 26330.61,
+    "paid_revenue_net": 25919.91,
     "returns_adjusted": 410.7,
     "wholesale_orders": 3,
     "wholesale_revenue": 1114.0,
     "wholesale_revenue_net": 1114.0,
-    "total_ad_spend": 10909,
-    "blended_mer": 2.41,
-    "blended_mer_net": 2.37,
-    "cpa_blended": 47.85,
-    "aov": 115.12,
-    "aov_net": 113.32,
+    "total_ad_spend": 10683,
+    "blended_mer": 2.46,
+    "blended_mer_net": 2.43,
+    "cpa_blended": 46.65,
+    "aov": 114.98,
+    "aov_net": 113.19,
     "spend_estimated": false,
     "unit_economics": {
       "refunds_recorded": 0.0,
       "returns_adjusted_on_orders": 410.7,
-      "shipping_collected_from_customer": 2650.87,
+      "shipping_collected_from_customer": 2660.82,
       "discounts": 1484.85,
       "returnzap_exchange_orders": 0,
       "intl_ship_to_orders": 13,
       "fulfilled_orders": 220,
       "fulfilled_pct": 96,
-      "avg_shipping_collected": 11.63
+      "avg_shipping_collected": 11.62
     },
     "returns_rollup": {
       "refund_return_orders": 10,
@@ -218,58 +218,58 @@
   "channels": [
     {
       "name": "Meta",
-      "spend": 7226.69,
-      "spend_last": 7244.77,
-      "shopify_orders": 79,
-      "shopify_orders_last": 60,
-      "shopify_revenue": 8244,
-      "shopify_revenue_last": 6115,
-      "shopify_roas": 1.14,
-      "shopify_roas_last": 0.84,
-      "shopify_cpa": 91.48,
-      "platform_purchases": 142,
-      "platform_revenue": 16238.35,
-      "platform_roas": 2.25,
+      "spend": 7088.58,
+      "spend_last": 7145.39,
+      "shopify_orders": 80,
+      "shopify_orders_last": 58,
+      "shopify_revenue": 8328,
+      "shopify_revenue_last": 5826,
+      "shopify_roas": 1.17,
+      "shopify_roas_last": 0.82,
+      "shopify_cpa": 88.61,
+      "platform_purchases": 144,
+      "platform_revenue": 16406.25,
+      "platform_roas": 2.31,
       "status": "watch",
       "interpretation": "",
-      "spend_month": 8376.36,
-      "shopify_orders_month": 90,
-      "shopify_revenue_month": 9364,
-      "shopify_revenue_net": 8056,
-      "shopify_revenue_net_last": 5963,
-      "shopify_revenue_net_month": 8496,
-      "shopify_roas_month": 1.12,
-      "shopify_roas_net": 1.11,
+      "spend_month": 8583.92,
+      "shopify_orders_month": 87,
+      "shopify_revenue_month": 9149,
+      "shopify_revenue_net": 8140,
+      "shopify_revenue_net_last": 5673,
+      "shopify_revenue_net_month": 8429,
+      "shopify_roas_month": 1.07,
+      "shopify_roas_net": 1.15,
       "spend_source": "live",
-      "impressions": 234226,
-      "clicks": 9843,
-      "ctr": 4.2024,
+      "impressions": 230547,
+      "clicks": 9752,
+      "ctr": 4.2299,
       "cpc": 0.73
     },
     {
       "name": "Google PMax",
-      "spend": 3147.78,
-      "spend_last": 2316.78,
+      "spend": 3063.56,
+      "spend_last": 2332.82,
       "shopify_orders": 49,
-      "shopify_orders_last": 56,
+      "shopify_orders_last": 57,
       "shopify_revenue": 4843,
-      "shopify_revenue_last": 5362,
-      "shopify_roas": 1.54,
-      "shopify_roas_last": 2.31,
-      "shopify_cpa": 64.24,
-      "platform_purchases": 49,
-      "platform_revenue": 4302.95,
-      "platform_roas": 1.37,
+      "shopify_revenue_last": 5509,
+      "shopify_roas": 1.58,
+      "shopify_roas_last": 2.36,
+      "shopify_cpa": 62.52,
+      "platform_purchases": 47,
+      "platform_revenue": 4091.75,
+      "platform_roas": 1.34,
       "status": "watch",
       "interpretation": "",
-      "spend_month": 2327.23,
+      "spend_month": 2374.25,
       "shopify_orders_month": 57,
-      "shopify_revenue_month": 6150,
+      "shopify_revenue_month": 6105,
       "shopify_revenue_net": 4843,
-      "shopify_revenue_net_last": 5214,
-      "shopify_revenue_net_month": 5773,
-      "shopify_roas_month": 2.64,
-      "shopify_roas_net": 1.54,
+      "shopify_revenue_net_last": 5361,
+      "shopify_revenue_net_month": 5802,
+      "shopify_roas_month": 2.57,
+      "shopify_roas_net": 1.58,
       "spend_source": "live",
       "impressions": null,
       "clicks": null,
@@ -278,27 +278,27 @@
     },
     {
       "name": "Pinterest",
-      "spend": 534.98,
-      "spend_last": 552.07,
+      "spend": 531.09,
+      "spend_last": 576.56,
       "shopify_orders": 3,
       "shopify_orders_last": 3,
       "shopify_revenue": 256,
       "shopify_revenue_last": 252,
       "shopify_roas": null,
-      "shopify_roas_last": 0.46,
-      "shopify_cpa": 178.33,
+      "shopify_roas_last": 0.44,
+      "shopify_cpa": 177.03,
       "platform_purchases": 0,
       "platform_revenue": 0,
       "platform_roas": 0,
       "status": "watch",
       "interpretation": "",
-      "spend_month": 19.26,
+      "spend_month": 29.56,
       "shopify_orders_month": 2,
       "shopify_revenue_month": 290,
       "shopify_revenue_net": 256,
       "shopify_revenue_net_last": 252,
       "shopify_revenue_net_month": 290,
-      "shopify_roas_month": 15.07,
+      "shopify_roas_month": 9.82,
       "shopify_roas_net": null,
       "spend_source": "manual",
       "impressions": null,
@@ -313,35 +313,35 @@
     {
       "metric": "Store orders",
       "change": "+33%",
-      "vs": "Sep 24 \u2013 Oct 23, 2026",
+      "vs": "Sep 25 \u2013 Oct 24, 2026",
       "cause": "Rolling store order volume vs the same-length prior window.",
       "response": "Confirm paid vs organic; check Meta/Google UTMs before changing budgets."
     },
     {
       "metric": "Store revenue",
       "change": "+49%",
-      "vs": "Sep 24 \u2013 Oct 23, 2026",
+      "vs": "Sep 25 \u2013 Oct 24, 2026",
       "cause": "Rolling DTC revenue vs prior window (Shopify REST).",
       "response": "Use channel compare for attribution; do not react to a single metric alone."
     },
     {
       "metric": "Meta Shopify ROAS",
-      "change": "+36%",
-      "vs": "Sep 24 \u2013 Oct 23, 2026",
+      "change": "+43%",
+      "vs": "Sep 25 \u2013 Oct 24, 2026",
       "cause": "UTM-attributed Shopify revenue \u00f7 spend for this window.",
       "response": "Judge on Shopify UTM ROAS; verify spend is live not estimated."
     },
     {
       "metric": "Google PMax Shopify ROAS",
       "change": "-33%",
-      "vs": "Sep 24 \u2013 Oct 23, 2026",
+      "vs": "Sep 25 \u2013 Oct 24, 2026",
       "cause": "UTM-attributed Shopify revenue \u00f7 spend for this window.",
       "response": "Judge on Shopify UTM ROAS; verify spend is live not estimated."
     },
     {
       "metric": "Pinterest Shopify ROAS",
       "change": "-100%",
-      "vs": "Sep 24 \u2013 Oct 23, 2026",
+      "vs": "Sep 25 \u2013 Oct 24, 2026",
       "cause": "UTM-attributed Shopify revenue \u00f7 spend for this window.",
       "response": "Judge on Shopify UTM ROAS; verify spend is live not estimated."
     }
@@ -552,7 +552,7 @@
     },
     {
       "priority": 3,
-      "action": "Meta attribution gap \u2014 platform 142 purch vs 79 Shopify UTM orders",
+      "action": "Meta attribution gap \u2014 platform 144 purch vs 80 Shopify UTM orders",
       "owner": "Andrew",
       "due": "Weekly",
       "expected": ""
@@ -576,7 +576,7 @@
     {
       "id": 3,
       "status": "watch",
-      "action": "Meta attribution gap \u2014 platform 142 purch vs 79 Shopify UTM orders",
+      "action": "Meta attribution gap \u2014 platform 144 purch vs 80 Shopify UTM orders",
       "owner": "Andrew",
       "due": "Weekly"
     }
@@ -622,16 +622,16 @@
     {
       "campaign": "BAR | Creative Test | Broad | US",
       "ad": "IG Reel | Upgrade Your Grip | Feb 2026",
-      "spend": 1797,
+      "spend": 1721,
       "purch": 33,
-      "roas": 2.13
+      "roas": 2.23
     },
     {
       "campaign": "Barreletix | Prospecting | CBO | US | May",
       "ad": "Video # 01 \u2013 Corrected",
-      "spend": 1487,
+      "spend": 1504,
       "purch": 32,
-      "roas": 2.09
+      "roas": 2.07
     },
     {
       "campaign": "Barreletix | Prospecting | CBO | US | May",
@@ -643,16 +643,16 @@
     {
       "campaign": "Barreletix | Prospecting | CBO | US | May",
       "ad": "IG Reel | Hear The Grip | Prospecting | Sep 2026",
-      "spend": 626,
+      "spend": 580,
       "purch": 11,
-      "roas": 2.0
+      "roas": 2.16
     },
     {
       "campaign": "BAR | Retargeting | US | Nov 2026",
       "ad": "RT | Upgrade Your Grip | Video | Nov 2026",
-      "spend": 508,
+      "spend": 516,
       "purch": 17,
-      "roas": 3.96
+      "roas": 3.9
     }
   ],
   "ga4_funnel": {
@@ -691,34 +691,10 @@
     "2026-11-19": 13,
     "2026-11-20": 6,
     "2026-11-21": 4,
-    "2026-11-22": 5
+    "2026-11-22": 5,
+    "2026-11-23": 1
   },
   "history_weekly": [
-    {
-      "label": "Oct 13 \u2013 Nov 11, 2026",
-      "start": "2026-10-13",
-      "end": "2026-11-11",
-      "days": 30,
-      "orders": 202,
-      "revenue": 21962,
-      "revenue_net": 21607,
-      "ad_spend": 10517,
-      "mer": 2.09,
-      "channels": {
-        "Meta": {
-          "orders": 76,
-          "revenue": 7835
-        },
-        "Google": {
-          "orders": 52,
-          "revenue": 4879
-        },
-        "Pinterest": {
-          "orders": 3,
-          "revenue": 252
-        }
-      }
-    },
     {
       "label": "Oct 14 \u2013 Nov 12, 2026",
       "start": "2026-10-14",
@@ -993,6 +969,31 @@
           "revenue": 256
         }
       }
+    },
+    {
+      "label": "Oct 25 \u2013 Nov 23, 2026",
+      "start": "2026-10-25",
+      "end": "2026-11-23",
+      "days": 30,
+      "orders": 229,
+      "revenue": 26331,
+      "revenue_net": 25920,
+      "ad_spend": 10683,
+      "mer": 2.46,
+      "channels": {
+        "Meta": {
+          "orders": 80,
+          "revenue": 8328
+        },
+        "Google": {
+          "orders": 49,
+          "revenue": 4843
+        },
+        "Pinterest": {
+          "orders": 3,
+          "revenue": 256
+        }
+      }
     }
   ],
   "thresholds": {
@@ -1003,33 +1004,33 @@
   },
   "prior_period": {
     "window": {
-      "start": "2026-09-24",
-      "end": "2026-10-23",
-      "label": "Sep 24 \u2013 Oct 23, 2026",
+      "start": "2026-09-25",
+      "end": "2026-10-24",
+      "label": "Sep 25 \u2013 Oct 24, 2026",
       "days": 30
     },
     "kpis": {
-      "paid_orders": 171,
-      "paid_revenue": 17587.83,
-      "paid_revenue_net": 17139.39,
-      "wholesale_orders": 2,
+      "paid_orders": 172,
+      "paid_revenue": 17644.08,
+      "paid_revenue_net": 17195.64,
+      "wholesale_orders": 1,
       "wholesale_revenue": 374.0,
-      "total_ad_spend": 10114,
-      "blended_mer": 1.74,
-      "blended_mer_net": 1.69
+      "total_ad_spend": 10055,
+      "blended_mer": 1.75,
+      "blended_mer_net": 1.71
     },
     "wholesale": {
-      "orders": 2,
+      "orders": 1,
       "revenue": 374.0,
       "revenue_net": 374.0,
       "unit_economics": {
         "refunds_recorded": 0.0,
         "returns_adjusted_on_orders": 0.0,
         "shipping_collected_from_customer": 0.0,
-        "discounts": 522.0,
+        "discounts": 374.0,
         "returnzap_exchange_orders": 0,
         "intl_ship_to_orders": 0,
-        "fulfilled_orders": 2,
+        "fulfilled_orders": 1,
         "fulfilled_pct": 100,
         "avg_shipping_collected": 0.0
       }
@@ -1063,7 +1064,8 @@
     "2026-11-19": 1535.27,
     "2026-11-20": 706.01,
     "2026-11-21": 430.9,
-    "2026-11-22": 464.15
+    "2026-11-22": 464.15,
+    "2026-11-23": 83.95
   },
   "daily_revenue_net": {
     "2026-10-26": 167.9,
@@ -1093,37 +1095,38 @@
     "2026-11-19": 1535.27,
     "2026-11-20": 706.01,
     "2026-11-21": 430.9,
-    "2026-11-22": 464.15
+    "2026-11-22": 464.15,
+    "2026-11-23": 83.95
   },
   "prior_month": {
     "window": {
-      "start": "2026-08-28",
-      "end": "2026-09-26",
-      "label": "Aug 28 \u2013 Sep 26, 2026",
+      "start": "2026-08-29",
+      "end": "2026-09-27",
+      "label": "Aug 29 \u2013 Sep 27, 2026",
       "days": 30
     },
     "kpis": {
-      "paid_orders": 219,
-      "paid_revenue": 24125.31,
-      "paid_revenue_net": 22312.96,
-      "wholesale_orders": 2,
+      "paid_orders": 217,
+      "paid_revenue": 23782.75,
+      "paid_revenue_net": 22192.4,
+      "wholesale_orders": 3,
       "wholesale_revenue": 413.0,
-      "total_ad_spend": 10909,
-      "blended_mer": 2.21,
-      "blended_mer_net": 2.05
+      "total_ad_spend": 10683,
+      "blended_mer": 2.23,
+      "blended_mer_net": 2.08
     },
     "wholesale": {
-      "orders": 2,
+      "orders": 3,
       "revenue": 413.0,
       "revenue_net": 413.0,
       "unit_economics": {
         "refunds_recorded": 0.0,
         "returns_adjusted_on_orders": 0.0,
         "shipping_collected_from_customer": 0.0,
-        "discounts": 413.0,
+        "discounts": 561.0,
         "returnzap_exchange_orders": 0,
         "intl_ship_to_orders": 0,
-        "fulfilled_orders": 2,
+        "fulfilled_orders": 3,
         "fulfilled_pct": 100,
         "avg_shipping_collected": 0.0
       }
@@ -1135,64 +1138,64 @@
         "Meta": {
           "status": "ok",
           "source": "meta_graph_api",
-          "pulled_at": "2026-11-22T20:52:32.251644-05:00",
-          "window_end": "2026-11-22"
+          "pulled_at": "2026-11-23T06:29:12.721546-05:00",
+          "window_end": "2026-11-23"
         },
         "Google": {
           "status": "ok",
           "source": "ga4_ad_cost",
-          "pulled_at": "2026-11-22T20:52:32.251644-05:00",
-          "window_end": "2026-11-22"
+          "pulled_at": "2026-11-23T06:29:12.721546-05:00",
+          "window_end": "2026-11-23"
         },
         "Pinterest": {
           "status": "ok",
           "source": "blend_manual",
-          "window_end": "2026-11-22",
-          "note": "manual, via Blend, Nov 21 \u00b7 spend covers 2026-09-25\u20132026-11-21"
+          "window_end": "2026-11-23",
+          "note": "manual, via Blend, Nov 22 \u00b7 spend covers 2026-09-25\u20132026-11-22"
         }
       },
       "ad_pull_errors": {
         "Pinterest": "Pinterest API: Authentication failed."
       },
       "window": {
-        "start": "2026-11-16",
-        "end": "2026-11-22",
-        "label": "Nov 16\u201322, 2026",
+        "start": "2026-11-17",
+        "end": "2026-11-23",
+        "label": "Nov 17\u201323, 2026",
         "days": 7,
         "mode": "rolling",
         "through": "today",
-        "prior_start": "2026-11-09",
-        "prior_end": "2026-11-15",
-        "prior_label": "Nov 9\u201315, 2026",
-        "month_start": "2026-10-13",
-        "month_end": "2026-10-19",
-        "month_label": "Oct 13\u201319, 2026"
+        "prior_start": "2026-11-10",
+        "prior_end": "2026-11-16",
+        "prior_label": "Nov 10\u201316, 2026",
+        "month_start": "2026-10-14",
+        "month_end": "2026-10-20",
+        "month_label": "Oct 14\u201320, 2026"
       },
       "kpis": {
-        "paid_orders": 54,
-        "paid_revenue": 5805.64,
-        "paid_revenue_net": 5805.64,
+        "paid_orders": 46,
+        "paid_revenue": 4834.73,
+        "paid_revenue_net": 4834.73,
         "returns_adjusted": 0.0,
         "wholesale_orders": 2,
         "wholesale_revenue": 1114.0,
         "wholesale_revenue_net": 1114.0,
-        "total_ad_spend": 2308,
-        "blended_mer": 2.52,
-        "blended_mer_net": 2.52,
-        "cpa_blended": 42.73,
-        "aov": 107.51,
-        "aov_net": 107.51,
+        "total_ad_spend": 1986,
+        "blended_mer": 2.43,
+        "blended_mer_net": 2.43,
+        "cpa_blended": 43.18,
+        "aov": 105.1,
+        "aov_net": 105.1,
         "spend_estimated": false,
         "unit_economics": {
           "refunds_recorded": 0.0,
           "returns_adjusted_on_orders": 0.0,
-          "shipping_collected_from_customer": 719.78,
+          "shipping_collected_from_customer": 576.19,
           "discounts": 301.86,
           "returnzap_exchange_orders": 0,
           "intl_ship_to_orders": 4,
-          "fulfilled_orders": 46,
-          "fulfilled_pct": 85,
-          "avg_shipping_collected": 13.33
+          "fulfilled_orders": 37,
+          "fulfilled_pct": 80,
+          "avg_shipping_collected": 12.53
         },
         "returns_rollup": {
           "refund_return_orders": 1,
@@ -1212,58 +1215,58 @@
       "channels": [
         {
           "name": "Meta",
-          "spend": 1556.05,
-          "spend_last": 1722.05,
-          "shopify_orders": 17,
-          "shopify_orders_last": 22,
-          "shopify_revenue": 1681,
-          "shopify_revenue_last": 2544,
-          "shopify_roas": 1.08,
-          "shopify_roas_last": 1.48,
-          "shopify_cpa": 91.53,
-          "platform_purchases": 28,
-          "platform_revenue": 3629.86,
-          "platform_roas": 2.33,
-          "status": "watch",
+          "spend": 1367.32,
+          "spend_last": 1762.93,
+          "shopify_orders": 14,
+          "shopify_orders_last": 21,
+          "shopify_revenue": 1278,
+          "shopify_revenue_last": 2331,
+          "shopify_roas": 0.93,
+          "shopify_roas_last": 1.32,
+          "shopify_cpa": 97.67,
+          "platform_purchases": 25,
+          "platform_revenue": 3226.64,
+          "platform_roas": 2.36,
+          "status": "pull_back",
           "interpretation": "",
-          "spend_month": 1534.48,
-          "shopify_orders_month": 21,
-          "shopify_revenue_month": 2046,
-          "shopify_revenue_net": 1681,
-          "shopify_revenue_net_last": 2544,
-          "shopify_revenue_net_month": 2046,
-          "shopify_roas_month": 1.33,
-          "shopify_roas_net": 1.08,
+          "spend_month": 1554.17,
+          "shopify_orders_month": 22,
+          "shopify_revenue_month": 2056,
+          "shopify_revenue_net": 1278,
+          "shopify_revenue_net_last": 2331,
+          "shopify_revenue_net_month": 2056,
+          "shopify_roas_month": 1.32,
+          "shopify_roas_net": 0.93,
           "spend_source": "live",
-          "impressions": 44473,
-          "clicks": 1599,
-          "ctr": 3.5954,
-          "cpc": 0.97
+          "impressions": 39640,
+          "clicks": 1420,
+          "ctr": 3.5822,
+          "cpc": 0.96
         },
         {
           "name": "Google PMax",
-          "spend": 632.2,
-          "spend_last": 1068.41,
-          "shopify_orders": 9,
-          "shopify_orders_last": 11,
-          "shopify_revenue": 771,
-          "shopify_revenue_last": 1404,
-          "shopify_roas": 1.22,
-          "shopify_roas_last": 1.31,
-          "shopify_cpa": 70.24,
-          "platform_purchases": 8,
-          "platform_revenue": 592.0,
-          "platform_roas": 0.94,
+          "spend": 498.89,
+          "spend_last": 1128.74,
+          "shopify_orders": 6,
+          "shopify_orders_last": 14,
+          "shopify_revenue": 519,
+          "shopify_revenue_last": 1656,
+          "shopify_roas": 1.04,
+          "shopify_roas_last": 1.47,
+          "shopify_cpa": 83.15,
+          "platform_purchases": 5,
+          "platform_revenue": 370.0,
+          "platform_roas": 0.74,
           "status": "watch",
           "interpretation": "",
-          "spend_month": 593.19,
-          "shopify_orders_month": 12,
-          "shopify_revenue_month": 1083,
-          "shopify_revenue_net": 771,
-          "shopify_revenue_net_last": 1404,
-          "shopify_revenue_net_month": 1009,
-          "shopify_roas_month": 1.82,
-          "shopify_roas_net": 1.22,
+          "spend_month": 622.41,
+          "shopify_orders_month": 11,
+          "shopify_revenue_month": 999,
+          "shopify_revenue_net": 519,
+          "shopify_revenue_net_last": 1656,
+          "shopify_revenue_net_month": 925,
+          "shopify_roas_month": 1.6,
+          "shopify_roas_net": 1.04,
           "spend_source": "live",
           "impressions": null,
           "clicks": null,
@@ -1272,27 +1275,27 @@
         },
         {
           "name": "Pinterest",
-          "spend": 119.39,
-          "spend_last": 56.13,
+          "spend": 119.88,
+          "spend_last": 76.24,
           "shopify_orders": 2,
           "shopify_orders_last": 0,
           "shopify_revenue": 172,
           "shopify_revenue_last": 0,
           "shopify_roas": null,
           "shopify_roas_last": 0.0,
-          "shopify_cpa": 59.7,
+          "shopify_cpa": 59.94,
           "platform_purchases": 0,
           "platform_revenue": 0,
           "platform_roas": 0,
           "status": "watch",
           "interpretation": "",
-          "spend_month": 151.19,
-          "shopify_orders_month": 2,
-          "shopify_revenue_month": 168,
+          "spend_month": 153.39,
+          "shopify_orders_month": 1,
+          "shopify_revenue_month": 84,
           "shopify_revenue_net": 172,
           "shopify_revenue_net_last": 0,
-          "shopify_revenue_net_month": 168,
-          "shopify_roas_month": 1.11,
+          "shopify_revenue_net_month": 84,
+          "shopify_roas_month": 0.55,
           "shopify_roas_net": null,
           "spend_source": "manual",
           "impressions": null,
@@ -1304,31 +1307,31 @@
         }
       ],
       "daily_orders": {
-        "2026-11-16": 9,
         "2026-11-17": 5,
         "2026-11-18": 12,
         "2026-11-19": 13,
         "2026-11-20": 6,
         "2026-11-21": 4,
-        "2026-11-22": 5
+        "2026-11-22": 5,
+        "2026-11-23": 1
       },
       "daily_revenue": {
-        "2026-11-16": 1054.86,
         "2026-11-17": 426.75,
         "2026-11-18": 1187.7,
         "2026-11-19": 1535.27,
         "2026-11-20": 706.01,
         "2026-11-21": 430.9,
-        "2026-11-22": 464.15
+        "2026-11-22": 464.15,
+        "2026-11-23": 83.95
       },
       "daily_revenue_net": {
-        "2026-11-16": 1054.86,
         "2026-11-17": 426.75,
         "2026-11-18": 1187.7,
         "2026-11-19": 1535.27,
         "2026-11-20": 706.01,
         "2026-11-21": 430.9,
-        "2026-11-22": 464.15
+        "2026-11-22": 464.15,
+        "2026-11-23": 83.95
       },
       "wholesale": {
         "orders": 2,
@@ -1373,20 +1376,20 @@
       },
       "prior_period": {
         "window": {
-          "start": "2026-11-09",
-          "end": "2026-11-15",
-          "label": "Nov 9\u201315, 2026",
+          "start": "2026-11-10",
+          "end": "2026-11-16",
+          "label": "Nov 10\u201316, 2026",
           "days": 7
         },
         "kpis": {
           "paid_orders": 60,
-          "paid_revenue": 7691.89,
-          "paid_revenue_net": 7691.89,
+          "paid_revenue": 7606.92,
+          "paid_revenue_net": 7606.92,
           "wholesale_orders": 0,
           "wholesale_revenue": 0.0,
-          "total_ad_spend": 2847,
-          "blended_mer": 2.7,
-          "blended_mer_net": 2.7
+          "total_ad_spend": 2968,
+          "blended_mer": 2.56,
+          "blended_mer_net": 2.56
         },
         "wholesale": {
           "orders": 0,
@@ -1407,20 +1410,20 @@
       },
       "prior_month": {
         "window": {
-          "start": "2026-10-13",
-          "end": "2026-10-19",
-          "label": "Oct 13\u201319, 2026",
+          "start": "2026-10-14",
+          "end": "2026-10-20",
+          "label": "Oct 14\u201320, 2026",
           "days": 7
         },
         "kpis": {
           "paid_orders": 52,
-          "paid_revenue": 4851.32,
-          "paid_revenue_net": 4629.32,
+          "paid_revenue": 4828.48,
+          "paid_revenue_net": 4606.48,
           "wholesale_orders": 0,
           "wholesale_revenue": 0.0,
-          "total_ad_spend": 2308,
-          "blended_mer": 2.1,
-          "blended_mer_net": 2.01
+          "total_ad_spend": 1986,
+          "blended_mer": 2.43,
+          "blended_mer_net": 2.32
         },
         "wholesale": {
           "orders": 0,
@@ -1440,7 +1443,7 @@
         }
       },
       "director_economics": {
-        "window_label": "Nov 16\u201322, 2026",
+        "window_label": "Nov 17\u201323, 2026",
         "returns_rollup": {
           "refund_return_orders": 1,
           "refund_returns_cash_completed": 1,
@@ -1455,35 +1458,35 @@
           "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
           "shopify_returns_samples": []
         },
-        "mer_gross": 2.52,
-        "mer_net": 2.52,
-        "mer_after_exchange_cost": 2.51,
-        "store_after_exchange_cost": 5787.64,
-        "shopify_roas_blended": 1.14,
-        "halo_revenue": 3181.64,
-        "halo_orders": 26,
-        "halo_index": 1.38,
-        "ad_spend": 2308,
-        "store_revenue_gross": 5805.64,
-        "store_revenue_net": 5805.64,
+        "mer_gross": 2.43,
+        "mer_net": 2.43,
+        "mer_after_exchange_cost": 2.43,
+        "store_after_exchange_cost": 4816.73,
+        "shopify_roas_blended": 0.99,
+        "halo_revenue": 2865.73,
+        "halo_orders": 24,
+        "halo_index": 1.44,
+        "ad_spend": 1986,
+        "store_revenue_gross": 4834.73,
+        "store_revenue_net": 4834.73,
         "refunds_and_adjustments": 0.0,
         "refunds_recorded": 0.0,
-        "shipping_collected": 719.78,
+        "shipping_collected": 576.19,
         "discounts": 301.86,
         "returnzap_exchanges": 2,
         "returnzap_status": "shopify_tags_only",
         "returnzap_note": "Exchanges: Shopify tag ReturnZap Exchanged. Refund RMAs: Shopify Return in progress / refund $. ReturnZap API not wired.",
         "intl_ship_to_orders": 4,
-        "fulfilled_pct": 85,
+        "fulfilled_pct": 80,
         "modeled_cogs_pct": 0.38,
         "modeled_fulfillment_per_order": 9.0,
-        "estimated_contribution": 805.5,
-        "contribution_mer": 0.35,
+        "estimated_contribution": 597.53,
+        "contribution_mer": 0.3,
         "model_disclaimer": "Modeled contribution only \u2014 replace with Xero COGS + actual 3PL when available",
         "strategy_lines": [
-          "MER 2.52\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
-          "Halo ~$3,182 (26 orders) not ad-tagged \u2014 likely organic/direct/email; MER includes this.",
-          "Tagged Shopify ROAS 1.14\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
+          "MER 2.43\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
+          "Halo ~$2,866 (24 orders) not ad-tagged \u2014 likely organic/direct/email; MER includes this.",
+          "Tagged Shopify ROAS 0.99\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
         ]
       }
     },
@@ -1492,64 +1495,64 @@
         "Meta": {
           "status": "ok",
           "source": "meta_graph_api",
-          "pulled_at": "2026-11-22T20:52:42.279592-05:00",
-          "window_end": "2026-11-22"
+          "pulled_at": "2026-11-23T06:29:21.431586-05:00",
+          "window_end": "2026-11-23"
         },
         "Google": {
           "status": "ok",
           "source": "ga4_ad_cost",
-          "pulled_at": "2026-11-22T20:52:42.279592-05:00",
-          "window_end": "2026-11-22"
+          "pulled_at": "2026-11-23T06:29:21.431586-05:00",
+          "window_end": "2026-11-23"
         },
         "Pinterest": {
           "status": "ok",
           "source": "blend_manual",
-          "window_end": "2026-11-22",
-          "note": "manual, via Blend, Nov 21 \u00b7 spend covers 2026-09-25\u20132026-11-21"
+          "window_end": "2026-11-23",
+          "note": "manual, via Blend, Nov 22 \u00b7 spend covers 2026-09-25\u20132026-11-22"
         }
       },
       "ad_pull_errors": {
         "Pinterest": "Pinterest API: Authentication failed."
       },
       "window": {
-        "start": "2026-11-09",
-        "end": "2026-11-22",
-        "label": "Nov 9\u201322, 2026",
+        "start": "2026-11-10",
+        "end": "2026-11-23",
+        "label": "Nov 10\u201323, 2026",
         "days": 14,
         "mode": "rolling",
         "through": "today",
-        "prior_start": "2026-10-26",
-        "prior_end": "2026-11-08",
-        "prior_label": "Oct 26 \u2013 Nov 8, 2026",
-        "month_start": "2026-09-29",
-        "month_end": "2026-10-12",
-        "month_label": "Sep 29 \u2013 Oct 12, 2026"
+        "prior_start": "2026-10-27",
+        "prior_end": "2026-11-09",
+        "prior_label": "Oct 27 \u2013 Nov 9, 2026",
+        "month_start": "2026-09-30",
+        "month_end": "2026-10-13",
+        "month_label": "Sep 30 \u2013 Oct 13, 2026"
       },
       "kpis": {
-        "paid_orders": 114,
-        "paid_revenue": 13497.53,
-        "paid_revenue_net": 13497.53,
+        "paid_orders": 106,
+        "paid_revenue": 12441.65,
+        "paid_revenue_net": 12441.65,
         "returns_adjusted": 0.0,
         "wholesale_orders": 2,
         "wholesale_revenue": 1114.0,
         "wholesale_revenue_net": 1114.0,
-        "total_ad_spend": 5154,
-        "blended_mer": 2.62,
-        "blended_mer_net": 2.62,
-        "cpa_blended": 45.21,
-        "aov": 118.4,
-        "aov_net": 118.4,
+        "total_ad_spend": 4954,
+        "blended_mer": 2.51,
+        "blended_mer_net": 2.51,
+        "cpa_blended": 46.74,
+        "aov": 117.37,
+        "aov_net": 117.37,
         "spend_estimated": false,
         "unit_economics": {
           "refunds_recorded": 0.0,
           "returns_adjusted_on_orders": 0.0,
-          "shipping_collected_from_customer": 1416.24,
-          "discounts": 794.6,
+          "shipping_collected_from_customer": 1339.59,
+          "discounts": 703.7,
           "returnzap_exchange_orders": 0,
           "intl_ship_to_orders": 9,
-          "fulfilled_orders": 106,
-          "fulfilled_pct": 93,
-          "avg_shipping_collected": 12.42
+          "fulfilled_orders": 97,
+          "fulfilled_pct": 92,
+          "avg_shipping_collected": 12.64
         },
         "returns_rollup": {
           "refund_return_orders": 5,
@@ -1569,58 +1572,58 @@
       "channels": [
         {
           "name": "Meta",
-          "spend": 3278.1,
-          "spend_last": 3471.45,
-          "shopify_orders": 39,
-          "shopify_orders_last": 40,
-          "shopify_revenue": 4226,
-          "shopify_revenue_last": 4019,
-          "shopify_roas": 1.29,
-          "shopify_roas_last": 1.16,
-          "shopify_cpa": 84.05,
-          "platform_purchases": 64,
-          "platform_revenue": 7992.41,
-          "platform_roas": 2.44,
+          "spend": 3130.3,
+          "spend_last": 3426.77,
+          "shopify_orders": 35,
+          "shopify_orders_last": 43,
+          "shopify_revenue": 3609,
+          "shopify_revenue_last": 4551,
+          "shopify_roas": 1.15,
+          "shopify_roas_last": 1.33,
+          "shopify_cpa": 89.44,
+          "platform_purchases": 58,
+          "platform_revenue": 7156.23,
+          "platform_roas": 2.29,
           "status": "watch",
           "interpretation": "",
-          "spend_month": 3450.58,
-          "shopify_orders_month": 30,
-          "shopify_revenue_month": 3184,
-          "shopify_revenue_net": 4226,
-          "shopify_revenue_net_last": 3830,
-          "shopify_revenue_net_month": 3105,
-          "shopify_roas_month": 0.92,
-          "shopify_roas_net": 1.29,
+          "spend_month": 3337.04,
+          "shopify_orders_month": 26,
+          "shopify_revenue_month": 2851,
+          "shopify_revenue_net": 3609,
+          "shopify_revenue_net_last": 4362,
+          "shopify_revenue_net_month": 2851,
+          "shopify_roas_month": 0.85,
+          "shopify_roas_net": 1.15,
           "spend_source": "live",
-          "impressions": 99426,
-          "clicks": 4202,
-          "ctr": 4.2263,
-          "cpc": 0.78
+          "impressions": 94003,
+          "clicks": 3906,
+          "ctr": 4.1552,
+          "cpc": 0.8
         },
         {
           "name": "Google PMax",
-          "spend": 1700.6,
-          "spend_last": 1242.03,
+          "spend": 1627.63,
+          "spend_last": 1234.8,
           "shopify_orders": 20,
           "shopify_orders_last": 29,
           "shopify_revenue": 2175,
           "shopify_revenue_last": 2668,
-          "shopify_roas": 1.28,
-          "shopify_roas_last": 2.15,
-          "shopify_cpa": 85.03,
+          "shopify_roas": 1.34,
+          "shopify_roas_last": 2.16,
+          "shopify_cpa": 81.38,
           "platform_purchases": 15,
           "platform_revenue": 1512.85,
-          "platform_roas": 0.89,
+          "platform_roas": 0.93,
           "status": "watch",
           "interpretation": "",
-          "spend_month": 978.84,
-          "shopify_orders_month": 33,
-          "shopify_revenue_month": 3215,
+          "spend_month": 1004.85,
+          "shopify_orders_month": 34,
+          "shopify_revenue_month": 3303,
           "shopify_revenue_net": 2175,
           "shopify_revenue_net_last": 2668,
-          "shopify_revenue_net_month": 3141,
-          "shopify_roas_month": 3.28,
-          "shopify_roas_net": 1.28,
+          "shopify_revenue_net_month": 3229,
+          "shopify_roas_month": 3.29,
+          "shopify_roas_net": 1.34,
           "spend_source": "live",
           "impressions": null,
           "clicks": null,
@@ -1629,27 +1632,27 @@
         },
         {
           "name": "Pinterest",
-          "spend": 175.52,
-          "spend_last": 309.96,
+          "spend": 196.12,
+          "spend_last": 284.21,
           "shopify_orders": 2,
           "shopify_orders_last": 1,
           "shopify_revenue": 172,
           "shopify_revenue_last": 84,
           "shopify_roas": null,
-          "shopify_roas_last": 0.27,
-          "shopify_cpa": 87.76,
+          "shopify_roas_last": 0.3,
+          "shopify_cpa": 98.06,
           "platform_purchases": 0,
           "platform_revenue": 0,
           "platform_roas": 0,
           "status": "watch",
           "interpretation": "",
-          "spend_month": 260.49,
-          "shopify_orders_month": 1,
-          "shopify_revenue_month": 84,
+          "spend_month": 272.86,
+          "shopify_orders_month": 2,
+          "shopify_revenue_month": 168,
           "shopify_revenue_net": 172,
           "shopify_revenue_net_last": 84,
-          "shopify_revenue_net_month": 84,
-          "shopify_roas_month": 0.32,
+          "shopify_revenue_net_month": 168,
+          "shopify_roas_month": 0.62,
           "shopify_roas_net": null,
           "spend_source": "manual",
           "impressions": null,
@@ -1661,7 +1664,6 @@
         }
       ],
       "daily_orders": {
-        "2026-11-09": 9,
         "2026-11-10": 10,
         "2026-11-11": 5,
         "2026-11-12": 4,
@@ -1674,10 +1676,10 @@
         "2026-11-19": 13,
         "2026-11-20": 6,
         "2026-11-21": 4,
-        "2026-11-22": 5
+        "2026-11-22": 5,
+        "2026-11-23": 1
       },
       "daily_revenue": {
-        "2026-11-09": 1139.83,
         "2026-11-10": 1101.9,
         "2026-11-11": 597.35,
         "2026-11-12": 761.45,
@@ -1690,10 +1692,10 @@
         "2026-11-19": 1535.27,
         "2026-11-20": 706.01,
         "2026-11-21": 430.9,
-        "2026-11-22": 464.15
+        "2026-11-22": 464.15,
+        "2026-11-23": 83.95
       },
       "daily_revenue_net": {
-        "2026-11-09": 1139.83,
         "2026-11-10": 1101.9,
         "2026-11-11": 597.35,
         "2026-11-12": 761.45,
@@ -1706,7 +1708,8 @@
         "2026-11-19": 1535.27,
         "2026-11-20": 706.01,
         "2026-11-21": 430.9,
-        "2026-11-22": 464.15
+        "2026-11-22": 464.15,
+        "2026-11-23": 83.95
       },
       "wholesale": {
         "orders": 2,
@@ -1783,20 +1786,20 @@
       },
       "prior_period": {
         "window": {
-          "start": "2026-10-26",
-          "end": "2026-11-08",
-          "label": "Oct 26 \u2013 Nov 8, 2026",
+          "start": "2026-10-27",
+          "end": "2026-11-09",
+          "label": "Oct 27 \u2013 Nov 9, 2026",
           "days": 14
         },
         "kpis": {
-          "paid_orders": 116,
-          "paid_revenue": 12917.03,
-          "paid_revenue_net": 12506.33,
+          "paid_orders": 121,
+          "paid_revenue": 13721.06,
+          "paid_revenue_net": 13310.36,
           "wholesale_orders": 1,
           "wholesale_revenue": 0.0,
-          "total_ad_spend": 5023,
-          "blended_mer": 2.57,
-          "blended_mer_net": 2.49
+          "total_ad_spend": 4946,
+          "blended_mer": 2.77,
+          "blended_mer_net": 2.69
         },
         "wholesale": {
           "orders": 1,
@@ -1817,20 +1820,20 @@
       },
       "prior_month": {
         "window": {
-          "start": "2026-09-29",
-          "end": "2026-10-12",
-          "label": "Sep 29 \u2013 Oct 12, 2026",
+          "start": "2026-09-30",
+          "end": "2026-10-13",
+          "label": "Sep 30 \u2013 Oct 13, 2026",
           "days": 14
         },
         "kpis": {
-          "paid_orders": 87,
-          "paid_revenue": 9428.01,
-          "paid_revenue_net": 9275.57,
+          "paid_orders": 85,
+          "paid_revenue": 9219.76,
+          "paid_revenue_net": 9145.76,
           "wholesale_orders": 0,
           "wholesale_revenue": 0.0,
-          "total_ad_spend": 5154,
-          "blended_mer": 1.83,
-          "blended_mer_net": 1.8
+          "total_ad_spend": 4954,
+          "blended_mer": 1.86,
+          "blended_mer_net": 1.85
         },
         "wholesale": {
           "orders": 0,
@@ -1850,7 +1853,7 @@
         }
       },
       "director_economics": {
-        "window_label": "Nov 9\u201322, 2026",
+        "window_label": "Nov 10\u201323, 2026",
         "returns_rollup": {
           "refund_return_orders": 5,
           "refund_returns_cash_completed": 5,
@@ -1865,35 +1868,35 @@
           "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
           "shopify_returns_samples": []
         },
-        "mer_gross": 2.62,
-        "mer_net": 2.62,
-        "mer_after_exchange_cost": 2.61,
-        "store_after_exchange_cost": 13461.53,
-        "shopify_roas_blended": 1.28,
-        "halo_revenue": 6924.53,
-        "halo_orders": 53,
-        "halo_index": 1.34,
-        "ad_spend": 5154,
-        "store_revenue_gross": 13497.53,
-        "store_revenue_net": 13497.53,
+        "mer_gross": 2.51,
+        "mer_net": 2.51,
+        "mer_after_exchange_cost": 2.5,
+        "store_after_exchange_cost": 12405.65,
+        "shopify_roas_blended": 1.2,
+        "halo_revenue": 6485.65,
+        "halo_orders": 49,
+        "halo_index": 1.31,
+        "ad_spend": 4954,
+        "store_revenue_gross": 12441.65,
+        "store_revenue_net": 12441.65,
         "refunds_and_adjustments": 0.0,
         "refunds_recorded": 0.0,
-        "shipping_collected": 1416.24,
-        "discounts": 794.6,
+        "shipping_collected": 1339.59,
+        "discounts": 703.7,
         "returnzap_exchanges": 4,
         "returnzap_status": "shopify_tags_only",
         "returnzap_note": "Exchanges: Shopify tag ReturnZap Exchanged. Refund RMAs: Shopify Return in progress / refund $. ReturnZap API not wired.",
         "intl_ship_to_orders": 9,
-        "fulfilled_pct": 93,
+        "fulfilled_pct": 92,
         "modeled_cogs_pct": 0.38,
         "modeled_fulfillment_per_order": 9.0,
-        "estimated_contribution": 2188.47,
-        "contribution_mer": 0.42,
+        "estimated_contribution": 1805.82,
+        "contribution_mer": 0.36,
         "model_disclaimer": "Modeled contribution only \u2014 replace with Xero COGS + actual 3PL when available",
         "strategy_lines": [
-          "MER 2.62\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
-          "Halo ~$6,925 (53 orders) not ad-tagged \u2014 likely organic/direct/email; MER includes this.",
-          "Tagged Shopify ROAS 1.28\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
+          "MER 2.51\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
+          "Halo ~$6,486 (49 orders) not ad-tagged \u2014 likely organic/direct/email; MER includes this.",
+          "Tagged Shopify ROAS 1.2\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
         ]
       }
     },
@@ -1902,64 +1905,64 @@
         "Meta": {
           "status": "ok",
           "source": "meta_graph_api",
-          "pulled_at": "2026-11-22T20:52:52.147802-05:00",
-          "window_end": "2026-11-22"
+          "pulled_at": "2026-11-23T06:29:30.228607-05:00",
+          "window_end": "2026-11-23"
         },
         "Google": {
           "status": "ok",
           "source": "ga4_ad_cost",
-          "pulled_at": "2026-11-22T20:52:52.147802-05:00",
-          "window_end": "2026-11-22"
+          "pulled_at": "2026-11-23T06:29:30.228607-05:00",
+          "window_end": "2026-11-23"
         },
         "Pinterest": {
           "status": "ok",
           "source": "blend_manual",
-          "window_end": "2026-11-22",
-          "note": "manual, via Blend, Nov 21 \u00b7 spend covers 2026-09-25\u20132026-11-21"
+          "window_end": "2026-11-23",
+          "note": "manual, via Blend, Nov 22 \u00b7 spend covers 2026-09-25\u20132026-11-22"
         }
       },
       "ad_pull_errors": {
         "Pinterest": "Pinterest API: Authentication failed."
       },
       "window": {
-        "start": "2026-10-24",
-        "end": "2026-11-22",
-        "label": "Oct 24 \u2013 Nov 22, 2026",
+        "start": "2026-10-25",
+        "end": "2026-11-23",
+        "label": "Oct 25 \u2013 Nov 23, 2026",
         "days": 30,
         "mode": "rolling",
         "through": "today",
-        "prior_start": "2026-09-24",
-        "prior_end": "2026-10-23",
-        "prior_label": "Sep 24 \u2013 Oct 23, 2026",
-        "month_start": "2026-08-28",
-        "month_end": "2026-09-26",
-        "month_label": "Aug 28 \u2013 Sep 26, 2026"
+        "prior_start": "2026-09-25",
+        "prior_end": "2026-10-24",
+        "prior_label": "Sep 25 \u2013 Oct 24, 2026",
+        "month_start": "2026-08-29",
+        "month_end": "2026-09-27",
+        "month_label": "Aug 29 \u2013 Sep 27, 2026"
       },
       "kpis": {
-        "paid_orders": 228,
-        "paid_revenue": 26246.66,
-        "paid_revenue_net": 25835.96,
+        "paid_orders": 229,
+        "paid_revenue": 26330.61,
+        "paid_revenue_net": 25919.91,
         "returns_adjusted": 410.7,
         "wholesale_orders": 3,
         "wholesale_revenue": 1114.0,
         "wholesale_revenue_net": 1114.0,
-        "total_ad_spend": 10909,
-        "blended_mer": 2.41,
-        "blended_mer_net": 2.37,
-        "cpa_blended": 47.85,
-        "aov": 115.12,
-        "aov_net": 113.32,
+        "total_ad_spend": 10683,
+        "blended_mer": 2.46,
+        "blended_mer_net": 2.43,
+        "cpa_blended": 46.65,
+        "aov": 114.98,
+        "aov_net": 113.19,
         "spend_estimated": false,
         "unit_economics": {
           "refunds_recorded": 0.0,
           "returns_adjusted_on_orders": 410.7,
-          "shipping_collected_from_customer": 2650.87,
+          "shipping_collected_from_customer": 2660.82,
           "discounts": 1484.85,
           "returnzap_exchange_orders": 0,
           "intl_ship_to_orders": 13,
           "fulfilled_orders": 220,
           "fulfilled_pct": 96,
-          "avg_shipping_collected": 11.63
+          "avg_shipping_collected": 11.62
         },
         "returns_rollup": {
           "refund_return_orders": 10,
@@ -1979,58 +1982,58 @@
       "channels": [
         {
           "name": "Meta",
-          "spend": 7226.69,
-          "spend_last": 7244.77,
-          "shopify_orders": 79,
-          "shopify_orders_last": 60,
-          "shopify_revenue": 8244,
-          "shopify_revenue_last": 6115,
-          "shopify_roas": 1.14,
-          "shopify_roas_last": 0.84,
-          "shopify_cpa": 91.48,
-          "platform_purchases": 142,
-          "platform_revenue": 16238.35,
-          "platform_roas": 2.25,
+          "spend": 7088.58,
+          "spend_last": 7145.39,
+          "shopify_orders": 80,
+          "shopify_orders_last": 58,
+          "shopify_revenue": 8328,
+          "shopify_revenue_last": 5826,
+          "shopify_roas": 1.17,
+          "shopify_roas_last": 0.82,
+          "shopify_cpa": 88.61,
+          "platform_purchases": 144,
+          "platform_revenue": 16406.25,
+          "platform_roas": 2.31,
           "status": "watch",
           "interpretation": "",
-          "spend_month": 8376.36,
-          "shopify_orders_month": 90,
-          "shopify_revenue_month": 9364,
-          "shopify_revenue_net": 8056,
-          "shopify_revenue_net_last": 5963,
-          "shopify_revenue_net_month": 8496,
-          "shopify_roas_month": 1.12,
-          "shopify_roas_net": 1.11,
+          "spend_month": 8583.92,
+          "shopify_orders_month": 87,
+          "shopify_revenue_month": 9149,
+          "shopify_revenue_net": 8140,
+          "shopify_revenue_net_last": 5673,
+          "shopify_revenue_net_month": 8429,
+          "shopify_roas_month": 1.07,
+          "shopify_roas_net": 1.15,
           "spend_source": "live",
-          "impressions": 234226,
-          "clicks": 9843,
-          "ctr": 4.2024,
+          "impressions": 230547,
+          "clicks": 9752,
+          "ctr": 4.2299,
           "cpc": 0.73
         },
         {
           "name": "Google PMax",
-          "spend": 3147.78,
-          "spend_last": 2316.78,
+          "spend": 3063.56,
+          "spend_last": 2332.82,
           "shopify_orders": 49,
-          "shopify_orders_last": 56,
+          "shopify_orders_last": 57,
           "shopify_revenue": 4843,
-          "shopify_revenue_last": 5362,
-          "shopify_roas": 1.54,
-          "shopify_roas_last": 2.31,
-          "shopify_cpa": 64.24,
-          "platform_purchases": 49,
-          "platform_revenue": 4302.95,
-          "platform_roas": 1.37,
+          "shopify_revenue_last": 5509,
+          "shopify_roas": 1.58,
+          "shopify_roas_last": 2.36,
+          "shopify_cpa": 62.52,
+          "platform_purchases": 47,
+          "platform_revenue": 4091.75,
+          "platform_roas": 1.34,
           "status": "watch",
           "interpretation": "",
-          "spend_month": 2327.23,
+          "spend_month": 2374.25,
           "shopify_orders_month": 57,
-          "shopify_revenue_month": 6150,
+          "shopify_revenue_month": 6105,
           "shopify_revenue_net": 4843,
-          "shopify_revenue_net_last": 5214,
-          "shopify_revenue_net_month": 5773,
-          "shopify_roas_month": 2.64,
-          "shopify_roas_net": 1.54,
+          "shopify_revenue_net_last": 5361,
+          "shopify_revenue_net_month": 5802,
+          "shopify_roas_month": 2.57,
+          "shopify_roas_net": 1.58,
           "spend_source": "live",
           "impressions": null,
           "clicks": null,
@@ -2039,27 +2042,27 @@
         },
         {
           "name": "Pinterest",
-          "spend": 534.98,
-          "spend_last": 552.07,
+          "spend": 531.09,
+          "spend_last": 576.56,
           "shopify_orders": 3,
           "shopify_orders_last": 3,
           "shopify_revenue": 256,
           "shopify_revenue_last": 252,
           "shopify_roas": null,
-          "shopify_roas_last": 0.46,
-          "shopify_cpa": 178.33,
+          "shopify_roas_last": 0.44,
+          "shopify_cpa": 177.03,
           "platform_purchases": 0,
           "platform_revenue": 0,
           "platform_roas": 0,
           "status": "watch",
           "interpretation": "",
-          "spend_month": 19.26,
+          "spend_month": 29.56,
           "shopify_orders_month": 2,
           "shopify_revenue_month": 290,
           "shopify_revenue_net": 256,
           "shopify_revenue_net_last": 252,
           "shopify_revenue_net_month": 290,
-          "shopify_roas_month": 15.07,
+          "shopify_roas_month": 9.82,
           "shopify_roas_net": null,
           "spend_source": "manual",
           "impressions": null,
@@ -2098,7 +2101,8 @@
         "2026-11-19": 13,
         "2026-11-20": 6,
         "2026-11-21": 4,
-        "2026-11-22": 5
+        "2026-11-22": 5,
+        "2026-11-23": 1
       },
       "daily_revenue": {
         "2026-10-26": 167.9,
@@ -2128,7 +2132,8 @@
         "2026-11-19": 1535.27,
         "2026-11-20": 706.01,
         "2026-11-21": 430.9,
-        "2026-11-22": 464.15
+        "2026-11-22": 464.15,
+        "2026-11-23": 83.95
       },
       "daily_revenue_net": {
         "2026-10-26": 167.9,
@@ -2158,7 +2163,8 @@
         "2026-11-19": 1535.27,
         "2026-11-20": 706.01,
         "2026-11-21": 430.9,
-        "2026-11-22": 464.15
+        "2026-11-22": 464.15,
+        "2026-11-23": 83.95
       },
       "wholesale": {
         "orders": 3,
@@ -2177,11 +2183,11 @@
         }
       },
       "excluded": {
-        "orders": 19,
+        "orders": 18,
         "by_reason": {
           "cancelled": 6,
           "exchange": 1,
-          "test": 5,
+          "test": 4,
           "zero": 7
         },
         "samples": [
@@ -2253,33 +2259,33 @@
       },
       "prior_period": {
         "window": {
-          "start": "2026-09-24",
-          "end": "2026-10-23",
-          "label": "Sep 24 \u2013 Oct 23, 2026",
+          "start": "2026-09-25",
+          "end": "2026-10-24",
+          "label": "Sep 25 \u2013 Oct 24, 2026",
           "days": 30
         },
         "kpis": {
-          "paid_orders": 171,
-          "paid_revenue": 17587.83,
-          "paid_revenue_net": 17139.39,
-          "wholesale_orders": 2,
+          "paid_orders": 172,
+          "paid_revenue": 17644.08,
+          "paid_revenue_net": 17195.64,
+          "wholesale_orders": 1,
           "wholesale_revenue": 374.0,
-          "total_ad_spend": 10114,
-          "blended_mer": 1.74,
-          "blended_mer_net": 1.69
+          "total_ad_spend": 10055,
+          "blended_mer": 1.75,
+          "blended_mer_net": 1.71
         },
         "wholesale": {
-          "orders": 2,
+          "orders": 1,
           "revenue": 374.0,
           "revenue_net": 374.0,
           "unit_economics": {
             "refunds_recorded": 0.0,
             "returns_adjusted_on_orders": 0.0,
             "shipping_collected_from_customer": 0.0,
-            "discounts": 522.0,
+            "discounts": 374.0,
             "returnzap_exchange_orders": 0,
             "intl_ship_to_orders": 0,
-            "fulfilled_orders": 2,
+            "fulfilled_orders": 1,
             "fulfilled_pct": 100,
             "avg_shipping_collected": 0.0
           }
@@ -2287,40 +2293,40 @@
       },
       "prior_month": {
         "window": {
-          "start": "2026-08-28",
-          "end": "2026-09-26",
-          "label": "Aug 28 \u2013 Sep 26, 2026",
+          "start": "2026-08-29",
+          "end": "2026-09-27",
+          "label": "Aug 29 \u2013 Sep 27, 2026",
           "days": 30
         },
         "kpis": {
-          "paid_orders": 219,
-          "paid_revenue": 24125.31,
-          "paid_revenue_net": 22312.96,
-          "wholesale_orders": 2,
+          "paid_orders": 217,
+          "paid_revenue": 23782.75,
+          "paid_revenue_net": 22192.4,
+          "wholesale_orders": 3,
           "wholesale_revenue": 413.0,
-          "total_ad_spend": 10909,
-          "blended_mer": 2.21,
-          "blended_mer_net": 2.05
+          "total_ad_spend": 10683,
+          "blended_mer": 2.23,
+          "blended_mer_net": 2.08
         },
         "wholesale": {
-          "orders": 2,
+          "orders": 3,
           "revenue": 413.0,
           "revenue_net": 413.0,
           "unit_economics": {
             "refunds_recorded": 0.0,
             "returns_adjusted_on_orders": 0.0,
             "shipping_collected_from_customer": 0.0,
-            "discounts": 413.0,
+            "discounts": 561.0,
             "returnzap_exchange_orders": 0,
             "intl_ship_to_orders": 0,
-            "fulfilled_orders": 2,
+            "fulfilled_orders": 3,
             "fulfilled_pct": 100,
             "avg_shipping_collected": 0.0
           }
         }
       },
       "director_economics": {
-        "window_label": "Oct 24 \u2013 Nov 22, 2026",
+        "window_label": "Oct 25 \u2013 Nov 23, 2026",
         "returns_rollup": {
           "refund_return_orders": 10,
           "refund_returns_cash_completed": 10,
@@ -2335,20 +2341,20 @@
           "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
           "shopify_returns_samples": []
         },
-        "mer_gross": 2.41,
-        "mer_net": 2.37,
-        "mer_after_exchange_cost": 2.36,
-        "store_after_exchange_cost": 25790.96,
-        "shopify_roas_blended": 1.22,
-        "halo_revenue": 12903.66,
+        "mer_gross": 2.46,
+        "mer_net": 2.43,
+        "mer_after_exchange_cost": 2.42,
+        "store_after_exchange_cost": 25874.91,
+        "shopify_roas_blended": 1.26,
+        "halo_revenue": 12903.61,
         "halo_orders": 97,
-        "halo_index": 1.18,
-        "ad_spend": 10909,
-        "store_revenue_gross": 26246.66,
-        "store_revenue_net": 25835.96,
+        "halo_index": 1.21,
+        "ad_spend": 10683,
+        "store_revenue_gross": 26330.61,
+        "store_revenue_net": 25919.91,
         "refunds_and_adjustments": 410.7,
         "refunds_recorded": 0.0,
-        "shipping_collected": 2650.87,
+        "shipping_collected": 2660.82,
         "discounts": 1484.85,
         "returnzap_exchanges": 5,
         "returnzap_status": "shopify_tags_only",
@@ -2357,21 +2363,21 @@
         "fulfilled_pct": 96,
         "modeled_cogs_pct": 0.38,
         "modeled_fulfillment_per_order": 9.0,
-        "estimated_contribution": 3057.3,
-        "contribution_mer": 0.28,
+        "estimated_contribution": 3326.34,
+        "contribution_mer": 0.31,
         "model_disclaimer": "Modeled contribution only \u2014 replace with Xero COGS + actual 3PL when available",
         "strategy_lines": [
-          "MER 2.41\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
+          "MER 2.46\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
           "Halo ~$12,904 (97 orders) not ad-tagged \u2014 likely organic/direct/email; MER includes this.",
-          "Tagged Shopify ROAS 1.22\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
+          "Tagged Shopify ROAS 1.26\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
         ]
       }
     }
   },
   "ad_spend_window": {
-    "start": "2026-10-24",
-    "end": "2026-11-22",
-    "label": "Oct 24 \u2013 Nov 22, 2026"
+    "start": "2026-10-25",
+    "end": "2026-11-23",
+    "label": "Oct 25 \u2013 Nov 23, 2026"
   },
   "wholesale": {
     "orders": 3,
@@ -2390,11 +2396,11 @@
     }
   },
   "excluded": {
-    "orders": 19,
+    "orders": 18,
     "by_reason": {
       "cancelled": 6,
       "exchange": 1,
-      "test": 5,
+      "test": 4,
       "zero": 7
     },
     "samples": [
@@ -2535,7 +2541,7 @@
     },
     "headline": "Total store flat (125 orders). US \u22127 orders \u00b7 Intl +7. Intl Meta ~$568 \u2192 9 platform / 6 Shopify UTM purch.",
     "efficiency_actions": [
-      "Shopify ROAS 1.14\u00d7 \u2014 below 1.5\u00d7 gate. Hold blanket raises; Meta recommends Prospecting $100\u2192$172 \u2014 fund from Creative Test trims only.",
+      "Shopify ROAS 1.17\u00d7 \u2014 below 1.5\u00d7 gate. Hold blanket raises; Meta recommends Prospecting $100\u2192$172 \u2014 fund from Creative Test trims only.",
       "International test: about 14 days per country (default). Pause at $100 spend or day 14 with zero Shopify orders to that country \u2014 unless signals are clearly weak earlier (pause sooner) or clearly strong (keep or scale before day 14). Judge on Shopify orders only, not what Meta reports. International budget is extra only \u2014 do not cut United States spend.",
       "Pause Italy intl ad set ($139 \u00b7 0 purch).",
       "Keep AU + CA + UAE \u2014 purchases and ROAS above kill threshold.",
@@ -2545,26 +2551,26 @@
   },
   "action_rollup": {
     "title": "Action rollup",
-    "period": "Oct 24 \u2013 Nov 22, 2026",
+    "period": "Oct 25 \u2013 Nov 23, 2026",
     "zaki_confirm": "Zaki \u2014 reply yes/no on each item below, or note what you'd change.",
     "hit_list": [
-      "DTC store 228 orders \u00b7 $26,247 (+49% vs Sep 24 \u2013 Oct 23, 2026). Wholesale 3 orders \u00b7 $1,114 \u2014 not in DTC totals.",
-      "Google PMax \u00b7 Shopify ROAS 1.54\u00d7 on $4,843 \u2014 best paid channel.",
-      "Meta \u00b7 79 Shopify UTM orders \u00b7 ROAS 1.14\u00d7 (platform claims 142 purch).",
-      "Pinterest \u00b7 3 Shopify orders \u00b7 $535 spend."
+      "DTC store 229 orders \u00b7 $26,331 (+49% vs Sep 25 \u2013 Oct 24, 2026). Wholesale 3 orders \u00b7 $1,114 \u2014 not in DTC totals.",
+      "Google PMax \u00b7 Shopify ROAS 1.58\u00d7 on $4,843 \u2014 best paid channel.",
+      "Meta \u00b7 80 Shopify UTM orders \u00b7 ROAS 1.17\u00d7 (platform claims 144 purch).",
+      "Pinterest \u00b7 3 Shopify orders \u00b7 $531 spend."
     ],
     "intl_test_rules": "International test: about 14 days per country (default). Pause at $100 spend or day 14 with zero Shopify orders to that country \u2014 unless signals are clearly weak earlier (pause sooner) or clearly strong (keep or scale before day 14). Judge on Shopify orders only, not what Meta reports. International budget is extra only \u2014 do not cut United States spend.",
     "top_line": {
-      "ad_revenue": 13343,
-      "ad_spend": 10909,
-      "ad_revenue_delta_pct": 14,
-      "ad_spend_delta_pct": 8,
-      "net": 2434,
-      "net_delta_pct": 51,
-      "ad_roas": 1.22,
-      "total_roas": 2.41,
-      "total_roas_net": 2.37,
-      "total_roas_after_exchange_cost": 2.36,
+      "ad_revenue": 13427,
+      "ad_spend": 10683,
+      "ad_revenue_delta_pct": 16,
+      "ad_spend_delta_pct": 6,
+      "net": 2744,
+      "net_delta_pct": 79,
+      "ad_roas": 1.26,
+      "total_roas": 2.46,
+      "total_roas_net": 2.43,
+      "total_roas_after_exchange_cost": 2.42,
       "returns": {
         "refund_return_orders": 10,
         "refund_returns_cash_completed": 10,
@@ -2579,9 +2585,9 @@
         "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
         "shopify_returns_samples": []
       },
-      "ad_orders": 131,
-      "store_revenue": 26247,
-      "store_orders": 228,
+      "ad_orders": 132,
+      "store_revenue": 26331,
+      "store_orders": 229,
       "store_revenue_delta_pct": 49,
       "unattributed_revenue": 12904,
       "unattributed_orders": 97
@@ -2590,12 +2596,12 @@
     "items": [
       {
         "lane": "US Meta",
-        "action": "Shopify ROAS 1.14\u00d7 \u2014 below 1.5\u00d7 gate. Hold blanket raises; Meta recommends Prospecting $100\u2192$172 \u2014 fund from Creative Test trims only.",
+        "action": "Shopify ROAS 1.17\u00d7 \u2014 below 1.5\u00d7 gate. Hold blanket raises; Meta recommends Prospecting $100\u2192$172 \u2014 fund from Creative Test trims only.",
         "owner": "Zaki"
       },
       {
         "lane": "Google",
-        "action": "Keep PMax running \u2014 1.54\u00d7 Shopify ROAS on $3,148",
+        "action": "Keep PMax running \u2014 1.58\u00d7 Shopify ROAS on $3,064",
         "owner": "Zaki"
       },
       {
@@ -2640,18 +2646,18 @@
       },
       {
         "lane": "Attribution",
-        "action": "Meta platform 142 purch vs 79 Shopify UTM \u2014 judge on Shopify only",
+        "action": "Meta platform 144 purch vs 80 Shopify UTM \u2014 judge on Shopify only",
         "owner": "Andrew"
       },
       {
         "lane": "Google",
-        "action": "Google orders down 7 WoW \u2014 monitor delivery; no tROAS experiments",
+        "action": "Google orders down 8 WoW \u2014 monitor delivery; no tROAS experiments",
         "owner": "Zaki"
       }
     ]
   },
   "director_economics": {
-    "window_label": "Oct 24 \u2013 Nov 22, 2026",
+    "window_label": "Oct 25 \u2013 Nov 23, 2026",
     "returns_rollup": {
       "refund_return_orders": 10,
       "refund_returns_cash_completed": 10,
@@ -2666,20 +2672,20 @@
       "scope_note": "Refund RMAs: Shopify Return objects (ReturnZap). Exchanges: ReturnZap Exchanged tag. Cash out only after refund processed on order.",
       "shopify_returns_samples": []
     },
-    "mer_gross": 2.41,
-    "mer_net": 2.37,
-    "mer_after_exchange_cost": 2.36,
-    "store_after_exchange_cost": 25790.96,
-    "shopify_roas_blended": 1.22,
-    "halo_revenue": 12903.66,
+    "mer_gross": 2.46,
+    "mer_net": 2.43,
+    "mer_after_exchange_cost": 2.42,
+    "store_after_exchange_cost": 25874.91,
+    "shopify_roas_blended": 1.26,
+    "halo_revenue": 12903.61,
     "halo_orders": 97,
-    "halo_index": 1.18,
-    "ad_spend": 10909,
-    "store_revenue_gross": 26246.66,
-    "store_revenue_net": 25835.96,
+    "halo_index": 1.21,
+    "ad_spend": 10683,
+    "store_revenue_gross": 26330.61,
+    "store_revenue_net": 25919.91,
     "refunds_and_adjustments": 410.7,
     "refunds_recorded": 0.0,
-    "shipping_collected": 2650.87,
+    "shipping_collected": 2660.82,
     "discounts": 1484.85,
     "returnzap_exchanges": 5,
     "returnzap_status": "shopify_tags_only",
@@ -2688,19 +2694,19 @@
     "fulfilled_pct": 96,
     "modeled_cogs_pct": 0.38,
     "modeled_fulfillment_per_order": 9.0,
-    "estimated_contribution": 3057.3,
-    "contribution_mer": 0.28,
+    "estimated_contribution": 3326.34,
+    "contribution_mer": 0.31,
     "model_disclaimer": "Modeled contribution only \u2014 replace with Xero COGS + actual 3PL when available",
     "strategy_lines": [
-      "MER 2.41\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
+      "MER 2.46\u00d7 \u2014 acceptable; improve tagged Shopify ROAS or reduce waste (Pinterest / dead intl).",
       "Halo ~$12,904 (97 orders) not ad-tagged \u2014 likely organic/direct/email; MER includes this.",
-      "Tagged Shopify ROAS 1.22\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
+      "Tagged Shopify ROAS 1.26\u00d7 \u2014 measurable ads below gate; do not trust Meta purchase counts alone."
     ]
   },
   "meta_halo_trend": {
-    "generated_at": "2026-11-22T20:53:37.039179-05:00",
+    "generated_at": "2026-11-23T06:30:17.875490-05:00",
     "start": "2026-06-01",
-    "end": "2026-11-22",
+    "end": "2026-11-23",
     "weeks": [
       {
         "week_start": "2026-06-01",
@@ -3306,10 +3312,10 @@
         "week_start": "2026-11-16",
         "week_end": "2026-11-22",
         "label": "Nov 16\u201322, 2026",
-        "meta_spend": 1556.24,
+        "meta_spend": 1598.56,
         "meta_orders": 17,
         "meta_revenue": 1681.32,
-        "meta_roas": 1.08,
+        "meta_roas": 1.05,
         "meta_orders_per_day": 2.43,
         "google_paid_orders": 9,
         "google_paid_revenue": 770.55,
@@ -3326,32 +3332,57 @@
         "organic_halo_revenue": 5238.32,
         "organic_halo_orders": 39,
         "meta_week": "bad"
+      },
+      {
+        "week_start": "2026-11-23",
+        "week_end": "2026-11-29",
+        "label": "Nov 23\u201329, 2026",
+        "meta_spend": 18.81,
+        "meta_orders": 1,
+        "meta_revenue": 83.95,
+        "meta_roas": 4.46,
+        "meta_orders_per_day": 0.14,
+        "google_paid_orders": 0,
+        "google_paid_revenue": 0,
+        "organic_search_orders": 0,
+        "organic_search_revenue": 0,
+        "direct_orders": 0,
+        "direct_revenue": 0,
+        "organic_social_orders": 0,
+        "organic_social_revenue": 0,
+        "email_orders": 0,
+        "email_revenue": 0,
+        "other_orders": 0,
+        "other_revenue": 0,
+        "organic_halo_revenue": 0.0,
+        "organic_halo_orders": 0,
+        "meta_week": "bad"
       }
     ],
     "stats": {
       "corr_meta_spend_organic_halo_lag0": -0.01,
-      "corr_meta_spend_organic_halo_lag1": 0.02,
-      "corr_meta_revenue_organic_halo_lag0": 0.18,
-      "corr_meta_spend_direct_lag0": 0.14,
+      "corr_meta_spend_organic_halo_lag1": 0.03,
+      "corr_meta_revenue_organic_halo_lag0": 0.46,
+      "corr_meta_spend_direct_lag0": 0.15,
       "corr_meta_spend_organic_search_lag0": 0.11,
-      "organic_halo_revenue_per_meta_dollar": -0.04,
-      "weeks_count": 25,
+      "organic_halo_revenue_per_meta_dollar": -0.025,
+      "weeks_count": 26,
       "good_weeks": 11,
-      "bad_weeks": 14,
+      "bad_weeks": 15,
       "avg_organic_halo_good": 4546.0,
       "avg_organic_halo_bad": 4393.0
     },
     "findings": [
-      "Since Jun 2026 (25 Mon\u2013Sun weeks): Meta spend vs organic halo revenue correlates weakly (lag-0 r\u2248-0.01, lag-1 r\u22480.02) \u2014 moves together sometimes, not lockstep.",
-      "Meta-attributed Shopify sales track halo better than spend alone (lag-0 r\u22480.18). Good Meta weeks avg ~$4546.0 organic halo vs ~$4393.0 on bad weeks.",
-      "Rule-of-thumb from weekly data: ~$-0.04 organic halo Shopify $ per $1 Meta spend (non-causal; includes Oct partial week)."
+      "Since Jun 2026 (26 Mon\u2013Sun weeks): Meta spend vs organic halo revenue correlates weakly (lag-0 r\u2248-0.01, lag-1 r\u22480.03) \u2014 moves together sometimes, not lockstep.",
+      "Meta-attributed Shopify sales track halo better than spend alone (lag-0 r\u22480.46). Good Meta weeks avg ~$4546.0 organic halo vs ~$4393.0 on bad weeks.",
+      "Rule-of-thumb from weekly data: ~$-0.025 organic halo Shopify $ per $1 Meta spend (non-causal; includes Oct partial week)."
     ]
   },
   "meta_shopify_attribution_7d": {
     "window": {
-      "start": "2026-11-16",
-      "end": "2026-11-22",
-      "label": "Nov 16 \u2013 Nov 22, 2026",
+      "start": "2026-11-17",
+      "end": "2026-11-23",
+      "label": "Nov 17 \u2013 Nov 23, 2026",
       "days": 7
     },
     "attribution": "shopify_last_visit_utm",
@@ -3360,12 +3391,11 @@
         "shopify_utm_campaign": "BAR | Creative Test | Broad | US",
         "campaign_label": "Creative Test",
         "meta_campaign_name": "BAR | Creative Test | Broad | US",
-        "meta_spend": 582.68,
-        "shopify_orders": 8,
-        "shopify_revenue": 730.0,
-        "shopify_roas": 1.25,
+        "meta_spend": 497.0,
+        "shopify_orders": 7,
+        "shopify_revenue": 646.05,
+        "shopify_roas": 1.3,
         "order_names": [
-          "#6269",
           "#6273",
           "#6277",
           "#6280",
@@ -3378,51 +3408,46 @@
         "last_shopify_order_date": "2026-11-23"
       },
       {
-        "shopify_utm_campaign": "Barreletix | Prospecting | CBO | US | May",
+        "shopify_utm_campaign": null,
         "campaign_label": "Prospecting",
         "meta_campaign_name": "Barreletix | Prospecting | CBO | US | May",
-        "meta_spend": 542.32,
-        "shopify_orders": 1,
-        "shopify_revenue": 83.95,
-        "shopify_roas": 0.15,
-        "order_names": [
-          "#6264"
-        ],
-        "first_shopify_order_date": "2026-11-16",
-        "last_shopify_order_date": "2026-11-16"
+        "meta_spend": 482.8,
+        "shopify_orders": 0,
+        "shopify_revenue": 0.0,
+        "shopify_roas": 0.0,
+        "order_names": []
       },
       {
         "shopify_utm_campaign": "BAR | Two-Pair Offer Test | US | Nov 2026",
         "campaign_label": "Two-Pair Offer Test",
         "meta_campaign_name": "BAR | Two-Pair Offer Test | US | Nov 2026",
-        "meta_spend": 229.33,
+        "meta_spend": 209.55,
         "shopify_orders": 6,
         "shopify_revenue": 548.1,
-        "shopify_roas": 2.39,
+        "shopify_roas": 2.62,
         "order_names": [
-          "#6272",
           "#6278",
           "#6296",
           "#6298",
           "#6317",
-          "#6319"
+          "#6319",
+          "#6322"
         ],
-        "first_shopify_order_date": "2026-11-17",
-        "last_shopify_order_date": "2026-11-22"
+        "first_shopify_order_date": "2026-11-18",
+        "last_shopify_order_date": "2026-11-23"
       },
       {
         "shopify_utm_campaign": "BAR | Retargeting | US | Nov 2026",
         "campaign_label": "Retargeting",
         "meta_campaign_name": "BAR | Retargeting | US | Nov 2026",
-        "meta_spend": 201.84,
-        "shopify_orders": 2,
-        "shopify_revenue": 319.27,
-        "shopify_roas": 1.58,
+        "meta_spend": 178.02,
+        "shopify_orders": 1,
+        "shopify_revenue": 83.95,
+        "shopify_roas": 0.47,
         "order_names": [
-          "#6268",
           "#6311"
         ],
-        "first_shopify_order_date": "2026-11-16",
+        "first_shopify_order_date": "2026-11-21",
         "last_shopify_order_date": "2026-11-21"
       }
     ],
@@ -3432,12 +3457,11 @@
         "shopify_utm_content": "IG Reel | Organic Winner 5.01x | Nov 14 2026",
         "meta_campaign_name": "BAR | Creative Test | Broad | US",
         "meta_ad_name": "IG Reel | Organic Winner 5.01x | Nov 14 2026",
-        "meta_spend": 404.93,
-        "shopify_orders": 7,
-        "shopify_revenue": 653.45,
-        "shopify_roas": 1.61,
+        "meta_spend": 348.23,
+        "shopify_orders": 6,
+        "shopify_revenue": 569.5,
+        "shopify_roas": 1.64,
         "order_names": [
-          "#6269",
           "#6273",
           "#6277",
           "#6280",
@@ -3451,17 +3475,17 @@
         "shopify_utm_content": "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026",
         "meta_campaign_name": "BAR | Two-Pair Offer Test | US | Nov 2026",
         "meta_ad_name": "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026",
-        "meta_spend": 207.42,
+        "meta_spend": 198.81,
         "shopify_orders": 6,
         "shopify_revenue": 548.1,
-        "shopify_roas": 2.64,
+        "shopify_roas": 2.76,
         "order_names": [
-          "#6272",
           "#6278",
           "#6296",
           "#6298",
           "#6317",
-          "#6319"
+          "#6319",
+          "#6322"
         ]
       },
       {
@@ -3469,26 +3493,12 @@
         "shopify_utm_content": "RT | Upgrade Your Grip | Video | Nov 2026",
         "meta_campaign_name": "BAR | Retargeting | US | Nov 2026",
         "meta_ad_name": "RT | Upgrade Your Grip | Video | Nov 2026",
-        "meta_spend": 201.82,
-        "shopify_orders": 2,
-        "shopify_revenue": 319.27,
-        "shopify_roas": 1.58,
-        "order_names": [
-          "#6268",
-          "#6311"
-        ]
-      },
-      {
-        "shopify_utm_campaign": "Barreletix | Prospecting | CBO | US | May",
-        "shopify_utm_content": "Video # 01 \u2013 Corrected",
-        "meta_campaign_name": "Barreletix | Prospecting | CBO | US | May",
-        "meta_ad_name": "Video # 01 \u2013 Corrected",
-        "meta_spend": 468.67,
+        "meta_spend": 178.02,
         "shopify_orders": 1,
         "shopify_revenue": 83.95,
-        "shopify_roas": 0.18,
+        "shopify_roas": 0.47,
         "order_names": [
-          "#6264"
+          "#6311"
         ]
       },
       {
@@ -3496,68 +3506,30 @@
         "shopify_utm_content": "IG Reel | Get A Grip | Performance Skins | Nov 2026",
         "meta_campaign_name": "BAR | Creative Test | Broad | US",
         "meta_ad_name": "IG Reel | Get A Grip | Performance Skins | Nov 2026",
-        "meta_spend": 85.53,
+        "meta_spend": 84.08,
         "shopify_orders": 1,
         "shopify_revenue": 76.55,
-        "shopify_roas": 0.9,
+        "shopify_roas": 0.91,
         "order_names": [
           "#6289"
         ]
       }
     ],
     "totals": {
-      "meta_spend": 1556.17,
-      "shopify_orders": 17,
-      "shopify_revenue": 1681.32,
-      "shopify_roas": 1.08
+      "meta_spend": 1367.37,
+      "shopify_orders": 14,
+      "shopify_revenue": 1278.1,
+      "shopify_roas": 0.93
     }
   },
   "meta_ads_by_creative": {
     "window": {
-      "start": "2026-11-15",
-      "end": "2026-11-21",
-      "label": "Nov 15 \u2013 Nov 21, 2026",
+      "start": "2026-11-16",
+      "end": "2026-11-22",
+      "label": "Nov 16 \u2013 Nov 22, 2026",
       "days": 7
     },
     "rows": [
-      {
-        "ad": "Video # 01 \u2013 Corrected",
-        "ad_set": "Prospecting",
-        "ad_sets": [
-          "Prospecting"
-        ],
-        "meta_spend": 505.63,
-        "meta_claims_purch": 13,
-        "meta_revenue": 1342.12,
-        "meta_roas": 2.65,
-        "meta_cpa": 38.89,
-        "shopify_orders": 4,
-        "shopify_revenue": 328.4,
-        "shopify_roas": 0.65,
-        "shopify_cpa": 126.41,
-        "active": true,
-        "order_names": [
-          "#6248",
-          "#6250",
-          "#6263",
-          "#6264"
-        ],
-        "meta_ad_names": [
-          "Video # 01 \u2013 Corrected"
-        ],
-        "active_now": true,
-        "budgets": [
-          {
-            "level": "campaign (CBO)",
-            "name": "Barreletix | Prospecting | CBO | US | May",
-            "daily_budget": 80.0,
-            "avg_daily_spend_7d": 79.97,
-            "shared_with_creatives": 2
-          }
-        ],
-        "daily_budget": 80.0,
-        "budget_avg_daily_spend_7d": 79.97
-      },
       {
         "ad": "Organic Winner 5.01x",
         "ad_set": "Creative Test + Prospecting",
@@ -3565,15 +3537,15 @@
           "Creative Test",
           "Prospecting"
         ],
-        "meta_spend": 411.39,
-        "meta_claims_purch": 10,
-        "meta_revenue": 1402.69,
-        "meta_roas": 3.41,
-        "meta_cpa": 41.14,
-        "shopify_orders": 6,
-        "shopify_revenue": 569.5,
-        "shopify_roas": 1.38,
-        "shopify_cpa": 68.56,
+        "meta_spend": 495.28,
+        "meta_claims_purch": 11,
+        "meta_revenue": 1486.64,
+        "meta_roas": 3.0,
+        "meta_cpa": 45.03,
+        "shopify_orders": 7,
+        "shopify_revenue": 653.45,
+        "shopify_roas": 1.32,
+        "shopify_cpa": 70.75,
         "active": true,
         "order_names": [
           "#6269",
@@ -3581,7 +3553,8 @@
           "#6277",
           "#6280",
           "#6282",
-          "#6309"
+          "#6309",
+          "#6321"
         ],
         "meta_ad_names": [
           "IG Reel | Organic Winner 5.01x | Nov 14 2026",
@@ -3593,19 +3566,54 @@
             "level": "ad set",
             "name": "Broad | Men + Women 18-65+ | US",
             "daily_budget": 80.0,
-            "avg_daily_spend_7d": 87.08,
+            "avg_daily_spend_7d": 85.73,
             "shared_with_creatives": 3
           },
           {
             "level": "campaign (CBO)",
             "name": "Barreletix | Prospecting | CBO | US | May",
             "daily_budget": 80.0,
-            "avg_daily_spend_7d": 79.97,
+            "avg_daily_spend_7d": 79.92,
             "shared_with_creatives": 2
           }
         ],
         "daily_budget": 160.0,
-        "budget_avg_daily_spend_7d": 167.05
+        "budget_avg_daily_spend_7d": 165.65
+      },
+      {
+        "ad": "Video # 01 \u2013 Corrected",
+        "ad_set": "Prospecting",
+        "ad_sets": [
+          "Prospecting"
+        ],
+        "meta_spend": 480.93,
+        "meta_claims_purch": 6,
+        "meta_revenue": 471.55,
+        "meta_roas": 0.98,
+        "meta_cpa": 80.16,
+        "shopify_orders": 1,
+        "shopify_revenue": 83.95,
+        "shopify_roas": 0.17,
+        "shopify_cpa": 480.93,
+        "active": true,
+        "order_names": [
+          "#6264"
+        ],
+        "meta_ad_names": [
+          "Video # 01 \u2013 Corrected"
+        ],
+        "active_now": true,
+        "budgets": [
+          {
+            "level": "campaign (CBO)",
+            "name": "Barreletix | Prospecting | CBO | US | May",
+            "daily_budget": 80.0,
+            "avg_daily_spend_7d": 79.92,
+            "shared_with_creatives": 2
+          }
+        ],
+        "daily_budget": 80.0,
+        "budget_avg_daily_spend_7d": 79.92
       },
       {
         "ad": "Upgrade Your Grip",
@@ -3614,20 +3622,17 @@
           "Creative Test",
           "Other"
         ],
-        "meta_spend": 378.23,
-        "meta_claims_purch": 6,
-        "meta_revenue": 810.47,
-        "meta_roas": 2.14,
-        "meta_cpa": 63.04,
-        "shopify_orders": 5,
-        "shopify_revenue": 674.72,
-        "shopify_roas": 1.78,
-        "shopify_cpa": 75.65,
+        "meta_spend": 301.03,
+        "meta_claims_purch": 3,
+        "meta_revenue": 455.02,
+        "meta_roas": 1.51,
+        "meta_cpa": 100.34,
+        "shopify_orders": 2,
+        "shopify_revenue": 319.27,
+        "shopify_roas": 1.06,
+        "shopify_cpa": 150.51,
         "active": true,
         "order_names": [
-          "#6258",
-          "#6260",
-          "#6262",
           "#6268",
           "#6311"
         ],
@@ -3641,19 +3646,19 @@
             "level": "campaign (CBO)",
             "name": "BAR | Retargeting | US | Nov 2026",
             "daily_budget": 30.0,
-            "avg_daily_spend_7d": 29.99,
+            "avg_daily_spend_7d": 29.4,
             "shared_with_creatives": 1
           },
           {
             "level": "ad set",
             "name": "Broad | Men + Women 18-65+ | US",
             "daily_budget": 80.0,
-            "avg_daily_spend_7d": 87.08,
+            "avg_daily_spend_7d": 85.73,
             "shared_with_creatives": 3
           }
         ],
         "daily_budget": 110.0,
-        "budget_avg_daily_spend_7d": 117.07
+        "budget_avg_daily_spend_7d": 115.13
       },
       {
         "ad": "Buy 2 Save 15%",
@@ -3661,23 +3666,23 @@
         "ad_sets": [
           "Other"
         ],
-        "meta_spend": 185.8,
+        "meta_spend": 211.31,
         "meta_claims_purch": 6,
-        "meta_revenue": 1063.55,
-        "meta_roas": 5.72,
-        "meta_cpa": 30.97,
+        "meta_revenue": 1056.15,
+        "meta_roas": 5.0,
+        "meta_cpa": 35.22,
         "shopify_orders": 6,
-        "shopify_revenue": 555.5,
-        "shopify_roas": 2.99,
-        "shopify_cpa": 30.97,
+        "shopify_revenue": 548.1,
+        "shopify_roas": 2.59,
+        "shopify_cpa": 35.22,
         "active": true,
         "order_names": [
-          "#6257",
-          "#6261",
           "#6272",
           "#6278",
           "#6296",
-          "#6298"
+          "#6298",
+          "#6317",
+          "#6319"
         ],
         "meta_ad_names": [
           "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026"
@@ -3688,12 +3693,12 @@
             "level": "campaign (CBO)",
             "name": "BAR | Two-Pair Offer Test | US | Nov 2026",
             "daily_budget": 35.0,
-            "avg_daily_spend_7d": 32.19,
+            "avg_daily_spend_7d": 33.32,
             "shared_with_creatives": 1
           }
         ],
         "daily_budget": 35.0,
-        "budget_avg_daily_spend_7d": 32.19
+        "budget_avg_daily_spend_7d": 33.32
       },
       {
         "ad": "Get A Grip",
@@ -3701,15 +3706,15 @@
         "ad_sets": [
           "Creative Test"
         ],
-        "meta_spend": 84.01,
+        "meta_spend": 88.1,
         "meta_claims_purch": 2,
         "meta_revenue": 160.5,
-        "meta_roas": 1.91,
-        "meta_cpa": 42.01,
+        "meta_roas": 1.82,
+        "meta_cpa": 44.05,
         "shopify_orders": 1,
         "shopify_revenue": 76.55,
-        "shopify_roas": 0.91,
-        "shopify_cpa": 84.01,
+        "shopify_roas": 0.87,
+        "shopify_cpa": 88.1,
         "active": true,
         "order_names": [
           "#6289"
@@ -3723,12 +3728,12 @@
             "level": "ad set",
             "name": "Broad | Men + Women 18-65+ | US",
             "daily_budget": 80.0,
-            "avg_daily_spend_7d": 87.08,
+            "avg_daily_spend_7d": 85.73,
             "shared_with_creatives": 3
           }
         ],
         "daily_budget": 80.0,
-        "budget_avg_daily_spend_7d": 87.08
+        "budget_avg_daily_spend_7d": 85.73
       },
       {
         "ad": "Knock Your Socks Off",
@@ -3736,11 +3741,11 @@
         "ad_sets": [
           "Other"
         ],
-        "meta_spend": 39.53,
+        "meta_spend": 21.91,
         "meta_claims_purch": 1,
         "meta_revenue": 83.95,
-        "meta_roas": 2.12,
-        "meta_cpa": 39.53,
+        "meta_roas": 3.83,
+        "meta_cpa": 21.91,
         "shopify_orders": 0,
         "shopify_revenue": 0.0,
         "shopify_roas": 0.0,
@@ -3758,87 +3763,82 @@
     ],
     "totals": {
       "ad": "Total",
-      "meta_spend": 1604.59,
-      "meta_claims_purch": 38,
-      "meta_revenue": 4863.28,
-      "meta_roas": 3.03,
-      "meta_cpa": 42.23,
-      "shopify_orders": 22,
-      "shopify_revenue": 2204.67,
-      "shopify_roas": 1.37,
-      "shopify_cpa": 72.94
+      "meta_spend": 1598.56,
+      "meta_claims_purch": 29,
+      "meta_revenue": 3713.81,
+      "meta_roas": 2.32,
+      "meta_cpa": 55.12,
+      "shopify_orders": 17,
+      "shopify_revenue": 1681.32,
+      "shopify_roas": 1.05,
+      "shopify_cpa": 94.03
     },
     "campaigns": [
       {
         "campaign": "BAR | Creative Test | Broad | US",
-        "meta_spend": 609.53,
-        "meta_claims_purch": 13,
-        "meta_revenue": 1691.4,
-        "meta_roas": 2.77,
-        "shopify_orders": 9,
-        "shopify_revenue": 917.55,
-        "shopify_roas": 1.51,
-        "shopify_cpa": 67.73,
+        "meta_spend": 600.09,
+        "meta_claims_purch": 12,
+        "meta_revenue": 1503.85,
+        "meta_roas": 2.51,
+        "shopify_orders": 8,
+        "shopify_revenue": 730.0,
+        "shopify_roas": 1.22,
+        "shopify_cpa": 75.01,
         "order_names": [
-          "#6258",
-          "#6260",
           "#6269",
           "#6273",
           "#6277",
           "#6280",
           "#6282",
           "#6289",
-          "#6309"
+          "#6309",
+          "#6321"
         ]
       },
       {
         "campaign": "Barreletix | Prospecting | CBO | US | May",
-        "meta_spend": 559.77,
-        "meta_claims_purch": 14,
-        "meta_revenue": 1485.41,
-        "meta_roas": 2.65,
-        "shopify_orders": 4,
-        "shopify_revenue": 328.4,
-        "shopify_roas": 0.59,
-        "shopify_cpa": 139.94,
+        "meta_spend": 559.43,
+        "meta_claims_purch": 7,
+        "meta_revenue": 614.84,
+        "meta_roas": 1.1,
+        "shopify_orders": 1,
+        "shopify_revenue": 83.95,
+        "shopify_roas": 0.15,
+        "shopify_cpa": 559.43,
         "order_names": [
-          "#6248",
-          "#6250",
-          "#6263",
           "#6264"
         ]
       },
       {
         "campaign": "BAR | Two-Pair Offer Test | US | Nov 2026",
-        "meta_spend": 225.33,
+        "meta_spend": 233.22,
         "meta_claims_purch": 7,
-        "meta_revenue": 1147.5,
-        "meta_roas": 5.09,
+        "meta_revenue": 1140.1,
+        "meta_roas": 4.89,
         "shopify_orders": 6,
-        "shopify_revenue": 555.5,
-        "shopify_roas": 2.47,
-        "shopify_cpa": 37.55,
+        "shopify_revenue": 548.1,
+        "shopify_roas": 2.35,
+        "shopify_cpa": 38.87,
         "order_names": [
-          "#6257",
-          "#6261",
           "#6272",
           "#6278",
           "#6296",
-          "#6298"
+          "#6298",
+          "#6317",
+          "#6319"
         ]
       },
       {
         "campaign": "BAR | Retargeting | US | Nov 2026",
-        "meta_spend": 209.96,
-        "meta_claims_purch": 4,
-        "meta_revenue": 538.97,
-        "meta_roas": 2.57,
-        "shopify_orders": 3,
-        "shopify_revenue": 403.22,
-        "shopify_roas": 1.92,
-        "shopify_cpa": 69.99,
+        "meta_spend": 205.82,
+        "meta_claims_purch": 3,
+        "meta_revenue": 455.02,
+        "meta_roas": 2.21,
+        "shopify_orders": 2,
+        "shopify_revenue": 319.27,
+        "shopify_roas": 1.55,
+        "shopify_cpa": 102.91,
         "order_names": [
-          "#6262",
           "#6268",
           "#6311"
         ]
@@ -3847,7 +3847,7 @@
     "source_note": "Live Meta ad insights + Shopify last-touch utm_content (last 7 complete days)"
   },
   "channel_mix": {
-    "generated_at": "2026-11-22T20:53:25.363816-05:00",
+    "generated_at": "2026-11-23T06:30:01.035736-05:00",
     "shopify_attribution": "landing_site UTM \u00b7 Meta paid requires utm_campaign",
     "monthly_from": "2026-06-01",
     "monthly": [
@@ -3918,23 +3918,23 @@
       },
       {
         "month": "2026-11",
-        "meta_revenue": 7043.15,
+        "meta_revenue": 7127.1,
         "google_revenue": 4033.95,
         "pinterest_revenue": 171.9,
-        "meta_orders": 67,
+        "meta_orders": 68,
         "google_orders": 41,
         "pinterest_orders": 2,
-        "total_ad_revenue": 11249.0,
+        "total_ad_revenue": 11332.95,
         "meta_share_pct": 63,
         "google_share_pct": 36,
         "pinterest_share_pct": 2
       }
     ],
     "last_30d": {
-      "meta_revenue": 8244.0,
+      "meta_revenue": 8328.0,
       "google_revenue": 4843.0,
       "pinterest_revenue": 256.0,
-      "total_ad_revenue": 13343.0,
+      "total_ad_revenue": 13427.0,
       "meta_share_pct": 62,
       "google_share_pct": 36,
       "pinterest_share_pct": 2
@@ -4043,10 +4043,270 @@
     },
     "errors": {},
     "meta": {
-      "generated_for": "2026-11-22",
-      "as_of": "2026-11-22T20:53:15.861501-05:00",
+      "generated_for": "2026-11-23",
+      "as_of": "2026-11-23T06:29:54.503682-05:00",
       "attribution": "Meta = platform-claimed purchases/value (account default attribution). Shopify = last-visit utm_content (store truth).",
       "today": {
+        "window": {
+          "start": "2026-11-23",
+          "end": "2026-11-23",
+          "label": "Mon Nov 23, 2026",
+          "days": 1
+        },
+        "rows": [
+          {
+            "ad": "Organic Winner 5.01x",
+            "ad_set": "Creative Test + Prospecting",
+            "ad_sets": [
+              "Creative Test",
+              "Prospecting"
+            ],
+            "meta_spend": 5.5,
+            "meta_claims_purch": 0,
+            "meta_revenue": 0.0,
+            "meta_roas": 0.0,
+            "meta_cpa": null,
+            "shopify_orders": 0,
+            "shopify_revenue": 0.0,
+            "shopify_roas": 0.0,
+            "shopify_cpa": null,
+            "active": true,
+            "order_names": [],
+            "meta_ad_names": [
+              "IG Reel | Organic Winner 5.01x | Nov 14 2026",
+              "IG Reel | Organic Winner 5.01x | Prospecting | Nov 18 2026"
+            ],
+            "active_now": true,
+            "budgets": [
+              {
+                "level": "ad set",
+                "name": "Broad | Men + Women 18-65+ | US",
+                "daily_budget": 80.0,
+                "avg_daily_spend_7d": 85.73,
+                "shared_with_creatives": 3
+              },
+              {
+                "level": "campaign (CBO)",
+                "name": "Barreletix | Prospecting | CBO | US | May",
+                "daily_budget": 80.0,
+                "avg_daily_spend_7d": 79.92,
+                "shared_with_creatives": 2
+              }
+            ],
+            "daily_budget": 160.0,
+            "budget_avg_daily_spend_7d": 165.65
+          },
+          {
+            "ad": "Video # 01 \u2013 Corrected",
+            "ad_set": "Prospecting",
+            "ad_sets": [
+              "Prospecting"
+            ],
+            "meta_spend": 4.76,
+            "meta_claims_purch": 0,
+            "meta_revenue": 0.0,
+            "meta_roas": 0.0,
+            "meta_cpa": null,
+            "shopify_orders": 0,
+            "shopify_revenue": 0.0,
+            "shopify_roas": 0.0,
+            "shopify_cpa": null,
+            "active": true,
+            "order_names": [],
+            "meta_ad_names": [
+              "Video # 01 \u2013 Corrected"
+            ],
+            "active_now": true,
+            "budgets": [
+              {
+                "level": "campaign (CBO)",
+                "name": "Barreletix | Prospecting | CBO | US | May",
+                "daily_budget": 80.0,
+                "avg_daily_spend_7d": 79.92,
+                "shared_with_creatives": 2
+              }
+            ],
+            "daily_budget": 80.0,
+            "budget_avg_daily_spend_7d": 79.92
+          },
+          {
+            "ad": "Upgrade Your Grip",
+            "ad_set": "Creative Test + Other",
+            "ad_sets": [
+              "Creative Test",
+              "Other"
+            ],
+            "meta_spend": 4.61,
+            "meta_claims_purch": 0,
+            "meta_revenue": 0.0,
+            "meta_roas": 0.0,
+            "meta_cpa": null,
+            "shopify_orders": 0,
+            "shopify_revenue": 0.0,
+            "shopify_roas": 0.0,
+            "shopify_cpa": null,
+            "active": true,
+            "order_names": [],
+            "meta_ad_names": [
+              "IG Reel | Upgrade Your Grip | Feb 2026",
+              "RT | Upgrade Your Grip | Video | Nov 2026"
+            ],
+            "active_now": true,
+            "budgets": [
+              {
+                "level": "campaign (CBO)",
+                "name": "BAR | Retargeting | US | Nov 2026",
+                "daily_budget": 30.0,
+                "avg_daily_spend_7d": 29.4,
+                "shared_with_creatives": 1
+              },
+              {
+                "level": "ad set",
+                "name": "Broad | Men + Women 18-65+ | US",
+                "daily_budget": 80.0,
+                "avg_daily_spend_7d": 85.73,
+                "shared_with_creatives": 3
+              }
+            ],
+            "daily_budget": 110.0,
+            "budget_avg_daily_spend_7d": 115.13
+          },
+          {
+            "ad": "Buy 2 Save 15%",
+            "ad_set": "Other",
+            "ad_sets": [
+              "Other"
+            ],
+            "meta_spend": 2.42,
+            "meta_claims_purch": 1,
+            "meta_revenue": 83.95,
+            "meta_roas": 34.69,
+            "meta_cpa": 2.42,
+            "shopify_orders": 1,
+            "shopify_revenue": 83.95,
+            "shopify_roas": 34.69,
+            "shopify_cpa": 2.42,
+            "active": true,
+            "order_names": [
+              "#6322"
+            ],
+            "meta_ad_names": [
+              "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026"
+            ],
+            "active_now": true,
+            "budgets": [
+              {
+                "level": "campaign (CBO)",
+                "name": "BAR | Two-Pair Offer Test | US | Nov 2026",
+                "daily_budget": 35.0,
+                "avg_daily_spend_7d": 33.32,
+                "shared_with_creatives": 1
+              }
+            ],
+            "daily_budget": 35.0,
+            "budget_avg_daily_spend_7d": 33.32
+          },
+          {
+            "ad": "Get A Grip",
+            "ad_set": "Creative Test",
+            "ad_sets": [
+              "Creative Test"
+            ],
+            "meta_spend": 1.52,
+            "meta_claims_purch": 0,
+            "meta_revenue": 0.0,
+            "meta_roas": 0.0,
+            "meta_cpa": null,
+            "shopify_orders": 0,
+            "shopify_revenue": 0.0,
+            "shopify_roas": 0.0,
+            "shopify_cpa": null,
+            "active": true,
+            "order_names": [],
+            "meta_ad_names": [
+              "IG Reel | Get A Grip | Performance Skins | Nov 2026"
+            ],
+            "active_now": true,
+            "budgets": [
+              {
+                "level": "ad set",
+                "name": "Broad | Men + Women 18-65+ | US",
+                "daily_budget": 80.0,
+                "avg_daily_spend_7d": 85.73,
+                "shared_with_creatives": 3
+              }
+            ],
+            "daily_budget": 80.0,
+            "budget_avg_daily_spend_7d": 85.73
+          }
+        ],
+        "totals": {
+          "ad": "Total",
+          "meta_spend": 18.81,
+          "meta_claims_purch": 1,
+          "meta_revenue": 83.95,
+          "meta_roas": 4.46,
+          "meta_cpa": 18.81,
+          "shopify_orders": 1,
+          "shopify_revenue": 83.95,
+          "shopify_roas": 4.46,
+          "shopify_cpa": 18.81
+        },
+        "campaigns": [
+          {
+            "campaign": "Barreletix | Prospecting | CBO | US | May",
+            "meta_spend": 6.31,
+            "meta_claims_purch": 0,
+            "meta_revenue": 0.0,
+            "meta_roas": 0.0,
+            "shopify_orders": 0,
+            "shopify_revenue": 0.0,
+            "shopify_roas": 0.0,
+            "shopify_cpa": null,
+            "order_names": []
+          },
+          {
+            "campaign": "BAR | Creative Test | Broad | US",
+            "meta_spend": 6.13,
+            "meta_claims_purch": 0,
+            "meta_revenue": 0.0,
+            "meta_roas": 0.0,
+            "shopify_orders": 0,
+            "shopify_revenue": 0.0,
+            "shopify_roas": 0.0,
+            "shopify_cpa": null,
+            "order_names": []
+          },
+          {
+            "campaign": "BAR | Retargeting | US | Nov 2026",
+            "meta_spend": 3.95,
+            "meta_claims_purch": 0,
+            "meta_revenue": 0.0,
+            "meta_roas": 0.0,
+            "shopify_orders": 0,
+            "shopify_revenue": 0.0,
+            "shopify_roas": 0.0,
+            "shopify_cpa": null,
+            "order_names": []
+          },
+          {
+            "campaign": "BAR | Two-Pair Offer Test | US | Nov 2026",
+            "meta_spend": 2.42,
+            "meta_claims_purch": 1,
+            "meta_revenue": 83.95,
+            "meta_roas": 34.69,
+            "shopify_orders": 1,
+            "shopify_revenue": 83.95,
+            "shopify_roas": 34.69,
+            "shopify_cpa": 2.42,
+            "order_names": [
+              "#6322"
+            ]
+          }
+        ],
+        "partial": true
+      },
+      "yesterday": {
         "window": {
           "start": "2026-11-22",
           "end": "2026-11-22",
@@ -4061,318 +4321,54 @@
               "Creative Test",
               "Prospecting"
             ],
-            "meta_spend": 67.26,
-            "meta_claims_purch": 0,
-            "meta_revenue": 0.0,
-            "meta_roas": 0.0,
-            "meta_cpa": null,
-            "shopify_orders": 1,
-            "shopify_revenue": 83.95,
-            "shopify_roas": 1.25,
-            "shopify_cpa": 67.26,
-            "active": true,
-            "order_names": [
-              "#6321"
-            ],
-            "meta_ad_names": [
-              "IG Reel | Organic Winner 5.01x | Nov 14 2026",
-              "IG Reel | Organic Winner 5.01x | Prospecting | Nov 18 2026"
-            ],
-            "active_now": true,
-            "budgets": [
-              {
-                "level": "ad set",
-                "name": "Broad | Men + Women 18-65+ | US",
-                "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
-                "shared_with_creatives": 3
-              },
-              {
-                "level": "campaign (CBO)",
-                "name": "Barreletix | Prospecting | CBO | US | May",
-                "daily_budget": 80.0,
-                "avg_daily_spend_7d": 79.97,
-                "shared_with_creatives": 2
-              }
-            ],
-            "daily_budget": 160.0,
-            "budget_avg_daily_spend_7d": 167.05
-          },
-          {
-            "ad": "Video # 01 \u2013 Corrected",
-            "ad_set": "Prospecting",
-            "ad_sets": [
-              "Prospecting"
-            ],
-            "meta_spend": 55.66,
-            "meta_claims_purch": 0,
-            "meta_revenue": 0.0,
-            "meta_roas": 0.0,
-            "meta_cpa": null,
-            "shopify_orders": 0,
-            "shopify_revenue": 0.0,
-            "shopify_roas": 0.0,
-            "shopify_cpa": null,
-            "active": true,
-            "order_names": [],
-            "meta_ad_names": [
-              "Video # 01 \u2013 Corrected"
-            ],
-            "active_now": true,
-            "budgets": [
-              {
-                "level": "campaign (CBO)",
-                "name": "Barreletix | Prospecting | CBO | US | May",
-                "daily_budget": 80.0,
-                "avg_daily_spend_7d": 79.97,
-                "shared_with_creatives": 2
-              }
-            ],
-            "daily_budget": 80.0,
-            "budget_avg_daily_spend_7d": 79.97
-          },
-          {
-            "ad": "Upgrade Your Grip",
-            "ad_set": "Creative Test + Other",
-            "ad_sets": [
-              "Creative Test",
-              "Other"
-            ],
-            "meta_spend": 47.87,
-            "meta_claims_purch": 0,
-            "meta_revenue": 0.0,
-            "meta_roas": 0.0,
-            "meta_cpa": null,
-            "shopify_orders": 0,
-            "shopify_revenue": 0.0,
-            "shopify_roas": 0.0,
-            "shopify_cpa": null,
-            "active": true,
-            "order_names": [],
-            "meta_ad_names": [
-              "IG Reel | Upgrade Your Grip | Feb 2026",
-              "RT | Upgrade Your Grip | Video | Nov 2026"
-            ],
-            "active_now": true,
-            "budgets": [
-              {
-                "level": "campaign (CBO)",
-                "name": "BAR | Retargeting | US | Nov 2026",
-                "daily_budget": 30.0,
-                "avg_daily_spend_7d": 29.99,
-                "shared_with_creatives": 1
-              },
-              {
-                "level": "ad set",
-                "name": "Broad | Men + Women 18-65+ | US",
-                "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
-                "shared_with_creatives": 3
-              }
-            ],
-            "daily_budget": 110.0,
-            "budget_avg_daily_spend_7d": 117.07
-          },
-          {
-            "ad": "Buy 2 Save 15%",
-            "ad_set": "Other",
-            "ad_sets": [
-              "Other"
-            ],
-            "meta_spend": 41.88,
-            "meta_claims_purch": 2,
-            "meta_revenue": 160.5,
-            "meta_roas": 3.83,
-            "meta_cpa": 20.94,
-            "shopify_orders": 2,
-            "shopify_revenue": 160.5,
-            "shopify_roas": 3.83,
-            "shopify_cpa": 20.94,
-            "active": true,
-            "order_names": [
-              "#6317",
-              "#6319"
-            ],
-            "meta_ad_names": [
-              "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026"
-            ],
-            "active_now": true,
-            "budgets": [
-              {
-                "level": "campaign (CBO)",
-                "name": "BAR | Two-Pair Offer Test | US | Nov 2026",
-                "daily_budget": 35.0,
-                "avg_daily_spend_7d": 32.19,
-                "shared_with_creatives": 1
-              }
-            ],
-            "daily_budget": 35.0,
-            "budget_avg_daily_spend_7d": 32.19
-          },
-          {
-            "ad": "Get A Grip",
-            "ad_set": "Creative Test",
-            "ad_sets": [
-              "Creative Test"
-            ],
-            "meta_spend": 24.3,
-            "meta_claims_purch": 0,
-            "meta_revenue": 0.0,
-            "meta_roas": 0.0,
-            "meta_cpa": null,
-            "shopify_orders": 0,
-            "shopify_revenue": 0.0,
-            "shopify_roas": 0.0,
-            "shopify_cpa": null,
-            "active": true,
-            "order_names": [],
-            "meta_ad_names": [
-              "IG Reel | Get A Grip | Performance Skins | Nov 2026"
-            ],
-            "active_now": true,
-            "budgets": [
-              {
-                "level": "ad set",
-                "name": "Broad | Men + Women 18-65+ | US",
-                "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
-                "shared_with_creatives": 3
-              }
-            ],
-            "daily_budget": 80.0,
-            "budget_avg_daily_spend_7d": 87.08
-          }
-        ],
-        "totals": {
-          "ad": "Total",
-          "meta_spend": 236.97,
-          "meta_claims_purch": 2,
-          "meta_revenue": 160.5,
-          "meta_roas": 0.68,
-          "meta_cpa": 118.48,
-          "shopify_orders": 3,
-          "shopify_revenue": 244.45,
-          "shopify_roas": 1.03,
-          "shopify_cpa": 78.99
-        },
-        "campaigns": [
-          {
-            "campaign": "BAR | Creative Test | Broad | US",
-            "meta_spend": 84.63,
-            "meta_claims_purch": 0,
-            "meta_revenue": 0.0,
-            "meta_roas": 0.0,
-            "shopify_orders": 1,
-            "shopify_revenue": 83.95,
-            "shopify_roas": 0.99,
-            "shopify_cpa": 84.63,
-            "order_names": [
-              "#6321"
-            ]
-          },
-          {
-            "campaign": "Barreletix | Prospecting | CBO | US | May",
-            "meta_spend": 75.17,
-            "meta_claims_purch": 0,
-            "meta_revenue": 0.0,
-            "meta_roas": 0.0,
-            "shopify_orders": 0,
-            "shopify_revenue": 0.0,
-            "shopify_roas": 0.0,
-            "shopify_cpa": null,
-            "order_names": []
-          },
-          {
-            "campaign": "BAR | Two-Pair Offer Test | US | Nov 2026",
-            "meta_spend": 41.88,
-            "meta_claims_purch": 2,
-            "meta_revenue": 160.5,
-            "meta_roas": 3.83,
-            "shopify_orders": 2,
-            "shopify_revenue": 160.5,
-            "shopify_roas": 3.83,
-            "shopify_cpa": 20.94,
-            "order_names": [
-              "#6317",
-              "#6319"
-            ]
-          },
-          {
-            "campaign": "BAR | Retargeting | US | Nov 2026",
-            "meta_spend": 35.29,
-            "meta_claims_purch": 0,
-            "meta_revenue": 0.0,
-            "meta_roas": 0.0,
-            "shopify_orders": 0,
-            "shopify_revenue": 0.0,
-            "shopify_roas": 0.0,
-            "shopify_cpa": null,
-            "order_names": []
-          }
-        ],
-        "partial": true
-      },
-      "yesterday": {
-        "window": {
-          "start": "2026-11-21",
-          "end": "2026-11-21",
-          "label": "Sat Nov 21, 2026",
-          "days": 1
-        },
-        "rows": [
-          {
-            "ad": "Organic Winner 5.01x",
-            "ad_set": "Creative Test + Prospecting",
-            "ad_sets": [
-              "Creative Test",
-              "Prospecting"
-            ],
-            "meta_spend": 57.35,
-            "meta_claims_purch": 1,
-            "meta_revenue": 143.29,
-            "meta_roas": 2.5,
-            "meta_cpa": 57.35,
-            "shopify_orders": 0,
-            "shopify_revenue": 0.0,
-            "shopify_roas": 0.0,
-            "shopify_cpa": null,
-            "active": true,
-            "order_names": [],
-            "meta_ad_names": [
-              "IG Reel | Organic Winner 5.01x | Nov 14 2026",
-              "IG Reel | Organic Winner 5.01x | Prospecting | Nov 18 2026"
-            ],
-            "active_now": true,
-            "budgets": [
-              {
-                "level": "ad set",
-                "name": "Broad | Men + Women 18-65+ | US",
-                "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
-                "shared_with_creatives": 3
-              },
-              {
-                "level": "campaign (CBO)",
-                "name": "Barreletix | Prospecting | CBO | US | May",
-                "daily_budget": 80.0,
-                "avg_daily_spend_7d": 79.97,
-                "shared_with_creatives": 2
-              }
-            ],
-            "daily_budget": 160.0,
-            "budget_avg_daily_spend_7d": 167.05
-          },
-          {
-            "ad": "Video # 01 \u2013 Corrected",
-            "ad_set": "Prospecting",
-            "ad_sets": [
-              "Prospecting"
-            ],
-            "meta_spend": 54.27,
+            "meta_spend": 83.89,
             "meta_claims_purch": 1,
             "meta_revenue": 83.95,
-            "meta_roas": 1.55,
-            "meta_cpa": 54.27,
+            "meta_roas": 1.0,
+            "meta_cpa": 83.89,
+            "shopify_orders": 1,
+            "shopify_revenue": 83.95,
+            "shopify_roas": 1.0,
+            "shopify_cpa": 83.89,
+            "active": true,
+            "order_names": [
+              "#6321"
+            ],
+            "meta_ad_names": [
+              "IG Reel | Organic Winner 5.01x | Nov 14 2026",
+              "IG Reel | Organic Winner 5.01x | Prospecting | Nov 18 2026"
+            ],
+            "active_now": true,
+            "budgets": [
+              {
+                "level": "ad set",
+                "name": "Broad | Men + Women 18-65+ | US",
+                "daily_budget": 80.0,
+                "avg_daily_spend_7d": 85.73,
+                "shared_with_creatives": 3
+              },
+              {
+                "level": "campaign (CBO)",
+                "name": "Barreletix | Prospecting | CBO | US | May",
+                "daily_budget": 80.0,
+                "avg_daily_spend_7d": 79.92,
+                "shared_with_creatives": 2
+              }
+            ],
+            "daily_budget": 160.0,
+            "budget_avg_daily_spend_7d": 165.65
+          },
+          {
+            "ad": "Video # 01 \u2013 Corrected",
+            "ad_set": "Prospecting",
+            "ad_sets": [
+              "Prospecting"
+            ],
+            "meta_spend": 67.92,
+            "meta_claims_purch": 0,
+            "meta_revenue": 0.0,
+            "meta_roas": 0.0,
+            "meta_cpa": null,
             "shopify_orders": 0,
             "shopify_revenue": 0.0,
             "shopify_roas": 0.0,
@@ -4388,45 +4384,12 @@
                 "level": "campaign (CBO)",
                 "name": "Barreletix | Prospecting | CBO | US | May",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 79.97,
+                "avg_daily_spend_7d": 79.92,
                 "shared_with_creatives": 2
               }
             ],
             "daily_budget": 80.0,
-            "budget_avg_daily_spend_7d": 79.97
-          },
-          {
-            "ad": "Buy 2 Save 15%",
-            "ad_set": "Other",
-            "ad_sets": [
-              "Other"
-            ],
-            "meta_spend": 33.26,
-            "meta_claims_purch": 0,
-            "meta_revenue": 0.0,
-            "meta_roas": 0.0,
-            "meta_cpa": null,
-            "shopify_orders": 0,
-            "shopify_revenue": 0.0,
-            "shopify_roas": 0.0,
-            "shopify_cpa": null,
-            "active": true,
-            "order_names": [],
-            "meta_ad_names": [
-              "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026"
-            ],
-            "active_now": true,
-            "budgets": [
-              {
-                "level": "campaign (CBO)",
-                "name": "BAR | Two-Pair Offer Test | US | Nov 2026",
-                "daily_budget": 35.0,
-                "avg_daily_spend_7d": 32.19,
-                "shared_with_creatives": 1
-              }
-            ],
-            "daily_budget": 35.0,
-            "budget_avg_daily_spend_7d": 32.19
+            "budget_avg_daily_spend_7d": 79.92
           },
           {
             "ad": "Upgrade Your Grip",
@@ -4435,7 +4398,7 @@
               "Creative Test",
               "Other"
             ],
-            "meta_spend": 23.82,
+            "meta_spend": 54.84,
             "meta_claims_purch": 0,
             "meta_revenue": 0.0,
             "meta_roas": 0.0,
@@ -4456,19 +4419,55 @@
                 "level": "campaign (CBO)",
                 "name": "BAR | Retargeting | US | Nov 2026",
                 "daily_budget": 30.0,
-                "avg_daily_spend_7d": 29.99,
+                "avg_daily_spend_7d": 29.4,
                 "shared_with_creatives": 1
               },
               {
                 "level": "ad set",
                 "name": "Broad | Men + Women 18-65+ | US",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
+                "avg_daily_spend_7d": 85.73,
                 "shared_with_creatives": 3
               }
             ],
             "daily_budget": 110.0,
-            "budget_avg_daily_spend_7d": 117.07
+            "budget_avg_daily_spend_7d": 115.13
+          },
+          {
+            "ad": "Buy 2 Save 15%",
+            "ad_set": "Other",
+            "ad_sets": [
+              "Other"
+            ],
+            "meta_spend": 45.77,
+            "meta_claims_purch": 2,
+            "meta_revenue": 160.5,
+            "meta_roas": 3.51,
+            "meta_cpa": 22.89,
+            "shopify_orders": 2,
+            "shopify_revenue": 160.5,
+            "shopify_roas": 3.51,
+            "shopify_cpa": 22.89,
+            "active": true,
+            "order_names": [
+              "#6317",
+              "#6319"
+            ],
+            "meta_ad_names": [
+              "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026"
+            ],
+            "active_now": true,
+            "budgets": [
+              {
+                "level": "campaign (CBO)",
+                "name": "BAR | Two-Pair Offer Test | US | Nov 2026",
+                "daily_budget": 35.0,
+                "avg_daily_spend_7d": 33.32,
+                "shared_with_creatives": 1
+              }
+            ],
+            "daily_budget": 35.0,
+            "budget_avg_daily_spend_7d": 33.32
           },
           {
             "ad": "Get A Grip",
@@ -4476,7 +4475,7 @@
             "ad_sets": [
               "Creative Test"
             ],
-            "meta_spend": 21.71,
+            "meta_spend": 26.87,
             "meta_claims_purch": 0,
             "meta_revenue": 0.0,
             "meta_roas": 0.0,
@@ -4496,45 +4495,47 @@
                 "level": "ad set",
                 "name": "Broad | Men + Women 18-65+ | US",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
+                "avg_daily_spend_7d": 85.73,
                 "shared_with_creatives": 3
               }
             ],
             "daily_budget": 80.0,
-            "budget_avg_daily_spend_7d": 87.08
+            "budget_avg_daily_spend_7d": 85.73
           }
         ],
         "totals": {
           "ad": "Total",
-          "meta_spend": 190.41,
-          "meta_claims_purch": 2,
-          "meta_revenue": 227.24,
-          "meta_roas": 1.19,
-          "meta_cpa": 95.2,
-          "shopify_orders": 0,
-          "shopify_revenue": 0.0,
-          "shopify_roas": 0.0,
-          "shopify_cpa": null
+          "meta_spend": 279.29,
+          "meta_claims_purch": 3,
+          "meta_revenue": 244.45,
+          "meta_roas": 0.88,
+          "meta_cpa": 93.1,
+          "shopify_orders": 3,
+          "shopify_revenue": 244.45,
+          "shopify_roas": 0.88,
+          "shopify_cpa": 93.1
         },
         "campaigns": [
           {
             "campaign": "BAR | Creative Test | Broad | US",
-            "meta_spend": 73.09,
-            "meta_claims_purch": 0,
-            "meta_revenue": 0.0,
-            "meta_roas": 0.0,
-            "shopify_orders": 0,
-            "shopify_revenue": 0.0,
-            "shopify_roas": 0.0,
-            "shopify_cpa": null,
-            "order_names": []
+            "meta_spend": 101.97,
+            "meta_claims_purch": 1,
+            "meta_revenue": 83.95,
+            "meta_roas": 0.82,
+            "shopify_orders": 1,
+            "shopify_revenue": 83.95,
+            "shopify_roas": 0.82,
+            "shopify_cpa": 101.97,
+            "order_names": [
+              "#6321"
+            ]
           },
           {
             "campaign": "Barreletix | Prospecting | CBO | US | May",
-            "meta_spend": 68.6,
-            "meta_claims_purch": 2,
-            "meta_revenue": 227.24,
-            "meta_roas": 3.31,
+            "meta_spend": 92.28,
+            "meta_claims_purch": 0,
+            "meta_revenue": 0.0,
+            "meta_roas": 0.0,
             "shopify_orders": 0,
             "shopify_revenue": 0.0,
             "shopify_roas": 0.0,
@@ -4543,19 +4544,22 @@
           },
           {
             "campaign": "BAR | Two-Pair Offer Test | US | Nov 2026",
-            "meta_spend": 33.26,
-            "meta_claims_purch": 0,
-            "meta_revenue": 0.0,
-            "meta_roas": 0.0,
-            "shopify_orders": 0,
-            "shopify_revenue": 0.0,
-            "shopify_roas": 0.0,
-            "shopify_cpa": null,
-            "order_names": []
+            "meta_spend": 45.77,
+            "meta_claims_purch": 2,
+            "meta_revenue": 160.5,
+            "meta_roas": 3.51,
+            "shopify_orders": 2,
+            "shopify_revenue": 160.5,
+            "shopify_roas": 3.51,
+            "shopify_cpa": 22.89,
+            "order_names": [
+              "#6317",
+              "#6319"
+            ]
           },
           {
             "campaign": "BAR | Retargeting | US | Nov 2026",
-            "meta_spend": 15.46,
+            "meta_spend": 39.27,
             "meta_claims_purch": 0,
             "meta_revenue": 0.0,
             "meta_roas": 0.0,
@@ -4569,50 +4573,12 @@
       },
       "7d": {
         "window": {
-          "start": "2026-11-15",
-          "end": "2026-11-21",
-          "label": "Nov 15 \u2013 Nov 21, 2026",
+          "start": "2026-11-16",
+          "end": "2026-11-22",
+          "label": "Nov 16 \u2013 Nov 22, 2026",
           "days": 7
         },
         "rows": [
-          {
-            "ad": "Video # 01 \u2013 Corrected",
-            "ad_set": "Prospecting",
-            "ad_sets": [
-              "Prospecting"
-            ],
-            "meta_spend": 505.63,
-            "meta_claims_purch": 13,
-            "meta_revenue": 1342.12,
-            "meta_roas": 2.65,
-            "meta_cpa": 38.89,
-            "shopify_orders": 4,
-            "shopify_revenue": 328.4,
-            "shopify_roas": 0.65,
-            "shopify_cpa": 126.41,
-            "active": true,
-            "order_names": [
-              "#6248",
-              "#6250",
-              "#6263",
-              "#6264"
-            ],
-            "meta_ad_names": [
-              "Video # 01 \u2013 Corrected"
-            ],
-            "active_now": true,
-            "budgets": [
-              {
-                "level": "campaign (CBO)",
-                "name": "Barreletix | Prospecting | CBO | US | May",
-                "daily_budget": 80.0,
-                "avg_daily_spend_7d": 79.97,
-                "shared_with_creatives": 2
-              }
-            ],
-            "daily_budget": 80.0,
-            "budget_avg_daily_spend_7d": 79.97
-          },
           {
             "ad": "Organic Winner 5.01x",
             "ad_set": "Creative Test + Prospecting",
@@ -4620,15 +4586,15 @@
               "Creative Test",
               "Prospecting"
             ],
-            "meta_spend": 411.39,
-            "meta_claims_purch": 10,
-            "meta_revenue": 1402.69,
-            "meta_roas": 3.41,
-            "meta_cpa": 41.14,
-            "shopify_orders": 6,
-            "shopify_revenue": 569.5,
-            "shopify_roas": 1.38,
-            "shopify_cpa": 68.56,
+            "meta_spend": 495.28,
+            "meta_claims_purch": 11,
+            "meta_revenue": 1486.64,
+            "meta_roas": 3.0,
+            "meta_cpa": 45.03,
+            "shopify_orders": 7,
+            "shopify_revenue": 653.45,
+            "shopify_roas": 1.32,
+            "shopify_cpa": 70.75,
             "active": true,
             "order_names": [
               "#6269",
@@ -4636,7 +4602,8 @@
               "#6277",
               "#6280",
               "#6282",
-              "#6309"
+              "#6309",
+              "#6321"
             ],
             "meta_ad_names": [
               "IG Reel | Organic Winner 5.01x | Nov 14 2026",
@@ -4648,19 +4615,54 @@
                 "level": "ad set",
                 "name": "Broad | Men + Women 18-65+ | US",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
+                "avg_daily_spend_7d": 85.73,
                 "shared_with_creatives": 3
               },
               {
                 "level": "campaign (CBO)",
                 "name": "Barreletix | Prospecting | CBO | US | May",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 79.97,
+                "avg_daily_spend_7d": 79.92,
                 "shared_with_creatives": 2
               }
             ],
             "daily_budget": 160.0,
-            "budget_avg_daily_spend_7d": 167.05
+            "budget_avg_daily_spend_7d": 165.65
+          },
+          {
+            "ad": "Video # 01 \u2013 Corrected",
+            "ad_set": "Prospecting",
+            "ad_sets": [
+              "Prospecting"
+            ],
+            "meta_spend": 480.93,
+            "meta_claims_purch": 6,
+            "meta_revenue": 471.55,
+            "meta_roas": 0.98,
+            "meta_cpa": 80.16,
+            "shopify_orders": 1,
+            "shopify_revenue": 83.95,
+            "shopify_roas": 0.17,
+            "shopify_cpa": 480.93,
+            "active": true,
+            "order_names": [
+              "#6264"
+            ],
+            "meta_ad_names": [
+              "Video # 01 \u2013 Corrected"
+            ],
+            "active_now": true,
+            "budgets": [
+              {
+                "level": "campaign (CBO)",
+                "name": "Barreletix | Prospecting | CBO | US | May",
+                "daily_budget": 80.0,
+                "avg_daily_spend_7d": 79.92,
+                "shared_with_creatives": 2
+              }
+            ],
+            "daily_budget": 80.0,
+            "budget_avg_daily_spend_7d": 79.92
           },
           {
             "ad": "Upgrade Your Grip",
@@ -4669,20 +4671,17 @@
               "Creative Test",
               "Other"
             ],
-            "meta_spend": 378.23,
-            "meta_claims_purch": 6,
-            "meta_revenue": 810.47,
-            "meta_roas": 2.14,
-            "meta_cpa": 63.04,
-            "shopify_orders": 5,
-            "shopify_revenue": 674.72,
-            "shopify_roas": 1.78,
-            "shopify_cpa": 75.65,
+            "meta_spend": 301.03,
+            "meta_claims_purch": 3,
+            "meta_revenue": 455.02,
+            "meta_roas": 1.51,
+            "meta_cpa": 100.34,
+            "shopify_orders": 2,
+            "shopify_revenue": 319.27,
+            "shopify_roas": 1.06,
+            "shopify_cpa": 150.51,
             "active": true,
             "order_names": [
-              "#6258",
-              "#6260",
-              "#6262",
               "#6268",
               "#6311"
             ],
@@ -4696,19 +4695,19 @@
                 "level": "campaign (CBO)",
                 "name": "BAR | Retargeting | US | Nov 2026",
                 "daily_budget": 30.0,
-                "avg_daily_spend_7d": 29.99,
+                "avg_daily_spend_7d": 29.4,
                 "shared_with_creatives": 1
               },
               {
                 "level": "ad set",
                 "name": "Broad | Men + Women 18-65+ | US",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
+                "avg_daily_spend_7d": 85.73,
                 "shared_with_creatives": 3
               }
             ],
             "daily_budget": 110.0,
-            "budget_avg_daily_spend_7d": 117.07
+            "budget_avg_daily_spend_7d": 115.13
           },
           {
             "ad": "Buy 2 Save 15%",
@@ -4716,23 +4715,23 @@
             "ad_sets": [
               "Other"
             ],
-            "meta_spend": 185.8,
+            "meta_spend": 211.31,
             "meta_claims_purch": 6,
-            "meta_revenue": 1063.55,
-            "meta_roas": 5.72,
-            "meta_cpa": 30.97,
+            "meta_revenue": 1056.15,
+            "meta_roas": 5.0,
+            "meta_cpa": 35.22,
             "shopify_orders": 6,
-            "shopify_revenue": 555.5,
-            "shopify_roas": 2.99,
-            "shopify_cpa": 30.97,
+            "shopify_revenue": 548.1,
+            "shopify_roas": 2.59,
+            "shopify_cpa": 35.22,
             "active": true,
             "order_names": [
-              "#6257",
-              "#6261",
               "#6272",
               "#6278",
               "#6296",
-              "#6298"
+              "#6298",
+              "#6317",
+              "#6319"
             ],
             "meta_ad_names": [
               "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026"
@@ -4743,12 +4742,12 @@
                 "level": "campaign (CBO)",
                 "name": "BAR | Two-Pair Offer Test | US | Nov 2026",
                 "daily_budget": 35.0,
-                "avg_daily_spend_7d": 32.19,
+                "avg_daily_spend_7d": 33.32,
                 "shared_with_creatives": 1
               }
             ],
             "daily_budget": 35.0,
-            "budget_avg_daily_spend_7d": 32.19
+            "budget_avg_daily_spend_7d": 33.32
           },
           {
             "ad": "Get A Grip",
@@ -4756,15 +4755,15 @@
             "ad_sets": [
               "Creative Test"
             ],
-            "meta_spend": 84.01,
+            "meta_spend": 88.1,
             "meta_claims_purch": 2,
             "meta_revenue": 160.5,
-            "meta_roas": 1.91,
-            "meta_cpa": 42.01,
+            "meta_roas": 1.82,
+            "meta_cpa": 44.05,
             "shopify_orders": 1,
             "shopify_revenue": 76.55,
-            "shopify_roas": 0.91,
-            "shopify_cpa": 84.01,
+            "shopify_roas": 0.87,
+            "shopify_cpa": 88.1,
             "active": true,
             "order_names": [
               "#6289"
@@ -4778,12 +4777,12 @@
                 "level": "ad set",
                 "name": "Broad | Men + Women 18-65+ | US",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
+                "avg_daily_spend_7d": 85.73,
                 "shared_with_creatives": 3
               }
             ],
             "daily_budget": 80.0,
-            "budget_avg_daily_spend_7d": 87.08
+            "budget_avg_daily_spend_7d": 85.73
           },
           {
             "ad": "Knock Your Socks Off",
@@ -4791,11 +4790,11 @@
             "ad_sets": [
               "Other"
             ],
-            "meta_spend": 39.53,
+            "meta_spend": 21.91,
             "meta_claims_purch": 1,
             "meta_revenue": 83.95,
-            "meta_roas": 2.12,
-            "meta_cpa": 39.53,
+            "meta_roas": 3.83,
+            "meta_cpa": 21.91,
             "shopify_orders": 0,
             "shopify_revenue": 0.0,
             "shopify_roas": 0.0,
@@ -4813,87 +4812,82 @@
         ],
         "totals": {
           "ad": "Total",
-          "meta_spend": 1604.59,
-          "meta_claims_purch": 38,
-          "meta_revenue": 4863.28,
-          "meta_roas": 3.03,
-          "meta_cpa": 42.23,
-          "shopify_orders": 22,
-          "shopify_revenue": 2204.67,
-          "shopify_roas": 1.37,
-          "shopify_cpa": 72.94
+          "meta_spend": 1598.56,
+          "meta_claims_purch": 29,
+          "meta_revenue": 3713.81,
+          "meta_roas": 2.32,
+          "meta_cpa": 55.12,
+          "shopify_orders": 17,
+          "shopify_revenue": 1681.32,
+          "shopify_roas": 1.05,
+          "shopify_cpa": 94.03
         },
         "campaigns": [
           {
             "campaign": "BAR | Creative Test | Broad | US",
-            "meta_spend": 609.53,
-            "meta_claims_purch": 13,
-            "meta_revenue": 1691.4,
-            "meta_roas": 2.77,
-            "shopify_orders": 9,
-            "shopify_revenue": 917.55,
-            "shopify_roas": 1.51,
-            "shopify_cpa": 67.73,
+            "meta_spend": 600.09,
+            "meta_claims_purch": 12,
+            "meta_revenue": 1503.85,
+            "meta_roas": 2.51,
+            "shopify_orders": 8,
+            "shopify_revenue": 730.0,
+            "shopify_roas": 1.22,
+            "shopify_cpa": 75.01,
             "order_names": [
-              "#6258",
-              "#6260",
               "#6269",
               "#6273",
               "#6277",
               "#6280",
               "#6282",
               "#6289",
-              "#6309"
+              "#6309",
+              "#6321"
             ]
           },
           {
             "campaign": "Barreletix | Prospecting | CBO | US | May",
-            "meta_spend": 559.77,
-            "meta_claims_purch": 14,
-            "meta_revenue": 1485.41,
-            "meta_roas": 2.65,
-            "shopify_orders": 4,
-            "shopify_revenue": 328.4,
-            "shopify_roas": 0.59,
-            "shopify_cpa": 139.94,
+            "meta_spend": 559.43,
+            "meta_claims_purch": 7,
+            "meta_revenue": 614.84,
+            "meta_roas": 1.1,
+            "shopify_orders": 1,
+            "shopify_revenue": 83.95,
+            "shopify_roas": 0.15,
+            "shopify_cpa": 559.43,
             "order_names": [
-              "#6248",
-              "#6250",
-              "#6263",
               "#6264"
             ]
           },
           {
             "campaign": "BAR | Two-Pair Offer Test | US | Nov 2026",
-            "meta_spend": 225.33,
+            "meta_spend": 233.22,
             "meta_claims_purch": 7,
-            "meta_revenue": 1147.5,
-            "meta_roas": 5.09,
+            "meta_revenue": 1140.1,
+            "meta_roas": 4.89,
             "shopify_orders": 6,
-            "shopify_revenue": 555.5,
-            "shopify_roas": 2.47,
-            "shopify_cpa": 37.55,
+            "shopify_revenue": 548.1,
+            "shopify_roas": 2.35,
+            "shopify_cpa": 38.87,
             "order_names": [
-              "#6257",
-              "#6261",
               "#6272",
               "#6278",
               "#6296",
-              "#6298"
+              "#6298",
+              "#6317",
+              "#6319"
             ]
           },
           {
             "campaign": "BAR | Retargeting | US | Nov 2026",
-            "meta_spend": 209.96,
-            "meta_claims_purch": 4,
-            "meta_revenue": 538.97,
-            "meta_roas": 2.57,
-            "shopify_orders": 3,
-            "shopify_revenue": 403.22,
-            "shopify_roas": 1.92,
-            "shopify_cpa": 69.99,
+            "meta_spend": 205.82,
+            "meta_claims_purch": 3,
+            "meta_revenue": 455.02,
+            "meta_roas": 2.21,
+            "shopify_orders": 2,
+            "shopify_revenue": 319.27,
+            "shopify_roas": 1.55,
+            "shopify_cpa": 102.91,
             "order_names": [
-              "#6262",
               "#6268",
               "#6311"
             ]
@@ -4902,9 +4896,9 @@
       },
       "30d": {
         "window": {
-          "start": "2026-10-23",
-          "end": "2026-11-21",
-          "label": "Oct 23 \u2013 Nov 21, 2026",
+          "start": "2026-10-24",
+          "end": "2026-11-22",
+          "label": "Oct 24 \u2013 Nov 22, 2026",
           "days": 30
         },
         "rows": [
@@ -4916,18 +4910,17 @@
               "Other",
               "Prospecting"
             ],
-            "meta_spend": 2523.12,
-            "meta_claims_purch": 53,
-            "meta_revenue": 6110.39,
-            "meta_roas": 2.42,
-            "meta_cpa": 47.61,
-            "shopify_orders": 38,
-            "shopify_revenue": 3937.12,
-            "shopify_roas": 1.56,
-            "shopify_cpa": 66.4,
+            "meta_spend": 2401.25,
+            "meta_claims_purch": 50,
+            "meta_revenue": 5849.66,
+            "meta_roas": 2.44,
+            "meta_cpa": 48.02,
+            "shopify_orders": 37,
+            "shopify_revenue": 3919.22,
+            "shopify_roas": 1.63,
+            "shopify_cpa": 64.9,
             "active": true,
             "order_names": [
-              "#6036",
               "#6046",
               "#6047",
               "#6049",
@@ -4977,19 +4970,19 @@
                 "level": "campaign (CBO)",
                 "name": "BAR | Retargeting | US | Nov 2026",
                 "daily_budget": 30.0,
-                "avg_daily_spend_7d": 29.99,
+                "avg_daily_spend_7d": 29.4,
                 "shared_with_creatives": 1
               },
               {
                 "level": "ad set",
                 "name": "Broad | Men + Women 18-65+ | US",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
+                "avg_daily_spend_7d": 85.73,
                 "shared_with_creatives": 3
               }
             ],
             "daily_budget": 110.0,
-            "budget_avg_daily_spend_7d": 117.07
+            "budget_avg_daily_spend_7d": 115.13
           },
           {
             "ad": "Video # 01 \u2013 Corrected",
@@ -4997,15 +4990,15 @@
             "ad_sets": [
               "Prospecting"
             ],
-            "meta_spend": 1431.16,
+            "meta_spend": 1499.08,
             "meta_claims_purch": 32,
             "meta_revenue": 3105.97,
-            "meta_roas": 2.17,
-            "meta_cpa": 44.72,
+            "meta_roas": 2.07,
+            "meta_cpa": 46.85,
             "shopify_orders": 11,
             "shopify_revenue": 967.85,
-            "shopify_roas": 0.68,
-            "shopify_cpa": 130.11,
+            "shopify_roas": 0.65,
+            "shopify_cpa": 136.28,
             "active": true,
             "order_names": [
               "#6158",
@@ -5029,12 +5022,12 @@
                 "level": "campaign (CBO)",
                 "name": "Barreletix | Prospecting | CBO | US | May",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 79.97,
+                "avg_daily_spend_7d": 79.92,
                 "shared_with_creatives": 2
               }
             ],
             "daily_budget": 80.0,
-            "budget_avg_daily_spend_7d": 79.97
+            "budget_avg_daily_spend_7d": 79.92
           },
           {
             "ad": "Think Outside The Sock",
@@ -5113,15 +5106,15 @@
             "ad_sets": [
               "Prospecting"
             ],
-            "meta_spend": 662.8,
+            "meta_spend": 626.28,
             "meta_claims_purch": 11,
             "meta_revenue": 1252.59,
-            "meta_roas": 1.89,
-            "meta_cpa": 60.25,
+            "meta_roas": 2.0,
+            "meta_cpa": 56.93,
             "shopify_orders": 3,
             "shopify_revenue": 185.8,
-            "shopify_roas": 0.28,
-            "shopify_cpa": 220.93,
+            "shopify_roas": 0.3,
+            "shopify_cpa": 208.76,
             "active": true,
             "order_names": [
               "#6048",
@@ -5143,15 +5136,15 @@
               "Creative Test",
               "Prospecting"
             ],
-            "meta_spend": 411.39,
-            "meta_claims_purch": 10,
-            "meta_revenue": 1402.69,
-            "meta_roas": 3.41,
-            "meta_cpa": 41.14,
-            "shopify_orders": 6,
-            "shopify_revenue": 569.5,
-            "shopify_roas": 1.38,
-            "shopify_cpa": 68.56,
+            "meta_spend": 495.28,
+            "meta_claims_purch": 11,
+            "meta_revenue": 1486.64,
+            "meta_roas": 3.0,
+            "meta_cpa": 45.03,
+            "shopify_orders": 7,
+            "shopify_revenue": 653.45,
+            "shopify_roas": 1.32,
+            "shopify_cpa": 70.75,
             "active": true,
             "order_names": [
               "#6269",
@@ -5159,7 +5152,8 @@
               "#6277",
               "#6280",
               "#6282",
-              "#6309"
+              "#6309",
+              "#6321"
             ],
             "meta_ad_names": [
               "IG Reel | Organic Winner 5.01x | Nov 14 2026",
@@ -5171,19 +5165,61 @@
                 "level": "ad set",
                 "name": "Broad | Men + Women 18-65+ | US",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
+                "avg_daily_spend_7d": 85.73,
                 "shared_with_creatives": 3
               },
               {
                 "level": "campaign (CBO)",
                 "name": "Barreletix | Prospecting | CBO | US | May",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 79.97,
+                "avg_daily_spend_7d": 79.92,
                 "shared_with_creatives": 2
               }
             ],
             "daily_budget": 160.0,
-            "budget_avg_daily_spend_7d": 167.05
+            "budget_avg_daily_spend_7d": 165.65
+          },
+          {
+            "ad": "Buy 2 Save 15%",
+            "ad_set": "Other",
+            "ad_sets": [
+              "Other"
+            ],
+            "meta_spend": 269.21,
+            "meta_claims_purch": 9,
+            "meta_revenue": 1387.05,
+            "meta_roas": 5.15,
+            "meta_cpa": 29.91,
+            "shopify_orders": 8,
+            "shopify_revenue": 716.0,
+            "shopify_roas": 2.66,
+            "shopify_cpa": 33.65,
+            "active": true,
+            "order_names": [
+              "#6257",
+              "#6261",
+              "#6272",
+              "#6278",
+              "#6296",
+              "#6298",
+              "#6317",
+              "#6319"
+            ],
+            "meta_ad_names": [
+              "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026"
+            ],
+            "active_now": true,
+            "budgets": [
+              {
+                "level": "campaign (CBO)",
+                "name": "BAR | Two-Pair Offer Test | US | Nov 2026",
+                "daily_budget": 35.0,
+                "avg_daily_spend_7d": 33.32,
+                "shared_with_creatives": 1
+              }
+            ],
+            "daily_budget": 35.0,
+            "budget_avg_daily_spend_7d": 33.32
           },
           {
             "ad": "Get A Grip",
@@ -5191,15 +5227,15 @@
             "ad_sets": [
               "Creative Test"
             ],
-            "meta_spend": 232.91,
+            "meta_spend": 259.78,
             "meta_claims_purch": 3,
             "meta_revenue": 244.45,
-            "meta_roas": 1.05,
-            "meta_cpa": 77.64,
+            "meta_roas": 0.94,
+            "meta_cpa": 86.59,
             "shopify_orders": 2,
             "shopify_revenue": 300.1,
-            "shopify_roas": 1.29,
-            "shopify_cpa": 116.45,
+            "shopify_roas": 1.16,
+            "shopify_cpa": 129.89,
             "active": true,
             "order_names": [
               "#6226",
@@ -5215,52 +5251,12 @@
                 "level": "ad set",
                 "name": "Broad | Men + Women 18-65+ | US",
                 "daily_budget": 80.0,
-                "avg_daily_spend_7d": 87.08,
+                "avg_daily_spend_7d": 85.73,
                 "shared_with_creatives": 3
               }
             ],
             "daily_budget": 80.0,
-            "budget_avg_daily_spend_7d": 87.08
-          },
-          {
-            "ad": "Buy 2 Save 15%",
-            "ad_set": "Other",
-            "ad_sets": [
-              "Other"
-            ],
-            "meta_spend": 223.44,
-            "meta_claims_purch": 7,
-            "meta_revenue": 1226.55,
-            "meta_roas": 5.49,
-            "meta_cpa": 31.92,
-            "shopify_orders": 6,
-            "shopify_revenue": 555.5,
-            "shopify_roas": 2.49,
-            "shopify_cpa": 37.24,
-            "active": true,
-            "order_names": [
-              "#6257",
-              "#6261",
-              "#6272",
-              "#6278",
-              "#6296",
-              "#6298"
-            ],
-            "meta_ad_names": [
-              "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026"
-            ],
-            "active_now": true,
-            "budgets": [
-              {
-                "level": "campaign (CBO)",
-                "name": "BAR | Two-Pair Offer Test | US | Nov 2026",
-                "daily_budget": 35.0,
-                "avg_daily_spend_7d": 32.19,
-                "shared_with_creatives": 1
-              }
-            ],
-            "daily_budget": 35.0,
-            "budget_avg_daily_spend_7d": 32.19
+            "budget_avg_daily_spend_7d": 85.73
           },
           {
             "ad": "Get A Grip Grey",
@@ -5315,29 +5311,28 @@
         ],
         "totals": {
           "ad": "Total",
-          "meta_spend": 7203.14,
+          "meta_spend": 7269.2,
           "meta_claims_purch": 143,
-          "meta_revenue": 16338.57,
-          "meta_roas": 2.27,
-          "meta_cpa": 50.37,
-          "shopify_orders": 83,
-          "shopify_revenue": 8412.7,
-          "shopify_roas": 1.17,
-          "shopify_cpa": 86.78
+          "meta_revenue": 16322.29,
+          "meta_roas": 2.25,
+          "meta_cpa": 50.83,
+          "shopify_orders": 85,
+          "shopify_revenue": 8639.25,
+          "shopify_roas": 1.19,
+          "shopify_cpa": 85.52
         },
         "campaigns": [
           {
             "campaign": "Barreletix | Prospecting | CBO | US | May",
-            "meta_spend": 3189.99,
-            "meta_claims_purch": 59,
-            "meta_revenue": 6120.49,
-            "meta_roas": 1.92,
-            "shopify_orders": 24,
-            "shopify_revenue": 2074.25,
+            "meta_spend": 3148.68,
+            "meta_claims_purch": 57,
+            "meta_revenue": 5948.15,
+            "meta_roas": 1.89,
+            "shopify_orders": 23,
+            "shopify_revenue": 2056.35,
             "shopify_roas": 0.65,
-            "shopify_cpa": 132.92,
+            "shopify_cpa": 136.9,
             "order_names": [
-              "#6036",
               "#6048",
               "#6056",
               "#6089",
@@ -5365,14 +5360,14 @@
           },
           {
             "campaign": "BAR | Creative Test | Broad | US",
-            "meta_spend": 2918.25,
+            "meta_spend": 2940.58,
             "meta_claims_purch": 52,
-            "meta_revenue": 5984.23,
-            "meta_roas": 2.05,
-            "shopify_orders": 38,
-            "shopify_revenue": 3963.8,
-            "shopify_roas": 1.36,
-            "shopify_cpa": 76.8,
+            "meta_revenue": 5979.79,
+            "meta_roas": 2.03,
+            "shopify_orders": 39,
+            "shopify_revenue": 4047.75,
+            "shopify_roas": 1.38,
+            "shopify_cpa": 75.4,
             "order_names": [
               "#6046",
               "#6047",
@@ -5411,19 +5406,20 @@
               "#6280",
               "#6282",
               "#6289",
-              "#6309"
+              "#6309",
+              "#6321"
             ]
           },
           {
             "campaign": "BAR | Two-Pair Offer Test | US | Nov 2026",
-            "meta_spend": 573.08,
-            "meta_claims_purch": 15,
-            "meta_revenue": 2220.68,
-            "meta_roas": 3.87,
-            "shopify_orders": 9,
-            "shopify_revenue": 1078.08,
-            "shopify_roas": 1.88,
-            "shopify_cpa": 63.68,
+            "meta_spend": 618.85,
+            "meta_claims_purch": 17,
+            "meta_revenue": 2381.18,
+            "meta_roas": 3.85,
+            "shopify_orders": 11,
+            "shopify_revenue": 1238.58,
+            "shopify_roas": 2.0,
+            "shopify_cpa": 56.26,
             "order_names": [
               "#6159",
               "#6161",
@@ -5433,19 +5429,21 @@
               "#6272",
               "#6278",
               "#6296",
-              "#6298"
+              "#6298",
+              "#6317",
+              "#6319"
             ]
           },
           {
             "campaign": "BAR | Retargeting | US | Nov 2026",
-            "meta_spend": 521.82,
+            "meta_spend": 561.09,
             "meta_claims_purch": 17,
             "meta_revenue": 2013.17,
-            "meta_roas": 3.86,
+            "meta_roas": 3.59,
             "shopify_orders": 12,
             "shopify_revenue": 1296.57,
-            "shopify_roas": 2.48,
-            "shopify_cpa": 43.49,
+            "shopify_roas": 2.31,
+            "shopify_cpa": 46.76,
             "order_names": [
               "#6126",
               "#6130",
@@ -5464,102 +5462,6 @@
         ]
       },
       "by_day": {
-        "2026-10-23": {
-          "window": {
-            "start": "2026-10-23",
-            "end": "2026-10-23",
-            "label": "Fri Oct 23, 2026",
-            "days": 1
-          },
-          "rows": [
-            {
-              "ad": "Upgrade Your Grip",
-              "ad_set": "Creative Test + Prospecting",
-              "ad_sets": [
-                "Creative Test",
-                "Prospecting"
-              ],
-              "meta_spend": 176.71,
-              "meta_claims_purch": 3,
-              "meta_revenue": 260.73,
-              "meta_roas": 1.48,
-              "meta_cpa": 58.9,
-              "shopify_orders": 1,
-              "shopify_revenue": 17.9,
-              "shopify_roas": 0.1,
-              "shopify_cpa": 176.71,
-              "active": true,
-              "order_names": [
-                "#6036"
-              ],
-              "meta_ad_names": [
-                "IG Reel | Upgrade Your Grip | Feb 2026",
-                "IG Reel | Upgrade Your Grip | Prospecting | Oct 2026"
-              ]
-            },
-            {
-              "ad": "Hear The Grip",
-              "ad_set": "Prospecting",
-              "ad_sets": [
-                "Prospecting"
-              ],
-              "meta_spend": 36.52,
-              "meta_claims_purch": 0,
-              "meta_revenue": 0.0,
-              "meta_roas": 0.0,
-              "meta_cpa": null,
-              "shopify_orders": 0,
-              "shopify_revenue": 0.0,
-              "shopify_roas": 0.0,
-              "shopify_cpa": null,
-              "active": true,
-              "order_names": [],
-              "meta_ad_names": [
-                "IG Reel | Hear The Grip | Prospecting | Sep 2026"
-              ]
-            }
-          ],
-          "totals": {
-            "ad": "Total",
-            "meta_spend": 213.23,
-            "meta_claims_purch": 3,
-            "meta_revenue": 260.73,
-            "meta_roas": 1.22,
-            "meta_cpa": 71.08,
-            "shopify_orders": 1,
-            "shopify_revenue": 17.9,
-            "shopify_roas": 0.08,
-            "shopify_cpa": 213.23
-          },
-          "campaigns": [
-            {
-              "campaign": "Barreletix | Prospecting | CBO | US | May",
-              "meta_spend": 133.59,
-              "meta_claims_purch": 2,
-              "meta_revenue": 172.34,
-              "meta_roas": 1.29,
-              "shopify_orders": 1,
-              "shopify_revenue": 17.9,
-              "shopify_roas": 0.13,
-              "shopify_cpa": 133.59,
-              "order_names": [
-                "#6036"
-              ]
-            },
-            {
-              "campaign": "BAR | Creative Test | Broad | US",
-              "meta_spend": 79.64,
-              "meta_claims_purch": 1,
-              "meta_revenue": 88.39,
-              "meta_roas": 1.11,
-              "shopify_orders": 0,
-              "shopify_revenue": 0.0,
-              "shopify_roas": 0.0,
-              "shopify_cpa": null,
-              "order_names": []
-            }
-          ]
-        },
         "2026-10-24": {
           "window": {
             "start": "2026-10-24",
@@ -10192,26 +10094,7 @@
               "meta_ad_names": [
                 "IG Reel | Organic Winner 5.01x | Nov 14 2026",
                 "IG Reel | Organic Winner 5.01x | Prospecting | Nov 18 2026"
-              ],
-              "active_now": true,
-              "budgets": [
-                {
-                  "level": "ad set",
-                  "name": "Broad | Men + Women 18-65+ | US",
-                  "daily_budget": 80.0,
-                  "avg_daily_spend_7d": 87.08,
-                  "shared_with_creatives": 3
-                },
-                {
-                  "level": "campaign (CBO)",
-                  "name": "Barreletix | Prospecting | CBO | US | May",
-                  "daily_budget": 80.0,
-                  "avg_daily_spend_7d": 79.97,
-                  "shared_with_creatives": 2
-                }
-              ],
-              "daily_budget": 160.0,
-              "budget_avg_daily_spend_7d": 167.05
+              ]
             },
             {
               "ad": "Video # 01 \u2013 Corrected",
@@ -10232,19 +10115,7 @@
               "order_names": [],
               "meta_ad_names": [
                 "Video # 01 \u2013 Corrected"
-              ],
-              "active_now": true,
-              "budgets": [
-                {
-                  "level": "campaign (CBO)",
-                  "name": "Barreletix | Prospecting | CBO | US | May",
-                  "daily_budget": 80.0,
-                  "avg_daily_spend_7d": 79.97,
-                  "shared_with_creatives": 2
-                }
-              ],
-              "daily_budget": 80.0,
-              "budget_avg_daily_spend_7d": 79.97
+              ]
             },
             {
               "ad": "Buy 2 Save 15%",
@@ -10265,19 +10136,7 @@
               "order_names": [],
               "meta_ad_names": [
                 "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026"
-              ],
-              "active_now": true,
-              "budgets": [
-                {
-                  "level": "campaign (CBO)",
-                  "name": "BAR | Two-Pair Offer Test | US | Nov 2026",
-                  "daily_budget": 35.0,
-                  "avg_daily_spend_7d": 32.19,
-                  "shared_with_creatives": 1
-                }
-              ],
-              "daily_budget": 35.0,
-              "budget_avg_daily_spend_7d": 32.19
+              ]
             },
             {
               "ad": "Upgrade Your Grip",
@@ -10300,26 +10159,7 @@
               "meta_ad_names": [
                 "IG Reel | Upgrade Your Grip | Feb 2026",
                 "RT | Upgrade Your Grip | Video | Nov 2026"
-              ],
-              "active_now": true,
-              "budgets": [
-                {
-                  "level": "campaign (CBO)",
-                  "name": "BAR | Retargeting | US | Nov 2026",
-                  "daily_budget": 30.0,
-                  "avg_daily_spend_7d": 29.99,
-                  "shared_with_creatives": 1
-                },
-                {
-                  "level": "ad set",
-                  "name": "Broad | Men + Women 18-65+ | US",
-                  "daily_budget": 80.0,
-                  "avg_daily_spend_7d": 87.08,
-                  "shared_with_creatives": 3
-                }
-              ],
-              "daily_budget": 110.0,
-              "budget_avg_daily_spend_7d": 117.07
+              ]
             },
             {
               "ad": "Get A Grip",
@@ -10340,19 +10180,7 @@
               "order_names": [],
               "meta_ad_names": [
                 "IG Reel | Get A Grip | Performance Skins | Nov 2026"
-              ],
-              "active_now": true,
-              "budgets": [
-                {
-                  "level": "ad set",
-                  "name": "Broad | Men + Women 18-65+ | US",
-                  "daily_budget": 80.0,
-                  "avg_daily_spend_7d": 87.08,
-                  "shared_with_creatives": 3
-                }
-              ],
-              "daily_budget": 80.0,
-              "budget_avg_daily_spend_7d": 87.08
+              ]
             }
           ],
           "totals": {
@@ -10433,15 +10261,15 @@
                 "Creative Test",
                 "Prospecting"
               ],
-              "meta_spend": 67.26,
-              "meta_claims_purch": 0,
-              "meta_revenue": 0.0,
-              "meta_roas": 0.0,
-              "meta_cpa": null,
+              "meta_spend": 83.89,
+              "meta_claims_purch": 1,
+              "meta_revenue": 83.95,
+              "meta_roas": 1.0,
+              "meta_cpa": 83.89,
               "shopify_orders": 1,
               "shopify_revenue": 83.95,
-              "shopify_roas": 1.25,
-              "shopify_cpa": 67.26,
+              "shopify_roas": 1.0,
+              "shopify_cpa": 83.89,
               "active": true,
               "order_names": [
                 "#6321"
@@ -10456,19 +10284,19 @@
                   "level": "ad set",
                   "name": "Broad | Men + Women 18-65+ | US",
                   "daily_budget": 80.0,
-                  "avg_daily_spend_7d": 87.08,
+                  "avg_daily_spend_7d": 85.73,
                   "shared_with_creatives": 3
                 },
                 {
                   "level": "campaign (CBO)",
                   "name": "Barreletix | Prospecting | CBO | US | May",
                   "daily_budget": 80.0,
-                  "avg_daily_spend_7d": 79.97,
+                  "avg_daily_spend_7d": 79.92,
                   "shared_with_creatives": 2
                 }
               ],
               "daily_budget": 160.0,
-              "budget_avg_daily_spend_7d": 167.05
+              "budget_avg_daily_spend_7d": 165.65
             },
             {
               "ad": "Video # 01 \u2013 Corrected",
@@ -10476,7 +10304,7 @@
               "ad_sets": [
                 "Prospecting"
               ],
-              "meta_spend": 55.66,
+              "meta_spend": 67.92,
               "meta_claims_purch": 0,
               "meta_revenue": 0.0,
               "meta_roas": 0.0,
@@ -10496,12 +10324,12 @@
                   "level": "campaign (CBO)",
                   "name": "Barreletix | Prospecting | CBO | US | May",
                   "daily_budget": 80.0,
-                  "avg_daily_spend_7d": 79.97,
+                  "avg_daily_spend_7d": 79.92,
                   "shared_with_creatives": 2
                 }
               ],
               "daily_budget": 80.0,
-              "budget_avg_daily_spend_7d": 79.97
+              "budget_avg_daily_spend_7d": 79.92
             },
             {
               "ad": "Upgrade Your Grip",
@@ -10510,7 +10338,7 @@
                 "Creative Test",
                 "Other"
               ],
-              "meta_spend": 47.87,
+              "meta_spend": 54.84,
               "meta_claims_purch": 0,
               "meta_revenue": 0.0,
               "meta_roas": 0.0,
@@ -10531,19 +10359,19 @@
                   "level": "campaign (CBO)",
                   "name": "BAR | Retargeting | US | Nov 2026",
                   "daily_budget": 30.0,
-                  "avg_daily_spend_7d": 29.99,
+                  "avg_daily_spend_7d": 29.4,
                   "shared_with_creatives": 1
                 },
                 {
                   "level": "ad set",
                   "name": "Broad | Men + Women 18-65+ | US",
                   "daily_budget": 80.0,
-                  "avg_daily_spend_7d": 87.08,
+                  "avg_daily_spend_7d": 85.73,
                   "shared_with_creatives": 3
                 }
               ],
               "daily_budget": 110.0,
-              "budget_avg_daily_spend_7d": 117.07
+              "budget_avg_daily_spend_7d": 115.13
             },
             {
               "ad": "Buy 2 Save 15%",
@@ -10551,15 +10379,15 @@
               "ad_sets": [
                 "Other"
               ],
-              "meta_spend": 41.88,
+              "meta_spend": 45.77,
               "meta_claims_purch": 2,
               "meta_revenue": 160.5,
-              "meta_roas": 3.83,
-              "meta_cpa": 20.94,
+              "meta_roas": 3.51,
+              "meta_cpa": 22.89,
               "shopify_orders": 2,
               "shopify_revenue": 160.5,
-              "shopify_roas": 3.83,
-              "shopify_cpa": 20.94,
+              "shopify_roas": 3.51,
+              "shopify_cpa": 22.89,
               "active": true,
               "order_names": [
                 "#6317",
@@ -10574,12 +10402,12 @@
                   "level": "campaign (CBO)",
                   "name": "BAR | Two-Pair Offer Test | US | Nov 2026",
                   "daily_budget": 35.0,
-                  "avg_daily_spend_7d": 32.19,
+                  "avg_daily_spend_7d": 33.32,
                   "shared_with_creatives": 1
                 }
               ],
               "daily_budget": 35.0,
-              "budget_avg_daily_spend_7d": 32.19
+              "budget_avg_daily_spend_7d": 33.32
             },
             {
               "ad": "Get A Grip",
@@ -10587,7 +10415,7 @@
               "ad_sets": [
                 "Creative Test"
               ],
-              "meta_spend": 24.3,
+              "meta_spend": 26.87,
               "meta_claims_purch": 0,
               "meta_revenue": 0.0,
               "meta_roas": 0.0,
@@ -10607,44 +10435,44 @@
                   "level": "ad set",
                   "name": "Broad | Men + Women 18-65+ | US",
                   "daily_budget": 80.0,
-                  "avg_daily_spend_7d": 87.08,
+                  "avg_daily_spend_7d": 85.73,
                   "shared_with_creatives": 3
                 }
               ],
               "daily_budget": 80.0,
-              "budget_avg_daily_spend_7d": 87.08
+              "budget_avg_daily_spend_7d": 85.73
             }
           ],
           "totals": {
             "ad": "Total",
-            "meta_spend": 236.97,
-            "meta_claims_purch": 2,
-            "meta_revenue": 160.5,
-            "meta_roas": 0.68,
-            "meta_cpa": 118.48,
+            "meta_spend": 279.29,
+            "meta_claims_purch": 3,
+            "meta_revenue": 244.45,
+            "meta_roas": 0.88,
+            "meta_cpa": 93.1,
             "shopify_orders": 3,
             "shopify_revenue": 244.45,
-            "shopify_roas": 1.03,
-            "shopify_cpa": 78.99
+            "shopify_roas": 0.88,
+            "shopify_cpa": 93.1
           },
           "campaigns": [
             {
               "campaign": "BAR | Creative Test | Broad | US",
-              "meta_spend": 84.63,
-              "meta_claims_purch": 0,
-              "meta_revenue": 0.0,
-              "meta_roas": 0.0,
+              "meta_spend": 101.97,
+              "meta_claims_purch": 1,
+              "meta_revenue": 83.95,
+              "meta_roas": 0.82,
               "shopify_orders": 1,
               "shopify_revenue": 83.95,
-              "shopify_roas": 0.99,
-              "shopify_cpa": 84.63,
+              "shopify_roas": 0.82,
+              "shopify_cpa": 101.97,
               "order_names": [
                 "#6321"
               ]
             },
             {
               "campaign": "Barreletix | Prospecting | CBO | US | May",
-              "meta_spend": 75.17,
+              "meta_spend": 92.28,
               "meta_claims_purch": 0,
               "meta_revenue": 0.0,
               "meta_roas": 0.0,
@@ -10656,14 +10484,14 @@
             },
             {
               "campaign": "BAR | Two-Pair Offer Test | US | Nov 2026",
-              "meta_spend": 41.88,
+              "meta_spend": 45.77,
               "meta_claims_purch": 2,
               "meta_revenue": 160.5,
-              "meta_roas": 3.83,
+              "meta_roas": 3.51,
               "shopify_orders": 2,
               "shopify_revenue": 160.5,
-              "shopify_roas": 3.83,
-              "shopify_cpa": 20.94,
+              "shopify_roas": 3.51,
+              "shopify_cpa": 22.89,
               "order_names": [
                 "#6317",
                 "#6319"
@@ -10671,7 +10499,7 @@
             },
             {
               "campaign": "BAR | Retargeting | US | Nov 2026",
-              "meta_spend": 35.29,
+              "meta_spend": 39.27,
               "meta_claims_purch": 0,
               "meta_revenue": 0.0,
               "meta_roas": 0.0,
@@ -10680,6 +10508,265 @@
               "shopify_roas": 0.0,
               "shopify_cpa": null,
               "order_names": []
+            }
+          ]
+        },
+        "2026-11-23": {
+          "window": {
+            "start": "2026-11-23",
+            "end": "2026-11-23",
+            "label": "Mon Nov 23, 2026",
+            "days": 1
+          },
+          "rows": [
+            {
+              "ad": "Organic Winner 5.01x",
+              "ad_set": "Creative Test + Prospecting",
+              "ad_sets": [
+                "Creative Test",
+                "Prospecting"
+              ],
+              "meta_spend": 5.5,
+              "meta_claims_purch": 0,
+              "meta_revenue": 0.0,
+              "meta_roas": 0.0,
+              "meta_cpa": null,
+              "shopify_orders": 0,
+              "shopify_revenue": 0.0,
+              "shopify_roas": 0.0,
+              "shopify_cpa": null,
+              "active": true,
+              "order_names": [],
+              "meta_ad_names": [
+                "IG Reel | Organic Winner 5.01x | Nov 14 2026",
+                "IG Reel | Organic Winner 5.01x | Prospecting | Nov 18 2026"
+              ],
+              "active_now": true,
+              "budgets": [
+                {
+                  "level": "ad set",
+                  "name": "Broad | Men + Women 18-65+ | US",
+                  "daily_budget": 80.0,
+                  "avg_daily_spend_7d": 85.73,
+                  "shared_with_creatives": 3
+                },
+                {
+                  "level": "campaign (CBO)",
+                  "name": "Barreletix | Prospecting | CBO | US | May",
+                  "daily_budget": 80.0,
+                  "avg_daily_spend_7d": 79.92,
+                  "shared_with_creatives": 2
+                }
+              ],
+              "daily_budget": 160.0,
+              "budget_avg_daily_spend_7d": 165.65
+            },
+            {
+              "ad": "Video # 01 \u2013 Corrected",
+              "ad_set": "Prospecting",
+              "ad_sets": [
+                "Prospecting"
+              ],
+              "meta_spend": 4.76,
+              "meta_claims_purch": 0,
+              "meta_revenue": 0.0,
+              "meta_roas": 0.0,
+              "meta_cpa": null,
+              "shopify_orders": 0,
+              "shopify_revenue": 0.0,
+              "shopify_roas": 0.0,
+              "shopify_cpa": null,
+              "active": true,
+              "order_names": [],
+              "meta_ad_names": [
+                "Video # 01 \u2013 Corrected"
+              ],
+              "active_now": true,
+              "budgets": [
+                {
+                  "level": "campaign (CBO)",
+                  "name": "Barreletix | Prospecting | CBO | US | May",
+                  "daily_budget": 80.0,
+                  "avg_daily_spend_7d": 79.92,
+                  "shared_with_creatives": 2
+                }
+              ],
+              "daily_budget": 80.0,
+              "budget_avg_daily_spend_7d": 79.92
+            },
+            {
+              "ad": "Upgrade Your Grip",
+              "ad_set": "Creative Test + Other",
+              "ad_sets": [
+                "Creative Test",
+                "Other"
+              ],
+              "meta_spend": 4.61,
+              "meta_claims_purch": 0,
+              "meta_revenue": 0.0,
+              "meta_roas": 0.0,
+              "meta_cpa": null,
+              "shopify_orders": 0,
+              "shopify_revenue": 0.0,
+              "shopify_roas": 0.0,
+              "shopify_cpa": null,
+              "active": true,
+              "order_names": [],
+              "meta_ad_names": [
+                "IG Reel | Upgrade Your Grip | Feb 2026",
+                "RT | Upgrade Your Grip | Video | Nov 2026"
+              ],
+              "active_now": true,
+              "budgets": [
+                {
+                  "level": "campaign (CBO)",
+                  "name": "BAR | Retargeting | US | Nov 2026",
+                  "daily_budget": 30.0,
+                  "avg_daily_spend_7d": 29.4,
+                  "shared_with_creatives": 1
+                },
+                {
+                  "level": "ad set",
+                  "name": "Broad | Men + Women 18-65+ | US",
+                  "daily_budget": 80.0,
+                  "avg_daily_spend_7d": 85.73,
+                  "shared_with_creatives": 3
+                }
+              ],
+              "daily_budget": 110.0,
+              "budget_avg_daily_spend_7d": 115.13
+            },
+            {
+              "ad": "Buy 2 Save 15%",
+              "ad_set": "Other",
+              "ad_sets": [
+                "Other"
+              ],
+              "meta_spend": 2.42,
+              "meta_claims_purch": 1,
+              "meta_revenue": 83.95,
+              "meta_roas": 34.69,
+              "meta_cpa": 2.42,
+              "shopify_orders": 1,
+              "shopify_revenue": 83.95,
+              "shopify_roas": 34.69,
+              "shopify_cpa": 2.42,
+              "active": true,
+              "order_names": [
+                "#6322"
+              ],
+              "meta_ad_names": [
+                "Video | Buy 2 Save 15% | 2FOR15 | Nov 2026"
+              ],
+              "active_now": true,
+              "budgets": [
+                {
+                  "level": "campaign (CBO)",
+                  "name": "BAR | Two-Pair Offer Test | US | Nov 2026",
+                  "daily_budget": 35.0,
+                  "avg_daily_spend_7d": 33.32,
+                  "shared_with_creatives": 1
+                }
+              ],
+              "daily_budget": 35.0,
+              "budget_avg_daily_spend_7d": 33.32
+            },
+            {
+              "ad": "Get A Grip",
+              "ad_set": "Creative Test",
+              "ad_sets": [
+                "Creative Test"
+              ],
+              "meta_spend": 1.52,
+              "meta_claims_purch": 0,
+              "meta_revenue": 0.0,
+              "meta_roas": 0.0,
+              "meta_cpa": null,
+              "shopify_orders": 0,
+              "shopify_revenue": 0.0,
+              "shopify_roas": 0.0,
+              "shopify_cpa": null,
+              "active": true,
+              "order_names": [],
+              "meta_ad_names": [
+                "IG Reel | Get A Grip | Performance Skins | Nov 2026"
+              ],
+              "active_now": true,
+              "budgets": [
+                {
+                  "level": "ad set",
+                  "name": "Broad | Men + Women 18-65+ | US",
+                  "daily_budget": 80.0,
+                  "avg_daily_spend_7d": 85.73,
+                  "shared_with_creatives": 3
+                }
+              ],
+              "daily_budget": 80.0,
+              "budget_avg_daily_spend_7d": 85.73
+            }
+          ],
+          "totals": {
+            "ad": "Total",
+            "meta_spend": 18.81,
+            "meta_claims_purch": 1,
+            "meta_revenue": 83.95,
+            "meta_roas": 4.46,
+            "meta_cpa": 18.81,
+            "shopify_orders": 1,
+            "shopify_revenue": 83.95,
+            "shopify_roas": 4.46,
+            "shopify_cpa": 18.81
+          },
+          "campaigns": [
+            {
+              "campaign": "Barreletix | Prospecting | CBO | US | May",
+              "meta_spend": 6.31,
+              "meta_claims_purch": 0,
+              "meta_revenue": 0.0,
+              "meta_roas": 0.0,
+              "shopify_orders": 0,
+              "shopify_revenue": 0.0,
+              "shopify_roas": 0.0,
+              "shopify_cpa": null,
+              "order_names": []
+            },
+            {
+              "campaign": "BAR | Creative Test | Broad | US",
+              "meta_spend": 6.13,
+              "meta_claims_purch": 0,
+              "meta_revenue": 0.0,
+              "meta_roas": 0.0,
+              "shopify_orders": 0,
+              "shopify_revenue": 0.0,
+              "shopify_roas": 0.0,
+              "shopify_cpa": null,
+              "order_names": []
+            },
+            {
+              "campaign": "BAR | Retargeting | US | Nov 2026",
+              "meta_spend": 3.95,
+              "meta_claims_purch": 0,
+              "meta_revenue": 0.0,
+              "meta_roas": 0.0,
+              "shopify_orders": 0,
+              "shopify_revenue": 0.0,
+              "shopify_roas": 0.0,
+              "shopify_cpa": null,
+              "order_names": []
+            },
+            {
+              "campaign": "BAR | Two-Pair Offer Test | US | Nov 2026",
+              "meta_spend": 2.42,
+              "meta_claims_purch": 1,
+              "meta_revenue": 83.95,
+              "meta_roas": 34.69,
+              "shopify_orders": 1,
+              "shopify_revenue": 83.95,
+              "shopify_roas": 34.69,
+              "shopify_cpa": 2.42,
+              "order_names": [
+                "#6322"
+              ]
             }
           ],
           "partial": true
@@ -10692,14 +10779,14 @@
       "error": null,
       "today": {
         "window": {
-          "start": "2026-11-22",
-          "end": "2026-11-22",
-          "label": "Sun Nov 22, 2026"
+          "start": "2026-11-23",
+          "end": "2026-11-23",
+          "label": "Mon Nov 23, 2026"
         },
         "rows": [
           {
             "ad": "Barreletics | PMax | US | Test",
-            "spend": 109.99,
+            "spend": 4.71,
             "platform_purch": 0.0,
             "platform_revenue": 0.0,
             "platform_roas": 0.0,
@@ -10714,51 +10801,45 @@
       },
       "yesterday": {
         "window": {
-          "start": "2026-11-21",
-          "end": "2026-11-21",
-          "label": "Sat Nov 21, 2026"
+          "start": "2026-11-22",
+          "end": "2026-11-22",
+          "label": "Sun Nov 22, 2026"
         },
         "rows": [
           {
             "ad": "Barreletics | PMax | US | Test",
-            "spend": 129.29,
-            "platform_purch": 2.0,
-            "platform_revenue": 148.0,
-            "platform_roas": 1.14,
-            "platform_cpa": 64.64,
-            "shopify_orders": 3,
-            "shopify_revenue": 251.85,
-            "shopify_roas": 1.95,
-            "shopify_cpa": 43.1,
-            "order_names": [
-              "#6313",
-              "#6314",
-              "#6315"
-            ]
+            "spend": 125.83,
+            "platform_purch": 0.0,
+            "platform_revenue": 0.0,
+            "platform_roas": 0.0,
+            "platform_cpa": null,
+            "shopify_orders": 0,
+            "shopify_revenue": 0,
+            "shopify_roas": 0.0,
+            "shopify_cpa": null,
+            "order_names": []
           }
         ]
       },
       "7d": {
         "window": {
-          "start": "2026-11-15",
-          "end": "2026-11-21",
-          "label": "Nov 15 \u2013 Nov 21, 2026"
+          "start": "2026-11-16",
+          "end": "2026-11-22",
+          "label": "Nov 16 \u2013 Nov 22, 2026"
         },
         "rows": [
           {
             "ad": "Barreletics | PMax | US | Test",
-            "spend": 627.9,
-            "platform_purch": 9.0,
-            "platform_revenue": 750.95,
-            "platform_roas": 1.2,
-            "platform_cpa": 69.77,
-            "shopify_orders": 11,
-            "shopify_revenue": 1013.45,
-            "shopify_roas": 1.61,
-            "shopify_cpa": 57.08,
+            "spend": 648.05,
+            "platform_purch": 8.0,
+            "platform_revenue": 592.0,
+            "platform_roas": 0.91,
+            "platform_cpa": 81.01,
+            "shopify_orders": 9,
+            "shopify_revenue": 770.55,
+            "shopify_roas": 1.19,
+            "shopify_cpa": 72.01,
             "order_names": [
-              "#6251",
-              "#6254",
               "#6266",
               "#6267",
               "#6271",
@@ -10774,22 +10855,22 @@
       },
       "30d": {
         "window": {
-          "start": "2026-10-23",
-          "end": "2026-11-21",
-          "label": "Oct 23 \u2013 Nov 21, 2026"
+          "start": "2026-10-24",
+          "end": "2026-11-22",
+          "label": "Oct 24 \u2013 Nov 22, 2026"
         },
         "rows": [
           {
             "ad": "Barreletics | PMax | US | Test",
-            "spend": 3073.37,
-            "platform_purch": 51.0,
-            "platform_revenue": 4750.95,
-            "platform_roas": 1.55,
-            "platform_cpa": 60.26,
+            "spend": 3163.62,
+            "platform_purch": 49.0,
+            "platform_revenue": 4302.95,
+            "platform_roas": 1.36,
+            "platform_cpa": 64.56,
             "shopify_orders": 47,
             "shopify_revenue": 4694.63,
-            "shopify_roas": 1.53,
-            "shopify_cpa": 65.39,
+            "shopify_roas": 1.48,
+            "shopify_cpa": 67.31,
             "order_names": [
               "#6044",
               "#6045",
@@ -10844,28 +10925,6 @@
       },
       "daily_budget": 270,
       "by_day": {
-        "2026-10-23": {
-          "window": {
-            "start": "2026-10-23",
-            "end": "2026-10-23",
-            "label": "Fri Oct 23, 2026"
-          },
-          "rows": [
-            {
-              "ad": "Barreletics | PMax | US | Test",
-              "spend": 35.58,
-              "platform_purch": 2.0,
-              "platform_revenue": 448.0,
-              "platform_roas": 12.59,
-              "platform_cpa": 17.79,
-              "shopify_orders": 0,
-              "shopify_revenue": 0,
-              "shopify_roas": 0.0,
-              "shopify_cpa": null,
-              "order_names": []
-            }
-          ]
-        },
         "2026-10-24": {
           "window": {
             "start": "2026-10-24",
@@ -11581,7 +11640,29 @@
           "rows": [
             {
               "ad": "Barreletics | PMax | US | Test",
-              "spend": 109.99,
+              "spend": 125.83,
+              "platform_purch": 0.0,
+              "platform_revenue": 0.0,
+              "platform_roas": 0.0,
+              "platform_cpa": null,
+              "shopify_orders": 0,
+              "shopify_revenue": 0,
+              "shopify_roas": 0.0,
+              "shopify_cpa": null,
+              "order_names": []
+            }
+          ]
+        },
+        "2026-11-23": {
+          "window": {
+            "start": "2026-11-23",
+            "end": "2026-11-23",
+            "label": "Mon Nov 23, 2026"
+          },
+          "rows": [
+            {
+              "ad": "Barreletics | PMax | US | Test",
+              "spend": 4.71,
               "platform_purch": 0.0,
               "platform_revenue": 0.0,
               "platform_roas": 0.0,
@@ -11598,29 +11679,29 @@
     },
     "pinterest": {
       "source": "Pinterest spend + checkouts via Blend (manual) + Shopify last-visit UTM",
-      "spend_through": "2026-11-21",
+      "spend_through": "2026-11-22",
       "today": {
         "window": {
-          "start": "2026-11-22",
-          "end": "2026-11-22",
-          "label": "Sun Nov 22, 2026"
+          "start": "2026-11-23",
+          "end": "2026-11-23",
+          "label": "Mon Nov 23, 2026"
         },
         "missing_spend_days": [
-          "2026-11-22"
+          "2026-11-23"
         ],
         "rows": []
       },
       "yesterday": {
         "window": {
-          "start": "2026-11-21",
-          "end": "2026-11-21",
-          "label": "Sat Nov 21, 2026"
+          "start": "2026-11-22",
+          "end": "2026-11-22",
+          "label": "Sun Nov 22, 2026"
         },
         "missing_spend_days": [],
         "rows": [
           {
             "ad": "Pinterest (all campaigns)",
-            "spend": 19.98,
+            "spend": 20.6,
             "platform_purch": 0,
             "platform_revenue": 0,
             "platform_roas": 0.0,
@@ -11635,9 +11716,9 @@
       },
       "7d": {
         "window": {
-          "start": "2026-11-15",
-          "end": "2026-11-21",
-          "label": "Nov 15 \u2013 Nov 21, 2026"
+          "start": "2026-11-16",
+          "end": "2026-11-22",
+          "label": "Nov 16 \u2013 Nov 22, 2026"
         },
         "missing_spend_days": [],
         "rows": [
@@ -11661,23 +11742,23 @@
       },
       "30d": {
         "window": {
-          "start": "2026-10-23",
-          "end": "2026-11-21",
-          "label": "Oct 23 \u2013 Nov 21, 2026"
+          "start": "2026-10-24",
+          "end": "2026-11-22",
+          "label": "Oct 24 \u2013 Nov 22, 2026"
         },
         "missing_spend_days": [],
         "rows": [
           {
             "ad": "Pinterest (all campaigns)",
-            "spend": 560.98,
+            "spend": 555.58,
             "platform_purch": 3,
             "platform_revenue": 241.9,
-            "platform_roas": 0.43,
-            "platform_cpa": 186.99,
+            "platform_roas": 0.44,
+            "platform_cpa": 185.19,
             "shopify_orders": 3,
             "shopify_revenue": 255.85,
             "shopify_roas": 0.46,
-            "shopify_cpa": 186.99,
+            "shopify_cpa": 185.19,
             "order_names": [
               "#6054",
               "#6274",
@@ -11689,29 +11770,6 @@
       "daily_budget": 20,
       "budget_note": "Winners campaign",
       "by_day": {
-        "2026-10-23": {
-          "window": {
-            "start": "2026-10-23",
-            "end": "2026-10-23",
-            "label": "Fri Oct 23, 2026"
-          },
-          "missing_spend_days": [],
-          "rows": [
-            {
-              "ad": "Pinterest (all campaigns)",
-              "spend": 26.0,
-              "platform_purch": 0,
-              "platform_revenue": 0,
-              "platform_roas": 0.0,
-              "platform_cpa": null,
-              "shopify_orders": 0,
-              "shopify_revenue": 0,
-              "shopify_roas": 0.0,
-              "shopify_cpa": null,
-              "order_names": []
-            }
-          ]
-        },
         "2026-10-24": {
           "window": {
             "start": "2026-10-24",
@@ -12335,24 +12393,47 @@
             "end": "2026-11-22",
             "label": "Sun Nov 22, 2026"
           },
+          "missing_spend_days": [],
+          "rows": [
+            {
+              "ad": "Pinterest (all campaigns)",
+              "spend": 20.6,
+              "platform_purch": 0,
+              "platform_revenue": 0,
+              "platform_roas": 0.0,
+              "platform_cpa": null,
+              "shopify_orders": 0,
+              "shopify_revenue": 0,
+              "shopify_roas": 0.0,
+              "shopify_cpa": null,
+              "order_names": []
+            }
+          ]
+        },
+        "2026-11-23": {
+          "window": {
+            "start": "2026-11-23",
+            "end": "2026-11-23",
+            "label": "Mon Nov 23, 2026"
+          },
           "missing_spend_days": [
-            "2026-11-22"
+            "2026-11-23"
           ],
           "rows": []
         }
       }
     },
-    "generated_at": "2026-11-22T20:53:17.968896-05:00"
+    "generated_at": "2026-11-23T06:29:56.789410-05:00"
   },
   "ads_connect": {
-    "generated_at": "2026-11-22T20:53:10.331101-05:00",
+    "generated_at": "2026-11-23T06:29:49.692448-05:00",
     "meta_read_only": true,
     "window_30d": {
       "start": "2026-10-25",
       "end": "2026-11-23"
     },
     "errors": [],
-    "prospecting_reach_share_pct_30d": 58.2,
+    "prospecting_reach_share_pct_30d": 58.0,
     "retargeting_campaign": "BAR | Retargeting | US | Nov 2026",
     "prospecting_campaign": "Barreletix | Prospecting | CBO | US | May",
     "ad_sets": [
@@ -12617,9 +12698,9 @@
         "id": "120251541410310396",
         "name": "BAR | CA | Instagram Engagers | 60D | Nov 2026",
         "subtype": "IG_BUSINESS",
-        "approximate_count": 21700,
-        "approximate_count_lower_bound": 18400,
-        "approximate_count_upper_bound": 21700,
+        "approximate_count": 22100,
+        "approximate_count_lower_bound": 18800,
+        "approximate_count_upper_bound": 22100,
         "retention_days": 60,
         "rule": {
           "inclusions": {
@@ -12660,9 +12741,9 @@
         "id": "120251541430190396",
         "name": "BAR | CA | Facebook Engagers | 60D | Nov 2026",
         "subtype": "ENGAGEMENT",
-        "approximate_count": 7900,
-        "approximate_count_lower_bound": 6700,
-        "approximate_count_upper_bound": 7900,
+        "approximate_count": 7600,
+        "approximate_count_lower_bound": 6400,
+        "approximate_count_upper_bound": 7600,
         "retention_days": 60,
         "rule": {
           "inclusions": {
@@ -12782,36 +12863,36 @@
       }
     ],
     "prospecting_30d": {
-      "reach": 68291,
-      "impressions": 126414,
-      "inline_link_clicks": 2363,
-      "clicks": 5127,
-      "spend": 3012.12,
-      "landing_page_views": 4362,
-      "video_views_3s": 49119,
+      "reach": 68865,
+      "impressions": 127453,
+      "inline_link_clicks": 2384,
+      "clicks": 5166,
+      "spend": 3035.54,
+      "landing_page_views": 4424,
+      "video_views_3s": 49554,
       "video_thruplay": 0
     },
     "other_meta_30d": [
       {
         "campaign": "BAR | Creative Test | Broad | US",
-        "reach": 35656,
-        "impressions": 71799,
-        "inline_link_clicks": 1705,
-        "clicks": 2534,
-        "spend": 2843.26,
-        "landing_page_views": 3382,
-        "video_views_3s": 24578,
+        "reach": 36320,
+        "impressions": 72365,
+        "inline_link_clicks": 1719,
+        "clicks": 2559,
+        "spend": 2866.73,
+        "landing_page_views": 3424,
+        "video_views_3s": 24818,
         "video_thruplay": 0
       },
       {
         "campaign": "BAR | Two-Pair Offer Test | US | Nov 2026",
-        "reach": 13396,
-        "impressions": 19688,
-        "inline_link_clicks": 690,
-        "clicks": 1628,
-        "spend": 614.96,
-        "landing_page_views": 1072,
-        "video_views_3s": 9433,
+        "reach": 13538,
+        "impressions": 19883,
+        "inline_link_clicks": 699,
+        "clicks": 1643,
+        "spend": 621.27,
+        "landing_page_views": 1100,
+        "video_views_3s": 9520,
         "video_thruplay": 0
       }
     ],
@@ -12820,57 +12901,57 @@
       "start": "2026-09-25",
       "end": "2026-11-23",
       "buckets": {
-        "meta_prospecting": 5035,
-        "meta_other_paid": 5153,
+        "meta_prospecting": 5085,
+        "meta_other_paid": 5199,
         "google_paid": 10,
         "pinterest_paid": 104,
-        "organic_direct_other": 18360
+        "organic_direct_other": 18551
       },
       "rows_sample": [
         {
           "channel": "Direct",
           "campaign": "(direct)",
-          "sessions": 5927
+          "sessions": 5952
         },
         {
           "channel": "Paid Social",
           "campaign": "Barreletix | Prospecting | CBO | US | May",
-          "sessions": 4809
+          "sessions": 4856
         },
         {
           "channel": "Cross-network",
           "campaign": "Barreletics | PMax | US | Test",
-          "sessions": 3508
+          "sessions": 3561
         },
         {
           "channel": "Organic Social",
           "campaign": "(referral)",
-          "sessions": 3326
+          "sessions": 3370
         },
         {
           "channel": "Paid Social",
           "campaign": "BAR | Creative Test | Broad | US",
-          "sessions": 2955
+          "sessions": 2971
         },
         {
           "channel": "Organic Shopping",
           "campaign": "(referral)",
-          "sessions": 2430
+          "sessions": 2485
         },
         {
           "channel": "Organic Search",
           "campaign": "(organic)",
-          "sessions": 1455
+          "sessions": 1463
         },
         {
           "channel": "Paid Social",
           "campaign": "BAR | Two-Pair Offer Test | US | Nov 2026",
-          "sessions": 676
+          "sessions": 686
         },
         {
           "channel": "Paid Social",
           "campaign": "626760082398",
-          "sessions": 426
+          "sessions": 434
         },
         {
           "channel": "Unassigned",
@@ -12879,13 +12960,13 @@
         },
         {
           "channel": "Paid Social",
-          "campaign": "626760011313",
-          "sessions": 242
+          "campaign": "BAR | Retargeting | US | Nov 2026",
+          "sessions": 243
         },
         {
           "channel": "Paid Social",
-          "campaign": "BAR | Retargeting | US | Nov 2026",
-          "sessions": 235
+          "campaign": "626760011313",
+          "sessions": 242
         },
         {
           "channel": "Paid Social",
@@ -12900,7 +12981,7 @@
         {
           "channel": "Paid Other",
           "campaign": "Barreletix | Prospecting | CBO | US | May",
-          "sessions": 163
+          "sessions": 165
         },
         {
           "channel": "Email",
@@ -12935,7 +13016,7 @@
         {
           "channel": "Email",
           "campaign": "earth_meets_glo_nov_2026",
-          "sessions": 78
+          "sessions": 79
         },
         {
           "channel": "Email",
@@ -12950,7 +13031,7 @@
         {
           "channel": "Paid Social",
           "campaign": "Barreletix+|+Prospecting+|+CBO+|+US+|+May",
-          "sessions": 63
+          "sessions": 64
         },
         {
           "channel": "Email",
@@ -12990,7 +13071,7 @@
         {
           "channel": "Paid Social",
           "campaign": "626760195958",
-          "sessions": 40
+          "sessions": 41
         },
         {
           "channel": "Email",
@@ -13003,14 +13084,14 @@
           "sessions": 34
         },
         {
+          "channel": "Paid Social",
+          "campaign": "BAR+|+Creative+Test+|+Broad+|+US",
+          "sessions": 33
+        },
+        {
           "channel": "Organic Search",
           "campaign": "sag_organic",
           "sessions": 32
-        },
-        {
-          "channel": "Paid Social",
-          "campaign": "BAR+|+Creative+Test+|+Broad+|+US",
-          "sessions": 31
         },
         {
           "channel": "Email",
@@ -13025,7 +13106,7 @@
         {
           "channel": "Organic Video",
           "campaign": "(referral)",
-          "sessions": 26
+          "sessions": 27
         }
       ],
       "source": "ga4_runReport"
@@ -13038,7 +13119,7 @@
       "source": "campaign_status Shopify last-touch"
     },
     "verdict": "LIKELY",
-    "verdict_reason": "Retargeting pools (website / cart / video / IG engagers) are shared \u2014 not Prospecting-only. Audiences include: Zaki | CA | AddToCart | 30D | Oct 2026, Zaki | CA | Website Visitors | 30D | Oct 2026, BAR | CA | Instagram Engagers | 60D | Nov 2026, BAR | CA | Facebook Engagers | 60D | Nov 2026, CA - Purchase - 30D. Prospecting 30d reach 68,291, landing page views 4,362; other Meta campaigns reach 49,052 (~58% of Meta reach in the last 30 days). No audience rule names only Prospecting.",
+    "verdict_reason": "Retargeting pools (website / cart / video / IG engagers) are shared \u2014 not Prospecting-only. Audiences include: Zaki | CA | AddToCart | 30D | Oct 2026, Zaki | CA | Website Visitors | 30D | Oct 2026, BAR | CA | Instagram Engagers | 60D | Nov 2026, BAR | CA | Facebook Engagers | 60D | Nov 2026, CA - Purchase - 30D. Prospecting 30d reach 68,865, landing page views 4,424; other Meta campaigns reach 49,858 (~58% of Meta reach in the last 30 days). No audience rule names only Prospecting.",
     "sources": [
       "Meta Graph API v21.0 GET (campaigns, adsets, customaudiences, insights)",
       "GA4 Data API runReport (sessions by channel + campaign)"
